@@ -11,6 +11,8 @@
     "postinstall": "node -e \"try{const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json','utf8'));const n=JSON.parse(fs.readFileSync('node_modules/next/package.json','utf8'));console.log('TSOP build probe => app '+p.version+' | next '+n.version)}catch(e){console.log('TSOP build probe => next not resolvable')}\""
   },
   "dependencies": {
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.119.0",
     "lucide-react": "^1.73.0",
     "next": "^15.5.29",
     "react": "19.1.1",
