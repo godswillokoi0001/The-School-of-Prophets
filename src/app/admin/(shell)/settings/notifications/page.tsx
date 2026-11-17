@@ -1,0 +1,24 @@
+import { requireStaff } from "@/lib/admin";
+import { getServiceClient, supabaseConfigured } from "@/lib/supabase/server";
+import { NotificationSettingsForm } from "@/components/admin/NotificationSettingsForm";
+
+export const dynamic = "force-dynamic";
+
+export default async function MyNotificationsPage() {
+  const staff = await requireStaff("moderator");
+  const svc = getServiceClient();
+  const initial = svc && supabaseConfigured()
+    ? (await svc.from("notification_settings").select("*").eq("user_id", staff.id).maybeSingle()).data ?? {}
+    : {};
+  return (
+    <div className="mx-auto max-w-3xl">
+      <h1 className="mb-1 font-display text-2xl">My notifications</h1>
+      <p className="mb-4 text-xs opacity-60">
+        Choose what reaches you and how. Push notifications work even when the
+        dashboard is closed, once you have allowed them in your browser
+        (automatic on this device).
+      </p>
+      <NotificationSettingsForm userId={staff.id} initial={initial} />
+    </div>
+  );
+}
