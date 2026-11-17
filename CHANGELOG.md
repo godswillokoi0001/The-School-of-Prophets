@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## 1.1.1 — security patch
+
+- Next.js 15.5.4 → 15.5.29, the November 2026 maintenance release that patches the
+  image-optimisation and cache-component RCE advisories. Vercel blocks
+  deployments on the older version.
+- sharp 0.34.5 → 0.35.5, the fixed line for the image-optimisation vulnerability
+  on glibc hosts.
+- zod 3.25 → 4.6.7, clearing a memory-exhaustion advisory; form validation
+  behaviour is unchanged (verified against the running API routes).
+
 ## 1.1.0 — photography, iconography and navigation
 
 - The supplied crest is now the only logo: header, footer, page watermarks and the
