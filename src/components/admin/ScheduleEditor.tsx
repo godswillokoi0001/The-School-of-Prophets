@@ -172,7 +172,7 @@ export function ScheduleEditor({
         <h2 className="mb-1 font-display text-lg">This-week exceptions</h2>
         <p className="mb-3 text-xs opacity-60">
           Cancel or move one date without changing the weekly pattern. Visitors
-          see the note, for example "No Monday teaching this week".
+          see the note, for example “No Monday teaching this week”.
         </p>
         <form className="flex flex-wrap items-end gap-2" onSubmit={submitException}>
           <div className="min-w-44">
