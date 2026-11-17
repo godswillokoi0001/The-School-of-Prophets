@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidateTag } from "next/cache";
-import { getServiceClient } from "@/lib/supabase/server";
+import { getAdminClient } from "@/lib/supabase/server";
 import { audit, requireStaff } from "@/lib/admin";
 
 export type TeachingInput = {
@@ -38,7 +38,7 @@ function revalidateSite() {
 
 export async function saveTeaching(input: TeachingInput) {
   const staff = await requireStaff("admin");
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   if (!svc) return { ok: false, error: "No database connection" };
 
   const { data: existing } = input.id
@@ -79,7 +79,7 @@ export async function saveTeaching(input: TeachingInput) {
 
 export async function bulkTeachings(ids: string[], action: string, value?: string) {
   const staff = await requireStaff("admin");
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   if (!svc || ids.length === 0) return { ok: false };
   if (action === "delete") {
     await svc.from("teachings").delete().in("id", ids);
@@ -103,7 +103,7 @@ export async function bulkTeachings(ids: string[], action: string, value?: strin
 
 export async function duplicateTeaching(id: string) {
   const staff = await requireStaff("admin");
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   if (!svc) return { ok: false };
   const { data: src } = await svc.from("teachings").select("*").eq("id", id).single();
   if (!src) return { ok: false };
@@ -138,7 +138,7 @@ export type SeriesInput = {
 
 export async function saveSeries(input: SeriesInput) {
   const staff = await requireStaff("admin");
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   if (!svc) return { ok: false, error: "No database connection" };
   const { data: existing } = input.id
     ? await svc.from("series").select("slug").eq("id", input.id).single()
@@ -159,7 +159,7 @@ export async function saveSeries(input: SeriesInput) {
 
 export async function reorderSeries(orderedIds: string[]) {
   const staff = await requireStaff("admin");
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   if (!svc) return { ok: false };
   for (let i = 0; i < orderedIds.length; i++) {
     await svc.from("series").update({ sort_order: i + 1 }).eq("id", orderedIds[i]);
@@ -171,7 +171,7 @@ export async function reorderSeries(orderedIds: string[]) {
 
 export async function deleteSeries(id: string) {
   const staff = await requireStaff("admin");
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   if (!svc) return { ok: false };
   const { error } = await svc.from("series").delete().eq("id", id);
   if (error) return { ok: false, error: error.message };

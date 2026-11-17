@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidateTag } from "next/cache";
-import { getServiceClient } from "@/lib/supabase/server";
+import { getAdminClient } from "@/lib/supabase/server";
 import { audit, requireStaff } from "@/lib/admin";
 import { sendReplyEmail, sendTemplated } from "@/lib/notify";
 
@@ -12,14 +12,14 @@ const LABELS: Record<string, string> = {
 };
 
 async function recordChange(id: string, actor: string, field: string, from: string | null, to: string | null) {
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   if (!svc) return;
   await svc.from("submission_history").insert({ submission_id: id, actor, field, from_value: from, to_value: to });
 }
 
 export async function setStatus(id: string, status: string) {
   const staff = await requireStaff("moderator");
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   if (!svc) return { ok: false };
   const { data: current } = await svc.from("submissions").select("status,type").eq("id", id).single();
   const { error } = await svc.from("submissions").update({ status }).eq("id", id);
@@ -31,7 +31,7 @@ export async function setStatus(id: string, status: string) {
 
 export async function addNote(id: string, body: string) {
   const staff = await requireStaff("moderator");
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   if (!svc || !body.trim()) return { ok: false };
   const { error } = await svc.from("submission_notes").insert({ submission_id: id, author: staff.id, body: body.trim() });
   if (error) return { ok: false, error: error.message };
@@ -49,7 +49,7 @@ export async function replyByEmail(id: string, to: string, subject: string, body
 
 export async function bulkAction(ids: string[], action: string) {
   const staff = await requireStaff("moderator");
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   if (!svc || ids.length === 0) return { ok: false };
   if (action === "delete") {
     if (staff.role !== "owner" && staff.role !== "admin") return { ok: false, error: "Not allowed" };
@@ -67,7 +67,7 @@ export async function bulkAction(ids: string[], action: string) {
 
 export async function restoreSubmission(id: string) {
   const staff = await requireStaff("admin");
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   if (!svc) return { ok: false };
   await svc.from("submissions").update({ deleted_at: null }).eq("id", id);
   await audit(staff, "restore", "submissions", id);
@@ -76,7 +76,7 @@ export async function restoreSubmission(id: string) {
 
 export async function markPrayed(id: string, notes: string) {
   const staff = await requireStaff("moderator");
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   if (!svc) return { ok: false };
   const { data } = await svc.from("submissions").select("payload").eq("id", id).single();
   const payload = (data?.payload ?? {}) as Record<string, unknown>;
@@ -90,7 +90,7 @@ export async function markPrayed(id: string, notes: string) {
 
 export async function decideApplication(id: string, decision: "approved" | "declined" | "waitlist") {
   const staff = await requireStaff("admin");
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   if (!svc) return { ok: false };
   const { data } = await svc.from("submissions").select("payload").eq("id", id).single();
   const payload = (data?.payload ?? {}) as Record<string, unknown>;
@@ -107,7 +107,7 @@ export async function decideApplication(id: string, decision: "approved" | "decl
 
 export async function approveTestimony(id: string, editedBody: string | null) {
   const staff = await requireStaff("moderator");
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   if (!svc) return { ok: false };
   const { data } = await svc.from("submissions").select("payload").eq("id", id).single();
   const payload = (data?.payload ?? {}) as Record<string, unknown>;
@@ -121,7 +121,7 @@ export async function approveTestimony(id: string, editedBody: string | null) {
 
 export async function featureTestimony(id: string, featured: boolean) {
   await requireStaff("moderator");
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   if (!svc) return { ok: false };
   const { data } = await svc.from("submissions").select("payload").eq("id", id).single();
   const payload = (data?.payload ?? {}) as Record<string, unknown>;
@@ -132,7 +132,7 @@ export async function featureTestimony(id: string, featured: boolean) {
 
 export async function convertWaitlist(ids: string[]) {
   const staff = await requireStaff("admin");
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   if (!svc || ids.length === 0) return { ok: false };
   const { data } = await svc.from("submissions").select("id,payload").in("id", ids);
   for (const row of data ?? []) {

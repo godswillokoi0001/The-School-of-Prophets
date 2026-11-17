@@ -1,5 +1,5 @@
 import { requireStaff } from "@/lib/admin";
-import { getServiceClient, supabaseConfigured } from "@/lib/supabase/server";
+import { getAdminClient } from "@/lib/supabase/server";
 import { ListEditor } from "@/components/admin/ListEditor";
 import { saveTeam, deleteTeamMember } from "@/app/admin/(shell)/actions/site-admin";
 
@@ -7,8 +7,8 @@ export const dynamic = "force-dynamic";
 
 export default async function TeamSettings() {
   await requireStaff("admin");
-  const svc = getServiceClient();
-  const rows = svc && supabaseConfigured()
+  const svc = await getAdminClient();
+  const rows = svc
     ? (await svc.from("team_members").select("id,name,role_label,bio,photo_url,sort_order,visible").order("sort_order")).data ?? []
     : [];
   return (

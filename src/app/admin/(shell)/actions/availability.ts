@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidateTag } from "next/cache";
-import { getServiceClient } from "@/lib/supabase/server";
+import { getAdminClient } from "@/lib/supabase/server";
 import { audit, requireStaff } from "@/lib/admin";
 
 export type CallTypeInput = {
@@ -15,7 +15,7 @@ export async function saveAvailability(
   callTypes: CallTypeInput[],
 ) {
   const staff = await requireStaff("admin");
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   if (!svc) return { ok: false, error: "No database" };
   const { error: e1 } = await svc.from("availability_rules").upsert(
     rules.map((r) => ({ ...r, id: r.id || undefined })),
@@ -32,7 +32,7 @@ export async function saveAvailability(
 
 export async function deleteRule(id: string) {
   const staff = await requireStaff("admin");
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   if (!svc) return { ok: false };
   await svc.from("availability_rules").delete().eq("id", id);
   await audit(staff, "delete", "availability_rules", id);
@@ -41,7 +41,7 @@ export async function deleteRule(id: string) {
 
 export async function addBlockedDate(date: string, allDay: boolean, startTime: string, endTime: string, reason: string) {
   const staff = await requireStaff("admin");
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   if (!svc) return { ok: false, error: "No database" };
   const { error } = await svc.from("availability_exceptions").insert({
     date,
@@ -58,7 +58,7 @@ export async function addBlockedDate(date: string, allDay: boolean, startTime: s
 
 export async function removeBlockedDate(id: string) {
   const staff = await requireStaff("admin");
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   if (!svc) return { ok: false };
   await svc.from("availability_exceptions").delete().eq("id", id);
   await audit(staff, "delete", "availability_exceptions", id);

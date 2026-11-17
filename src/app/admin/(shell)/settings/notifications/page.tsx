@@ -1,13 +1,13 @@
 import { requireStaff } from "@/lib/admin";
-import { getServiceClient, supabaseConfigured } from "@/lib/supabase/server";
+import { getAdminClient } from "@/lib/supabase/server";
 import { NotificationSettingsForm } from "@/components/admin/NotificationSettingsForm";
 
 export const dynamic = "force-dynamic";
 
 export default async function MyNotificationsPage() {
   const staff = await requireStaff("moderator");
-  const svc = getServiceClient();
-  const initial = svc && supabaseConfigured()
+  const svc = await getAdminClient();
+  const initial = svc
     ? (await svc.from("notification_settings").select("*").eq("user_id", staff.id).maybeSingle()).data ?? {}
     : {};
   return (

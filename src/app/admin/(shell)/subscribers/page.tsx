@@ -1,5 +1,5 @@
 import { requireStaff } from "@/lib/admin";
-import { getServiceClient, supabaseConfigured } from "@/lib/supabase/server";
+import { getAdminClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { Mail } from "lucide-react";
 
@@ -7,9 +7,9 @@ export const dynamic = "force-dynamic";
 
 export default async function SubscribersPage() {
   await requireStaff("admin");
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   let rows: { id: string; email: string; name: string; consent_at: string; unsubscribed_at: string | null }[] = [];
-  if (svc && supabaseConfigured()) {
+  if (svc) {
     const { data } = await svc.from("subscribers").select("id,email,name,consent_at,unsubscribed_at").order("consent_at", { ascending: false });
     rows = data ?? [];
   }

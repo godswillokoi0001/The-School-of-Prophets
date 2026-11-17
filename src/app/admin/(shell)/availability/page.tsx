@@ -1,16 +1,16 @@
 import { requireStaff } from "@/lib/admin";
-import { getServiceClient, supabaseConfigured } from "@/lib/supabase/server";
+import { getAdminClient } from "@/lib/supabase/server";
 import { AvailabilityEditor } from "@/components/admin/AvailabilityEditor";
 
 export const dynamic = "force-dynamic";
 
 export default async function AvailabilityPage() {
   await requireStaff("admin");
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   let rules = [];
   let callTypes = [];
   let blocks: { id: string; date: string; all_day: boolean; reason: string }[] = [];
-  if (svc && supabaseConfigured()) {
+  if (svc) {
     const [r, t, b] = await Promise.all([
       svc.from("availability_rules").select("*").order("weekday"),
       svc.from("call_types").select("*").order("sort_order"),
@@ -31,11 +31,7 @@ export default async function AvailabilityPage() {
           BOOKING_MAX_DAYS_AHEAD in the environment).
         </p>
       </div>
-      {!supabaseConfigured() ? (
-        <div className="admin-surface p-6 text-sm opacity-70">Connect Supabase to edit availability (see README).</div>
-      ) : (
-        <AvailabilityEditor rules={rules} callTypes={callTypes} blocks={blocks} />
-      )}
+      <AvailabilityEditor rules={rules} callTypes={callTypes} blocks={blocks} />
     </div>
   );
 }

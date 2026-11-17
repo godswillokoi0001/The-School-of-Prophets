@@ -1,13 +1,13 @@
 import { requireStaff } from "@/lib/admin";
-import { getServiceClient, supabaseConfigured } from "@/lib/supabase/server";
+import { getAdminClient } from "@/lib/supabase/server";
 import { UsersManager } from "@/components/admin/UsersManager";
 
 export const dynamic = "force-dynamic";
 
 export default async function UsersPage() {
   const staff = await requireStaff("owner");
-  const svc = getServiceClient();
-  const members = svc && supabaseConfigured()
+  const svc = await getAdminClient();
+  const members = svc
     ? (await svc.from("profiles").select("id,email,full_name,role,status,created_at").order("created_at")).data ?? []
     : [];
   return (

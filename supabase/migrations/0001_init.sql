@@ -503,10 +503,25 @@ alter table public.submissions enable row level security;
 create policy inbox_read on public.submissions for select to authenticated
   using (public.can_moderate() and (not private or public.can_moderate()));
 create policy inbox_insert_staff on public.submissions for insert to authenticated with check (public.is_staff());
+create policy inbox_insert_all on public.submissions for insert to anon, authenticated with check (true);
 create policy inbox_update_mod on public.submissions for update to authenticated
   using (public.can_moderate()) with check (public.can_moderate());
 create policy inbox_delete_admin on public.submissions for delete to authenticated
   using (public.is_admin());
+
+-- public inserts for forms
+alter table public.event_registrations enable row level security;
+create policy event_reg_staff on public.event_registrations for all to authenticated using (public.can_moderate());
+create policy event_reg_insert_all on public.event_registrations for insert to anon, authenticated with check (true);
+
+alter table public.subscribers enable row level security;
+create policy subscribers_staff on public.subscribers for all to authenticated using (public.can_moderate());
+create policy subscribers_insert_all on public.subscribers for insert to anon, authenticated with check (true);
+
+alter table public.bookings enable row level security;
+create policy bookings_read_staff on public.bookings for select to authenticated using (public.can_moderate());
+create policy bookings_insert_all on public.bookings for insert to anon, authenticated with check (true);
+create policy bookings_modify_staff on public.bookings for all to authenticated using (public.can_moderate());
 
 alter table public.submission_notes enable row level security;
 create policy notes_mod on public.submission_notes for all to authenticated

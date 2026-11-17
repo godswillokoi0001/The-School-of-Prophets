@@ -1,5 +1,5 @@
 import { requireStaff } from "@/lib/admin";
-import { getServiceClient, supabaseConfigured } from "@/lib/supabase/server";
+import { getAdminClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
@@ -10,9 +10,9 @@ export default async function AuditPage({
 }) {
   await requireStaff("moderator");
   const sp = await searchParams;
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   let rows: { id: number; actor_email: string; action: string; entity: string; entity_id: string | null; detail: Record<string, unknown>; created_at: string }[] = [];
-  if (svc && supabaseConfigured()) {
+  if (svc) {
     let q = svc.from("audit_log").select("*").order("created_at", { ascending: false }).limit(200);
     if (sp.entity) q = q.ilike("entity", `%${sp.entity}%`);
     if (sp.q) q = q.or(`action.ilike.%${sp.q}%,actor_email.ilike.%${sp.q}%,entity.ilike.%${sp.q}%`);

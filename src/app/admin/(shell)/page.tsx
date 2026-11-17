@@ -3,7 +3,7 @@ import {
   PlusCircle, Radio, Clock,
 } from "lucide-react";
 import { requireStaff } from "@/lib/admin";
-import { getServiceClient, supabaseConfigured } from "@/lib/supabase/server";
+import { getAdminClient, supabaseConfigured } from "@/lib/supabase/server";
 import { getSchedule, getEnrolmentSettings } from "@/lib/data";
 import { nextOccurrence } from "@/lib/schedule-time";
 import { toggleEnrolment } from "@/app/admin/(shell)/actions/enrolment";
@@ -19,7 +19,7 @@ const typeLabels: Record<string, string> = {
 
 export default async function AdminHome() {
   await requireStaff("viewer");
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
 
   const schedule = await getSchedule();
   const next = nextOccurrence(schedule);
@@ -32,7 +32,7 @@ export default async function AdminHome() {
   let recent: { id: string; type: string; payload: Record<string, string>; created_at: string; status: string }[] = [];
   let weekStats: { type: string; count: number }[] = [];
 
-  if (svc && supabaseConfigured()) {
+  if (svc) {
     const since = new Date(Date.now() - 7 * 86400_000).toISOString();
     const startOfDay = new Date(); startOfDay.setHours(0, 0, 0, 0);
     const weekEnd = new Date(Date.now() + 7 * 86400_000).toISOString();
@@ -176,12 +176,7 @@ export default async function AdminHome() {
             Live in the bell above
           </span>
         </div>
-        {!supabaseConfigured() ? (
-          <p className="text-xs opacity-60">
-            Connect Supabase (see README) and every form submission will appear
-            here and on your phone instantly.
-          </p>
-        ) : recent.length === 0 ? (
+        {recent.length === 0 ? (
           <p className="text-xs opacity-60">No submissions yet.</p>
         ) : (
           <ul className="divide-y divide-parchment/10 text-sm">

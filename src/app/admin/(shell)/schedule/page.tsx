@@ -1,16 +1,16 @@
 import { requireStaff } from "@/lib/admin";
-import { getServiceClient, supabaseConfigured } from "@/lib/supabase/server";
+import { getAdminClient } from "@/lib/supabase/server";
 import { ScheduleEditor, type SessionRow, type ExceptionRow } from "@/components/admin/ScheduleEditor";
 
 export const dynamic = "force-dynamic";
 
 export default async function SchedulePage() {
   await requireStaff("admin");
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   let rows: SessionRow[] = [];
   let exceptions: ExceptionRow[] = [];
 
-  if (svc && supabaseConfigured()) {
+  if (svc) {
     const today = new Date().toISOString().slice(0, 10);
     const [sessions, ex] = await Promise.all([
       svc.from("schedule_sessions").select("*").order("sort_order"),

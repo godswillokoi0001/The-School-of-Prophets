@@ -1,13 +1,13 @@
 "use server";
 
 import { revalidateTag } from "next/cache";
-import { getServiceClient } from "@/lib/supabase/server";
+import { getAdminClient } from "@/lib/supabase/server";
 import { audit, requireStaff, getStaff } from "@/lib/admin";
 
 /* FAQ */
 export async function saveFaqs(rows: { id?: string; question: string; answer: string; sort_order: number; active: boolean }[]) {
   const staff = await requireStaff("admin");
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   if (!svc) return { ok: false, error: "No database" };
   const { error } = await svc.from("faqs").upsert(rows.map((r) => ({ ...r, id: r.id || undefined })));
   if (error) return { ok: false, error: error.message };
@@ -18,7 +18,7 @@ export async function saveFaqs(rows: { id?: string; question: string; answer: st
 
 export async function deleteFaq(id: string) {
   const staff = await requireStaff("admin");
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   if (!svc) return { ok: false };
   await svc.from("faqs").delete().eq("id", id);
   await audit(staff, "delete", "faqs", id);
@@ -29,7 +29,7 @@ export async function deleteFaq(id: string) {
 /* Team */
 export async function saveTeam(rows: { id?: string; name: string; role_label: string; bio: string; photo_url: string | null; sort_order: number; visible: boolean }[]) {
   const staff = await requireStaff("admin");
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   if (!svc) return { ok: false, error: "No database" };
   const { error } = await svc.from("team_members").upsert(rows.map((r) => ({ ...r, id: r.id || undefined })));
   if (error) return { ok: false, error: error.message };
@@ -40,7 +40,7 @@ export async function saveTeam(rows: { id?: string; name: string; role_label: st
 
 export async function deleteTeamMember(id: string) {
   const staff = await requireStaff("admin");
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   if (!svc) return { ok: false };
   await svc.from("team_members").delete().eq("id", id);
   await audit(staff, "delete", "team_members", id);
@@ -51,9 +51,12 @@ export async function deleteTeamMember(id: string) {
 /* Email templates */
 export async function saveEmailTemplate(key: string, subject: string, body: string) {
   const staff = await requireStaff("admin");
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   if (!svc) return { ok: false, error: "No database" };
-  const { error } = await svc.from("email_templates").update({ subject, body, updated_at: new Date().toISOString() }).eq("key", key);
+  const { error } = await svc.from("email_templates").upsert(
+    { key, subject, body, updated_at: new Date().toISOString() },
+    { onConflict: "key" },
+  );
   if (error) return { ok: false, error: error.message };
   await audit(staff, "update", "email_templates", key);
   return { ok: true };
@@ -70,7 +73,7 @@ export async function testEmailTemplate(to: string, subject: string, body: strin
 /* Users (owner) */
 export async function inviteUser(email: string, role: string, fullName: string) {
   const staff = await requireStaff("owner");
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   if (!svc) return { ok: false, error: "No database" };
   const site = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
   const { data, error } = await svc.auth.admin.inviteUserByEmail(email, {
@@ -87,7 +90,7 @@ export async function inviteUser(email: string, role: string, fullName: string) 
 
 export async function setUserRole(id: string, role: string) {
   const staff = await requireStaff("owner");
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   if (!svc) return { ok: false, error: "No database" };
   if (id === staff.id && role !== "owner")
     return { ok: false, error: "You cannot remove your own Owner role. Ask another Owner to do it." };
@@ -99,7 +102,7 @@ export async function setUserRole(id: string, role: string) {
 
 export async function setUserStatus(id: string, status: string) {
   const staff = await requireStaff("owner");
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   if (!svc) return { ok: false, error: "No database" };
   if (id === staff.id) return { ok: false, error: "You cannot deactivate yourself." };
   const { error } = await svc.from("profiles").update({ status }).eq("id", id);
@@ -111,7 +114,7 @@ export async function setUserStatus(id: string, status: string) {
 /* Privacy tools */
 export async function personSearch(term: string) {
   await requireStaff("owner");
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   if (!svc) return [];
   const like = `%${term}%`;
   const { data } = await svc
@@ -135,7 +138,7 @@ export async function personSearch(term: string) {
 
 export async function erasePerson(ids: string[]) {
   const staff = await requireStaff("owner");
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   if (!svc) return { ok: false, error: "No database" };
   for (const id of ids) {
     await svc.from("submissions").update({ payload: { erased: true }, deleted_at: new Date().toISOString() }).eq("id", id);
@@ -148,7 +151,7 @@ export async function erasePerson(ids: string[]) {
 /* Broadcasts */
 export async function sendBroadcast(subject: string, body: string, segment: string, scheduledAt?: string) {
   const staff = await requireStaff("admin");
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   if (!svc) return { ok: false, error: "No database" };
 
   const { data: insertedRow } = await svc
@@ -206,7 +209,7 @@ export async function sendBroadcast(subject: string, body: string, segment: stri
 
 export async function snippetFor(kind: string, ref: string) {
   await requireStaff("admin");
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   const site = process.env.NEXT_PUBLIC_SITE_URL ?? "";
   if (!svc) return { ok: false, text: "" };
   if (kind === "teaching") {
@@ -225,7 +228,7 @@ export async function saveNotificationSettings(userId: string, values: Record<st
   const staff = await getStaff();
   if (!staff || (staff.id !== userId && staff.role !== "owner"))
     return { ok: false, error: "Not allowed" };
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   if (!svc) return { ok: false, error: "No database" };
   const { error } = await svc.from("notification_settings").upsert({ user_id: userId, ...values });
   if (error) return { ok: false, error: error.message };

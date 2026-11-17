@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidateTag } from "next/cache";
-import { getServiceClient } from "@/lib/supabase/server";
+import { getAdminClient } from "@/lib/supabase/server";
 import { audit, requireStaff } from "@/lib/admin";
 
 export type EventInput = {
@@ -28,7 +28,7 @@ export type EventInput = {
 
 export async function saveEvent(input: EventInput) {
   const staff = await requireStaff("admin");
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   if (!svc) return { ok: false, error: "No database connection" };
   const { data: existing } = input.id
     ? await svc.from("events").select("slug").eq("id", input.id).single()
@@ -54,7 +54,7 @@ export async function saveEvent(input: EventInput) {
 
 export async function deleteEvent(id: string) {
   const staff = await requireStaff("admin");
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   if (!svc) return { ok: false };
   await svc.from("events").delete().eq("id", id);
   await audit(staff, "delete", "events", id);
@@ -70,7 +70,7 @@ export async function addEventException(
   note: string,
 ) {
   const staff = await requireStaff("admin");
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   if (!svc) return { ok: false, error: "No database connection" };
   const { error } = await svc.from("event_exceptions").insert({
     event_id: eventId,

@@ -1,5 +1,5 @@
 import { requireStaff } from "@/lib/admin";
-import { getServiceClient, supabaseConfigured } from "@/lib/supabase/server";
+import { getAdminClient } from "@/lib/supabase/server";
 import { ListEditor } from "@/components/admin/ListEditor";
 import { saveFaqs, deleteFaq } from "@/app/admin/(shell)/actions/site-admin";
 
@@ -7,8 +7,8 @@ export const dynamic = "force-dynamic";
 
 export default async function FaqSettings() {
   await requireStaff("admin");
-  const svc = getServiceClient();
-  const rows = svc && supabaseConfigured()
+  const svc = await getAdminClient();
+  const rows = svc
     ? (await svc.from("faqs").select("id,question,answer,sort_order,active").order("sort_order")).data ?? []
     : [];
   return (

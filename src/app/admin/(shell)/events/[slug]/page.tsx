@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { requireStaff } from "@/lib/admin";
-import { getServiceClient, supabaseConfigured } from "@/lib/supabase/server";
+import { getAdminClient } from "@/lib/supabase/server";
 import { EventEditor } from "@/components/admin/EventEditor";
 
 export const dynamic = "force-dynamic";
@@ -12,8 +12,8 @@ export default async function EditEventPage({
 }) {
   await requireStaff("admin");
   const { slug } = await params;
-  const svc = getServiceClient();
-  if (!svc || !supabaseConfigured()) notFound();
+  const svc = await getAdminClient();
+  if (!svc) notFound();
   const { data } = await svc.from("events").select("*").eq("slug", slug).single();
   if (!data) notFound();
   const { data: exceptions } = await svc

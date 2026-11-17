@@ -1,16 +1,16 @@
 "use server";
 
 import { revalidateTag } from "next/cache";
-import { getServiceClient } from "@/lib/supabase/server";
+import { getAdminClient } from "@/lib/supabase/server";
 import { audit, getStaff } from "@/lib/admin";
 
 const allTags = ["setting:enrolment", "setting:announcement", "setting:homepage", "setting:giving", "setting:contact", "setting:pages", "setting:legal", "setting:seo", "schedule", "series", "teachings", "events", "faqs", "team", "testimonies"];
 
 export async function saveSetting(key: string, value: Record<string, unknown>) {
   const staff = await getStaff();
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   if (!staff) return { ok: false, error: "Not signed in" };
-  if (!svc) return { ok: false, error: "Supabase not configured" };
+  if (!svc) return { ok: false, error: "Database not connected" };
   const { error } = await svc
     .from("site_settings")
     .upsert({ key, value, updated_by: staff.id, updated_at: new Date().toISOString() });

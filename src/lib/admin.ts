@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
-import { createSupabaseServer } from "@/lib/supabase/server";
-import { getServiceClient } from "@/lib/supabase/server";
+import { createSupabaseServer, getServiceClient, getAdminClient } from "@/lib/supabase/server";
 
 export type Role = "owner" | "admin" | "moderator" | "viewer";
 
@@ -16,8 +15,7 @@ export async function getStaff(): Promise<Staff | null> {
   if (!sb) return null;
   const { data: userData } = await sb.auth.getUser();
   if (!userData?.user) return null;
-  const svc = getServiceClient();
-  const client = svc || sb;
+  const client = (await getAdminClient()) || sb;
   const { data: profile } = await client
     .from("profiles")
     .select("id,email,full_name,role,status")
@@ -52,17 +50,24 @@ export async function audit(
   entityId?: string,
   detail: Record<string, unknown> = {},
 ) {
-  const svc = getServiceClient();
-  if (!svc) {
-    console.info(`[audit] ${action} ${entity} ${entityId ?? ""}`, detail);
-    return;
+  try {
+    const client = await getAdminClient();
+    if (!client) {
+      console.info(`[audit] ${action} ${entity} ${entityId ?? ""}`, detail);
+      return;
+    }
+    const { error } = await client.from("audit_log").insert({
+      actor: actor?.id ?? null,
+      actor_email: actor?.email ?? "system",
+      action,
+      entity,
+      entity_id: entityId ?? null,
+      detail,
+    });
+    if (error) {
+      console.warn(`[audit] Insert warning:`, error.message);
+    }
+  } catch (err) {
+    console.warn(`[audit] Failed to record audit log:`, err);
   }
-  await svc.from("audit_log").insert({
-    actor: actor?.id ?? null,
-    actor_email: actor?.email ?? "system",
-    action,
-    entity,
-    entity_id: entityId ?? null,
-    detail,
-  });
 }

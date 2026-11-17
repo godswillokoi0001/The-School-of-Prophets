@@ -1,16 +1,16 @@
 import Link from "next/link";
 import { PlusCircle } from "lucide-react";
 import { requireStaff } from "@/lib/admin";
-import { getServiceClient, supabaseConfigured } from "@/lib/supabase/server";
+import { getAdminClient } from "@/lib/supabase/server";
 import { SeriesList, type SeriesRow } from "@/components/admin/SeriesAdmin";
 
 export const dynamic = "force-dynamic";
 
 export default async function SeriesPage() {
   await requireStaff("admin");
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   let rows: SeriesRow[] = [];
-  if (svc && supabaseConfigured()) {
+  if (svc) {
     const { data } = await svc
       .from("series")
       .select("id,title,slug,description,status,sort_order,featured,teachings(count)")
@@ -33,19 +33,15 @@ export default async function SeriesPage() {
         <div>
           <h1 className="font-display text-2xl">Series</h1>
           <p className="text-xs opacity-60">
-            Order teachings into series such as “Faith Series” or “Word of
-            Knowledge”. The order here is the order visitors see.
+            Order teachings into series such as &ldquo;Faith Series&rdquo; or &ldquo;Word of
+            Knowledge&rdquo;. The order here is the order visitors see.
           </p>
         </div>
         <Link href="/admin/series/new" className="admin-btn admin-btn-gold">
           <PlusCircle size={13} /> New series
         </Link>
       </div>
-      {!supabaseConfigured() ? (
-        <div className="admin-surface p-6 text-sm opacity-70">Connect Supabase to manage series (see README).</div>
-      ) : (
-        <SeriesList initial={rows} />
-      )}
+      <SeriesList initial={rows} />
     </div>
   );
 }

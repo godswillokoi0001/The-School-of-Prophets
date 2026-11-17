@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { requireStaff } from "@/lib/admin";
-import { getServiceClient, supabaseConfigured } from "@/lib/supabase/server";
+import { getAdminClient } from "@/lib/supabase/server";
 import { TeachingEditor } from "@/components/admin/TeachingEditor";
 import type { TeachingInput } from "@/app/admin/(shell)/actions/teachings";
 
@@ -13,8 +13,8 @@ export default async function EditTeachingPage({
 }) {
   await requireStaff("admin");
   const { slug } = await params;
-  const svc = getServiceClient();
-  if (!svc || !supabaseConfigured()) notFound();
+  const svc = await getAdminClient();
+  if (!svc) notFound();
 
   const { data: teaching } = await svc
     .from("teachings")

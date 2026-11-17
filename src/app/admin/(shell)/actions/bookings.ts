@@ -1,13 +1,13 @@
 "use server";
 
-import { getServiceClient } from "@/lib/supabase/server";
+import { getAdminClient } from "@/lib/supabase/server";
 import { audit, requireStaff } from "@/lib/admin";
 import { sendTemplated } from "@/lib/notify";
 import { availableSlots } from "@/lib/booking";
 
 export async function bookingAction(id: string, action: string, reason: string, newStartsAt?: string) {
   const staff = await requireStaff("moderator");
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   if (!svc) return { ok: false, error: "No database" };
   const { data: booking } = await svc.from("bookings").select("*, call_types(name)").eq("id", id).single();
   if (!booking) return { ok: false, error: "Not found" };

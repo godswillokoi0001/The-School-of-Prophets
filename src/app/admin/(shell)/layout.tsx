@@ -1,6 +1,6 @@
 import { AdminShell } from "@/components/admin/AdminShell";
 import { requireStaff } from "@/lib/admin";
-import { getServiceClient, supabaseConfigured } from "@/lib/supabase/server";
+import { getAdminClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
@@ -10,7 +10,7 @@ export const metadata = {
 };
 
 async function counts() {
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   if (!svc) return { inbox: 0, testimony: 0 };
   const weekAgo = new Date(Date.now() - 7 * 86400_000).toISOString();
   const [inbox, testimony] = await Promise.all([
@@ -36,9 +36,7 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   const staff = await requireStaff();
-  const c = supabaseConfigured()
-    ? await counts()
-    : { inbox: 0, testimony: 0 };
+  const c = await counts();
   return (
     <AdminShell
       role={staff.role}

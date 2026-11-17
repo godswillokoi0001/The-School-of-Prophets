@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { PlusCircle } from "lucide-react";
 import { requireStaff } from "@/lib/admin";
-import { getServiceClient, supabaseConfigured } from "@/lib/supabase/server";
+import { getAdminClient } from "@/lib/supabase/server";
 import { TeachingList, type TeachingRow } from "@/components/admin/TeachingList";
 
 export const dynamic = "force-dynamic";
@@ -15,17 +15,17 @@ export default async function TeachingsPage({
   const sp = await searchParams;
   const status = sp.status ?? "all";
   const q = sp.q ?? "";
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
 
   let rows: TeachingRow[] = [];
   let seriesOptions: { id: string; title: string }[] = [];
 
-  if (svc && supabaseConfigured()) {
+  if (svc) {
     const [teachings, series] = await Promise.all([
       svc
-      .from("teachings")
-      .select("id,title,slug,status,date_taught,featured,series_id,series:series_id(title)")
-      .order("date_taught", { ascending: false }),
+        .from("teachings")
+        .select("id,title,slug,status,date_taught,featured,series_id,series:series_id(title)")
+        .order("date_taught", { ascending: false }),
       svc.from("series").select("id,title").order("sort_order"),
     ]);
     const seriesMap = new Map((series.data ?? []).map((s) => [s.id, s.title]));
@@ -75,14 +75,7 @@ export default async function TeachingsPage({
         <Link href="/admin/teachings" className="admin-btn admin-btn-ghost">Reset</Link>
       </form>
 
-      {!supabaseConfigured() ? (
-        <div className="admin-surface p-6 text-sm opacity-70">
-          Connect Supabase to manage teachings (see README). Without it the
-          public site shows the built-in sample library.
-        </div>
-      ) : (
-        <TeachingList rows={rows} seriesOptions={seriesOptions} />
-      )}
+      <TeachingList rows={rows} seriesOptions={seriesOptions} />
     </div>
   );
 }

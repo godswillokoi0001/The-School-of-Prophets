@@ -1,13 +1,13 @@
 import { requireStaff } from "@/lib/admin";
 import { getSetting } from "@/lib/data";
 import { SettingsEditor } from "@/components/admin/SettingsEditor";
-import { getServiceClient, supabaseConfigured } from "@/lib/supabase/server";
+import { getAdminClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
 async function optionsFor(key: "teachings" | "events") {
-  const svc = getServiceClient();
-  if (!svc || !supabaseConfigured()) return [{ value: "", label: "None" }];
+  const svc = await getAdminClient();
+  if (!svc) return [{ value: "", label: "None" }];
   const { data } = await svc
     .from(key)
     .select(key === "teachings" ? "title,slug" : "title,slug")

@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidateTag } from "next/cache";
-import { getServiceClient } from "@/lib/supabase/server";
+import { getAdminClient } from "@/lib/supabase/server";
 import { audit, requireStaff } from "@/lib/admin";
 
 type SessionInput = {
@@ -19,7 +19,7 @@ type SessionInput = {
 
 export async function saveSessions(rows: SessionInput[]) {
   const staff = await requireStaff("admin");
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   if (!svc) return { ok: false, error: "No database connection" };
   const { error } = await svc
     .from("schedule_sessions")
@@ -32,7 +32,7 @@ export async function saveSessions(rows: SessionInput[]) {
 
 export async function deleteSession(id: string) {
   const staff = await requireStaff("admin");
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   if (!svc) return { ok: false };
   const { error } = await svc.from("schedule_sessions").delete().eq("id", id);
   if (error) return { ok: false, error: error.message };
@@ -49,7 +49,7 @@ export async function addException(
   note: string,
 ) {
   const staff = await requireStaff("admin");
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   if (!svc) return { ok: false, error: "No database connection" };
   const { error } = await svc.from("schedule_exceptions").insert({
     session_id: sessionId,
@@ -66,7 +66,7 @@ export async function addException(
 
 export async function deleteException(id: string) {
   const staff = await requireStaff("admin");
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   if (!svc) return { ok: false };
   await svc.from("schedule_exceptions").delete().eq("id", id);
   await audit(staff, "delete", "schedule_exceptions", id);

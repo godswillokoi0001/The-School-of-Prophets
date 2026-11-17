@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Download } from "lucide-react";
 import { requireStaff } from "@/lib/admin";
-import { getServiceClient, supabaseConfigured } from "@/lib/supabase/server";
+import { getAdminClient } from "@/lib/supabase/server";
 import { InboxList, type SubmissionRow } from "@/components/admin/InboxUI";
 
 export const dynamic = "force-dynamic";
@@ -25,10 +25,10 @@ export default async function InboxPage({
   const q = sp.q ?? "";
   const from = sp.from ?? "";
   const to = sp.to ?? "";
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
 
   let rows: SubmissionRow[] = [];
-  if (svc && supabaseConfigured()) {
+  if (svc) {
     let query = svc
       .from("submissions")
       .select("id,type,status,private,payload,created_at,submission_notes(body,created_at)")
@@ -114,15 +114,7 @@ export default async function InboxPage({
         <Link href="/admin/inbox" className="admin-btn admin-btn-ghost">Reset</Link>
       </form>
 
-      {!supabaseConfigured() ? (
-        <div className="admin-surface p-6 text-sm opacity-70">
-          Connect Supabase to start receiving submissions (see the README setup
-          guide). The public forms already work; without a database they are
-          logged to the server only.
-        </div>
-      ) : (
-        <InboxList rows={rows} role={staff.role} />
-      )}
+      <InboxList rows={rows} role={staff.role} />
     </div>
   );
 }

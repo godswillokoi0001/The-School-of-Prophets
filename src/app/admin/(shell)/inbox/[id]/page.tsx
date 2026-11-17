@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { requireStaff } from "@/lib/admin";
-import { getServiceClient, supabaseConfigured } from "@/lib/supabase/server";
+import { getAdminClient } from "@/lib/supabase/server";
 import { SubmissionDetail, type SubmissionRow } from "@/components/admin/InboxUI";
 
 export const dynamic = "force-dynamic";
@@ -12,8 +12,8 @@ export default async function SubmissionPage({
 }) {
   await requireStaff("moderator");
   const { id } = await params;
-  const svc = getServiceClient();
-  if (!svc || !supabaseConfigured()) notFound();
+  const svc = await getAdminClient();
+  if (!svc) notFound();
 
   const { data } = await svc
     .from("submissions")

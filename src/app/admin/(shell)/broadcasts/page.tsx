@@ -1,14 +1,14 @@
 import { requireStaff } from "@/lib/admin";
-import { getServiceClient, supabaseConfigured } from "@/lib/supabase/server";
+import { getAdminClient } from "@/lib/supabase/server";
 import { BroadcastComposer } from "@/components/admin/BroadcastComposer";
 
 export const dynamic = "force-dynamic";
 
 export default async function BroadcastsPage() {
   await requireStaff("admin");
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   let options: { kind: "teaching" | "event"; id: string; label: string }[] = [];
-  if (svc && supabaseConfigured()) {
+  if (svc) {
     const [teachings, events] = await Promise.all([
       svc.from("teachings").select("id,title").eq("status", "published").order("date_taught", { ascending: false }).limit(30),
       svc.from("events").select("id,title").eq("status", "published").order("starts_at", { ascending: false }).limit(15),

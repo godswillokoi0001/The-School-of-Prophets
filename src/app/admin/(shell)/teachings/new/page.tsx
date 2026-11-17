@@ -1,5 +1,5 @@
 import { requireStaff } from "@/lib/admin";
-import { getServiceClient, supabaseConfigured } from "@/lib/supabase/server";
+import { getAdminClient } from "@/lib/supabase/server";
 import { TeachingEditor } from "@/components/admin/TeachingEditor";
 import type { TeachingInput } from "@/app/admin/(shell)/actions/teachings";
 
@@ -7,11 +7,11 @@ export const dynamic = "force-dynamic";
 
 export default async function NewTeachingPage() {
   await requireStaff("admin");
-  const svc = getServiceClient();
-  const media = svc && supabaseConfigured()
+  const svc = await getAdminClient();
+  const media = svc
     ? (await svc.from("media").select("path,alt").order("created_at", { ascending: false })).data ?? []
     : [];
-  const seriesOptions = svc && supabaseConfigured()
+  const seriesOptions = svc
     ? (await svc.from("series").select("id,title,status").order("sort_order")).data ?? []
     : [];
 

@@ -1,14 +1,14 @@
 import { requireStaff } from "@/lib/admin";
-import { getServiceClient, supabaseConfigured } from "@/lib/supabase/server";
+import { getAdminClient } from "@/lib/supabase/server";
 import { CalendarView } from "@/components/admin/CalendarView";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminCalendarPage() {
   await requireStaff("moderator");
-  const svc = getServiceClient();
+  const svc = await getAdminClient();
   let sessions: { title: string; day: number; start: string }[] = [];
-  if (svc && supabaseConfigured()) {
+  if (svc) {
     const { data } = await svc.from("schedule_sessions").select("title,day,start_time").eq("active", true);
     sessions = (data ?? []).map((s) => ({ title: s.title, day: s.day, start: s.start_time }));
   }
