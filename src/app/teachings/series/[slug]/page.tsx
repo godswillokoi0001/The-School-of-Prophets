@@ -3,18 +3,17 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PageHeader } from "@/components/PageHeader";
 import { TeachingCard } from "@/components/TeachingCard";
-import { seriesBySlug, seriesList, teachingsBySeries } from "@/content/teachings";
+import { getSeries, getTeachings } from "@/lib/data";
 import { site } from "@/config/site";
 
 type Params = { params: Promise<{ slug: string }> };
 
-export function generateStaticParams() {
-  return seriesList.map((s) => ({ slug: s.slug }));
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
-  const series = seriesBySlug(slug);
+  const seriesList = await getSeries();
+  const series = seriesList.find((s) => s.slug === slug);
   if (!series) return { title: "Series not found" };
   return {
     title: series.title,
@@ -30,10 +29,13 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 
 export default async function SeriesPage({ params }: Params) {
   const { slug } = await params;
-  const series = seriesBySlug(slug);
+  const [seriesList, teachings] = await Promise.all([getSeries(), getTeachings()]);
+  const series = seriesList.find((s) => s.slug === slug);
   if (!series) notFound();
 
-  const items = teachingsBySeries(slug);
+  const items = teachings
+    .filter((t) => t.series === slug)
+    .sort((a, b) => b.date.localeCompare(a.date));
 
   return (
     <>
@@ -58,7 +60,7 @@ export default async function SeriesPage({ params }: Params) {
         {items.length > 0 ? (
           <div className="grid gap-x-10 gap-y-12 md:grid-cols-2">
             {items.map((t) => (
-              <TeachingCard key={t.slug} teaching={t} />
+              <TeachingCard key={t.slug} teaching={t} seriesTitle={series.title} />
             ))}
           </div>
         ) : (

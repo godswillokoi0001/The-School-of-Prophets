@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { seriesList, teachings, type Format } from "@/content/teachings";
+import type { Format, Series, Teaching } from "@/content/teachings";
 import { TeachingCard } from "@/components/TeachingCard";
 
 const formats: { key: Format | "all"; label: string }[] = [
@@ -11,7 +11,13 @@ const formats: { key: Format | "all"; label: string }[] = [
   { key: "notes", label: "Notes" },
 ];
 
-export function TeachingLibrary() {
+export function TeachingLibrary({
+  seriesList,
+  teachings,
+}: {
+  seriesList: Series[];
+  teachings: Teaching[];
+}) {
   const [series, setSeries] = useState<string>("all");
   const [format, setFormat] = useState<Format | "all">("all");
   const [query, setQuery] = useState("");
@@ -99,7 +105,11 @@ export function TeachingLibrary() {
       {results.length > 0 ? (
         <div className="mt-8 grid gap-x-10 gap-y-12 md:grid-cols-2">
           {results.map((t) => (
-            <TeachingCard key={t.slug} teaching={t} />
+            <TeachingCard
+              key={t.slug}
+              teaching={t}
+              seriesTitle={seriesList.find((s) => s.slug === t.series)?.title}
+            />
           ))}
         </div>
       ) : (

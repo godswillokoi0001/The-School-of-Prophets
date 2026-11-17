@@ -7,7 +7,10 @@ import { SocialLinks } from "@/components/SocialLinks";
 import { BookOpen, Flame, HandHeart, CalendarPlus } from "lucide-react";
 import { covenant } from "@/content/faq";
 import { scheduleNote } from "@/content/schedule";
+import { getContactSettings, getSchedule } from "@/lib/data";
 import { site } from "@/config/site";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Weekly Gatherings",
@@ -22,14 +25,17 @@ export const metadata: Metadata = {
   },
 };
 
-export default function GatheringsPage() {
+export default async function GatheringsPage() {
+  const [schedule, contact] = await Promise.all([getSchedule(), getContactSettings()]);
   return (
     <>
       <PageHeader
         label="Weekly gatherings"
         title="Every week, we meet."
         lead="All sessions are held online. Times are in West Africa Time (WAT); we convert them to your timezone automatically, because our members gather from Nigeria, Zambia and further afield."
-        aside={<NextGathering tone="light" />}
+        aside={
+          <NextGathering tone="light" sessions={schedule} joinHref={contact.whatsapp || undefined} />
+        }
         image="/images/worship-hands.webp"
         imageAlt="A member of the fellowship worshipping with raised hands"
       />
@@ -48,7 +54,7 @@ export default function GatheringsPage() {
         </div>
 
         <div className="lg:col-span-9">
-          <Timetable />
+          <Timetable sessions={schedule} />
           <p className="mt-5 max-w-[70ch] text-xs leading-relaxed text-quiet">
             {scheduleNote}{" "}
             <Link href="/contact" className="underline underline-offset-4">
@@ -116,7 +122,15 @@ export default function GatheringsPage() {
             the same notices for members who prefer them.
           </p>
           <div className="mt-7">
-            <SocialLinks />
+            <SocialLinks
+              links={{
+                whatsapp: contact.whatsapp,
+                telegram: contact.telegram,
+                facebookGroup: contact.facebookGroup,
+                facebookPage: contact.facebookPage,
+                youtube: contact.youtube,
+              }}
+            />
           </div>
           <p className="mt-4 text-xs leading-relaxed text-quiet">
             Invite links are refreshed periodically. If a link is closed, request

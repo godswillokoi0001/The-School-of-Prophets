@@ -1,5 +1,5 @@
 import { BookOpen, Flame, Sun, Users, type LucideIcon } from "lucide-react";
-import { dayNames, sessions } from "@/content/schedule";
+import { dayNames, type Session } from "@/content/schedule";
 import { formatTimeWAT } from "@/lib/time";
 import { LocalClock } from "@/components/LocalClock";
 
@@ -10,7 +10,7 @@ const icons: Record<string, LucideIcon> = {
   "sunday-exhortation": Sun,
 };
 
-export function Timetable() {
+export function Timetable({ sessions }: { sessions: Session[] }) {
   return (
     <div>
       <div className="hidden border-b border-ink/20 pb-3 md:grid md:grid-cols-[6rem_1.5fr_1fr_1fr] md:gap-4">

@@ -6,6 +6,7 @@ import {
   YouTubeIcon,
 } from "@/components/BrandIcons";
 import { socialLinks } from "@/config/site";
+import { site } from "@/config/site";
 
 const iconFor = {
   whatsapp: WhatsAppIcon,
@@ -15,17 +16,39 @@ const iconFor = {
   youtube: YouTubeIcon,
 } as const;
 
+export type SocialLinkOverride = {
+  whatsapp?: string;
+  telegram?: string;
+  facebookGroup?: string;
+  facebookPage?: string;
+  youtube?: string;
+};
+
+/** Build the social link list from live contact settings when provided. */
+export function resolveSocialLinks(overrides?: SocialLinkOverride) {
+  if (!overrides) return socialLinks;
+  return socialLinks.map((link) => {
+    const value = overrides[link.key];
+    return value
+      ? { ...link, href: value, fallbackHref: value }
+      : link;
+  });
+}
+
 export function SocialLinks({
   variant = "row",
   className = "",
+  links,
 }: {
   variant?: "row" | "list" | "icons";
   className?: string;
+  links?: SocialLinkOverride;
 }) {
+  const resolved = resolveSocialLinks(links);
   if (variant === "icons") {
     return (
       <ul className={`flex flex-wrap gap-2 ${className}`}>
-        {socialLinks.map((link) => {
+        {resolved.map((link) => {
           const href = link.href || link.fallbackHref;
           const external = href.startsWith("http");
           const Icon = iconFor[link.key];
@@ -50,7 +73,7 @@ export function SocialLinks({
   if (variant === "list") {
     return (
       <ul className={`divide-y divide-ink/15 ${className}`}>
-        {socialLinks.map((link) => {
+        {resolved.map((link) => {
           const href = link.href || link.fallbackHref;
           const external = href.startsWith("http");
           const Icon = iconFor[link.key];
@@ -84,7 +107,7 @@ export function SocialLinks({
 
   return (
     <ul className={`flex flex-wrap gap-3 ${className}`}>
-      {socialLinks.map((link) => {
+      {resolved.map((link) => {
         const href = link.href || link.fallbackHref;
         const external = href.startsWith("http");
         const Icon = iconFor[link.key];
@@ -104,3 +127,4 @@ export function SocialLinks({
     </ul>
   );
 }
+

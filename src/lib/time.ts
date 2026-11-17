@@ -1,4 +1,4 @@
-import { sessions, type Session } from "@/content/schedule";
+import type { Session } from "@/content/schedule";
 
 export const WAT_OFFSET_MS = 60 * 60 * 1000; // Africa/Lagos is UTC+1, no DST
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -41,7 +41,9 @@ export function nextStartFor(session: Session, now = new Date()): number {
   return start;
 }
 
-export function nextSession(now = new Date()) {
+export function nextSession(sessions: Session[], now = new Date()) {
+  if (sessions.length === 0)
+    return { session: null, start: NaN };
   return sessions
     .map((session) => ({ session, start: nextStartFor(session, now) }))
     .sort((a, b) => a.start - b.start)[0];
@@ -105,7 +107,7 @@ export function googleCalendarUrl(
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
 }
 
-export function icsForSessions(weeks = 8, now = new Date()) {
+export function icsForSessions(sessions: Session[], weeks = 8, now = new Date()) {
   const lines: string[] = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",

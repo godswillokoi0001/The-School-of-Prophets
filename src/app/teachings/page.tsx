@@ -3,7 +3,7 @@ import Link from "next/link";
 import { PageHeader } from "@/components/PageHeader";
 import { TeachingLibrary } from "@/components/TeachingLibrary";
 import { TeachingCard } from "@/components/TeachingCard";
-import { seriesList, teachingOfTheWeek, teachings } from "@/content/teachings";
+import { getSeries, getTeachings } from "@/lib/data";
 import { site } from "@/config/site";
 import { BookOpen, Layers } from "lucide-react";
 import { YouTubeIcon } from "@/components/BrandIcons";
@@ -21,8 +21,11 @@ export const metadata: Metadata = {
   },
 };
 
-export default function TeachingsPage() {
-  const featured = teachings.find((t) => t.slug === teachingOfTheWeek) ?? teachings[0];
+export const dynamic = "force-dynamic";
+
+export default async function TeachingsPage() {
+  const [teachings, seriesList] = await Promise.all([getTeachings(), getSeries()]);
+  const featured = teachings.find((t) => t.featured) ?? teachings[0];
 
   return (
     <>
@@ -57,7 +60,11 @@ export default function TeachingsPage() {
             <p className="label text-ember">Teaching of the week</p>
           </div>
           <div className="md:col-span-9">
-            <TeachingCard teaching={featured} featured />
+            <TeachingCard
+              teaching={featured}
+              featured
+              seriesTitle={seriesList.find((s) => s.slug === featured.series)?.title}
+            />
           </div>
         </div>
       </section>
@@ -72,7 +79,7 @@ export default function TeachingsPage() {
           </p>
         </div>
         <div className="mt-8">
-          <TeachingLibrary />
+          <TeachingLibrary seriesList={seriesList} teachings={teachings} />
         </div>
 
         <div id="series" className="mt-16 border-t border-ink/15 pt-8">

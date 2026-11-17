@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/PageHeader";
 import { TestimonyForm } from "@/components/forms/TestimonyForm";
-import { testimonies, testimonyNote } from "@/content/testimonies";
+import { testimonyNote } from "@/content/testimonies";
+import { getTestimonies } from "@/lib/data";
 import { formatDate } from "@/lib/time";
 import { Quote, ShieldCheck } from "lucide-react";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Testimonies",
@@ -12,7 +15,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "/testimonies" },
 };
 
-export default function TestimoniesPage() {
+export default async function TestimoniesPage() {
+  const testimonies = await getTestimonies();
   return (
     <>
       <PageHeader

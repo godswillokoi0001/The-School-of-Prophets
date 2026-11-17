@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { EnrolmentForm } from "@/components/forms/EnrolmentForm";
 import { EnrolmentBanner } from "@/components/EnrolmentBanner";
 import { training } from "@/content/ministry";
+import { getEnrolmentSettings } from "@/lib/data";
 import { BookOpen, Flame, HandHeart, ShieldCheck, Sparkles, type LucideIcon } from "lucide-react";
 
 const unitIcons: LucideIcon[] = [Sparkles, BookOpen, Flame, HandHeart, ShieldCheck];
@@ -21,8 +22,9 @@ export const metadata: Metadata = {
   },
 };
 
-export default function TrainingPage() {
-  const isOpen = training.status === "open";
+export default async function TrainingPage() {
+  const enrolment = await getEnrolmentSettings();
+  const isOpen = enrolment.status === "open";
 
   return (
     <>
@@ -30,7 +32,7 @@ export default function TrainingPage() {
         label="The Bible institute"
         title="Trained for the call."
         lead={training.intro}
-        aside={<EnrolmentBanner tone="light" showLink={false} />}
+        aside={<EnrolmentBanner tone="light" showLink={false} status={enrolment.status} />}
         image="/images/potter.webp"
         imageAlt="A potter shaping a vessel, an image of training and formation"
       />
@@ -51,7 +53,9 @@ export default function TrainingPage() {
 
           <div className="mt-10 border border-ink/15 p-5">
             <p className="label text-quiet">Cost</p>
-            <p className="mt-2 text-sm leading-relaxed text-ink/80">{training.costs}</p>
+            <p className="mt-2 text-sm leading-relaxed text-ink/80">
+              {enrolment.feeText || training.costs}
+            </p>
           </div>
         </div>
 

@@ -17,7 +17,8 @@ export async function getStaff(): Promise<Staff | null> {
   const { data: userData } = await sb.auth.getUser();
   if (!userData?.user) return null;
   const svc = getServiceClient();
-  const { data: profile } = await svc!
+  const client = svc || sb;
+  const { data: profile } = await client
     .from("profiles")
     .select("id,email,full_name,role,status")
     .eq("id", userData.user.id)

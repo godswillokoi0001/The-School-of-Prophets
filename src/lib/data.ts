@@ -92,31 +92,39 @@ export async function getSeries(): Promise<SeedSeries[]> {
 
 export async function getTeachings(): Promise<SeedTeaching[]> {
   return cached("teachings", async () => {
+    const nowIso = new Date().toISOString();
     const { data } = await db()!
       .from("teachings")
       .select("*")
-      .eq("status", "published")
+      .or(`status.eq.published,and(status.eq.scheduled,publish_at.lte.${nowIso})`)
       .order("date_taught", { ascending: false });
     if (!data) return seedTeachings;
     const series = await db()!.from("series").select("id,slug").eq("status", "published");
     const map = new Map((series.data ?? []).map((s) => [s.id, s.slug]));
-    return data.map((t: DbTeaching) => ({
-      slug: t.slug,
-      title: t.title,
-      series: t.series_id ? (map.get(t.series_id) ?? "") : "",
-      topics: t.tags,
-      format: ["notes"],
-      date: t.date_taught ?? t.publish_at?.slice(0, 10) ?? new Date().toISOString().slice(0, 10),
-      scripture: t.scripture.join(", "),
-      summary: t.summary,
-      youtubeId: t.youtube_url ? extractYouTubeId(t.youtube_url) : null,
-      image: t.cover_url ?? "",
-      imageAlt: t.cover_alt,
-      audioUrl: t.audio_url ?? undefined,
-      notes: [],
-      body: t.body,
-      isSample: false,
-    })) as SeedTeaching[];
+    return data.map((t: DbTeaching) => {
+      const youtubeId = t.youtube_url ? extractYouTubeId(t.youtube_url) : null;
+      return {
+        slug: t.slug,
+        title: t.title,
+        series: t.series_id ? (map.get(t.series_id) ?? "") : "",
+        topics: t.tags,
+        format: [
+          youtubeId ? "video" : null,
+          t.audio_url ? "audio" : null,
+          "notes",
+        ].filter(Boolean) as SeedTeaching["format"],
+        date: t.date_taught ?? t.publish_at?.slice(0, 10) ?? new Date().toISOString().slice(0, 10),
+        scripture: t.scripture.join(", "),
+        summary: t.summary,
+        youtubeId,
+        image: t.cover_url ?? "/images/bible-bedside.webp",
+        imageAlt: t.cover_alt || "Teaching cover image",
+        audioUrl: t.audio_url ?? undefined,
+        notes: [],
+        body: t.body,
+        isSample: false,
+      } as SeedTeaching;
+    });
   }, seedTeachings);
 }
 
@@ -145,7 +153,7 @@ export async function getEvents(): Promise<SeedEvent[]> {
       endTime: e.ends_at?.slice(11, 16) || undefined,
       location: e.location || "Online",
       summary: e.description,
-      detail: [],
+      detail: e.recap ? [e.recap] : [],
       image: e.cover_url ?? "",
       imageAlt: e.cover_alt,
       isSample: false,

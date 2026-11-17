@@ -18,32 +18,52 @@ export default function AdminLogin() {
     e.preventDefault();
     setBusy(true);
     setError("");
-    const sb = createSupabaseBrowser();
-    const { error: err } = await sb.auth.signInWithPassword({
-      email,
-      password,
-    });
-    if (err) {
-      setError(err.message);
+    try {
+      if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+        setError("Supabase is not configured yet. Please configure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local.");
+        setBusy(false);
+        return;
+      }
+      const sb = createSupabaseBrowser();
+      const { error: err } = await sb.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (err) {
+        setError(err.message);
+        setBusy(false);
+        return;
+      }
+      router.push("/admin");
+      router.refresh();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to sign in");
       setBusy(false);
-      return;
     }
-    router.push("/admin");
-    router.refresh();
   }
 
   async function sendMagic(e: React.MouseEvent) {
     e.preventDefault();
     setBusy(true);
     setError("");
-    const sb = createSupabaseBrowser();
-    const { error: err } = await sb.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: `${location.origin}/admin/auth/callback` },
-    });
-    setBusy(false);
-    if (err) setError(err.message);
-    else setMagicSent(true);
+    try {
+      if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+        setError("Supabase is not configured yet. Please configure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local.");
+        setBusy(false);
+        return;
+      }
+      const sb = createSupabaseBrowser();
+      const { error: err } = await sb.auth.signInWithOtp({
+        email,
+        options: { emailRedirectTo: `${location.origin}/admin/auth/callback` },
+      });
+      setBusy(false);
+      if (err) setError(err.message);
+      else setMagicSent(true);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to send link");
+      setBusy(false);
+    }
   }
 
   return (

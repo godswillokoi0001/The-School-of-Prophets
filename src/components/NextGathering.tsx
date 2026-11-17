@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { dayNames } from "@/content/schedule";
+import { dayNames, type Session } from "@/content/schedule";
 import { site } from "@/config/site";
 import {
   countdownParts,
@@ -13,7 +13,15 @@ import {
   nextSession,
 } from "@/lib/time";
 
-export function NextGathering({ tone = "dark" }: { tone?: "dark" | "light" }) {
+export function NextGathering({
+  tone = "dark",
+  sessions,
+  joinHref: joinHrefProp,
+}: {
+  tone?: "dark" | "light";
+  sessions: Session[];
+  joinHref?: string;
+}) {
   const [now, setNow] = useState<number | null>(null);
 
   useEffect(() => {
@@ -22,14 +30,30 @@ export function NextGathering({ tone = "dark" }: { tone?: "dark" | "light" }) {
     return () => window.clearInterval(id);
   }, []);
 
-  const next = nextSession(now ? new Date(now) : new Date());
-  const { session, start } = next;
+  const next = nextSession(sessions, now ? new Date(now) : new Date());
+  const session = next.session;
+  const start = next.start;
   const parts = now ? countdownParts(start, now) : null;
-  const joinHref = site.social.whatsappInvite || "/contact";
-  const joinLabel = site.social.whatsappInvite ? "Join on WhatsApp" : "Request the invite";
-  const external = joinHref.startsWith("http");
 
   const light = tone === "light";
+
+  if (!session) {
+    return (
+      <div
+        className={`border p-6 sm:p-8 ${
+          light ? "border-ink/15 bg-parchment text-ink" : "border-parchment/20 bg-ink-2 text-parchment"
+        }`}
+      >
+        <p className={`label ${light ? "text-ember" : "text-gold"}`}>Next gathering</p>
+        <p className="mt-4 text-sm leading-relaxed">
+          The weekly schedule is being prepared. Please check back shortly.
+        </p>
+      </div>
+    );
+  }
+  const joinHref = joinHrefProp || site.social.whatsappInvite || "/contact";
+  const joinLabel = site.social.whatsappInvite ? "Join on WhatsApp" : "Request the invite";
+  const external = joinHref.startsWith("http");
 
   return (
     <div
@@ -41,7 +65,7 @@ export function NextGathering({ tone = "dark" }: { tone?: "dark" | "light" }) {
     >
       <div className="flex items-baseline justify-between gap-4">
         <p className={`label ${light ? "text-ember" : "text-gold"}`}>Next gathering</p>
-        <p className={`label ${light ? "text-quiet" : "text-parchment/45"}`}>
+        <p className={`label ${light ? "text-quiet" : "text-parchment/45"}`} suppressHydrationWarning>
           {now ? localZoneLabel(start) : "local time"}
         </p>
       </div>
@@ -58,6 +82,7 @@ export function NextGathering({ tone = "dark" }: { tone?: "dark" | "light" }) {
       <p
         className={`mt-1 text-sm tabular-nums ${light ? "text-ink" : "text-parchment"}`}
         aria-live="polite"
+        suppressHydrationWarning
       >
         {now
           ? `Your time: ${formatLocal(start)}`
@@ -120,6 +145,7 @@ export function NextGathering({ tone = "dark" }: { tone?: "dark" | "light" }) {
           )}
           target="_blank"
           rel="noopener noreferrer"
+          suppressHydrationWarning
         >
           Google
         </a>{" "}

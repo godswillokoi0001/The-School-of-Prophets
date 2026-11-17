@@ -1,6 +1,7 @@
 import { z } from "zod";
+import { createClient } from "@supabase/supabase-js";
 import { getServiceClient, supabaseConfigured } from "@/lib/supabase/server";
-import { fieldErrors, honeypotSchema, contactSchema, prayerSchema, testimonySchema, enrolmentSchema, newsletterSchema } from "@/lib/schemas";
+import { fieldErrors, honeypotSchema, contactSchema, prayerSchema, testimonySchema, enrolmentSchema, newsletterSchema, registrationSchema } from "@/lib/schemas";
 import { clientKey, rateLimit } from "@/lib/forms";
 import { notifySubmission, sendConfirmation } from "@/lib/notify";
 
@@ -11,6 +12,7 @@ export const formSchemas: Record<string, z.ZodType<Record<string, unknown>>> = {
   enrolment: enrolmentSchema as unknown as z.ZodType<Record<string, unknown>>,
   waitlist: enrolmentSchema as unknown as z.ZodType<Record<string, unknown>>,
   newsletter: newsletterSchema as unknown as z.ZodType<Record<string, unknown>>,
+  registration: registrationSchema as unknown as z.ZodType<Record<string, unknown>>,
 };
 
 const privateTypes = new Set(["prayer", "enrolment", "waitlist"]);

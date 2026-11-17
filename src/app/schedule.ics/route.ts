@@ -1,9 +1,11 @@
+import { getSchedule } from "@/lib/data";
 import { icsForSessions } from "@/lib/time";
 
-export const revalidate = 86400;
+export const dynamic = "force-dynamic";
 
-export function GET() {
-  const body = icsForSessions();
+export async function GET() {
+  const sessions = await getSchedule();
+  const body = icsForSessions(sessions);
   return new Response(body, {
     headers: {
       "Content-Type": "text/calendar; charset=utf-8",

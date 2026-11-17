@@ -4,11 +4,13 @@ import { training } from "@/content/ministry";
 export function EnrolmentBanner({
   tone = "dark",
   showLink = true,
+  status,
 }: {
   tone?: "dark" | "light";
   showLink?: boolean;
+  status?: "open" | "closed";
 }) {
-  const isOpen = training.status === "open";
+  const isOpen = (status ?? training.status) === "open";
   const dark = tone === "dark";
 
   return (

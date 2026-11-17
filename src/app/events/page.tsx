@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
 import { CalendarDays, MapPin, Clock } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { EventCalendarLink } from "@/components/EventCalendarLink";
-import { events } from "@/content/events";
+import { getEvents } from "@/lib/data";
 import { formatDate } from "@/lib/time";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Events",
@@ -18,7 +21,8 @@ export const metadata: Metadata = {
   },
 };
 
-export default function EventsPage() {
+export default async function EventsPage() {
+  const events = await getEvents();
   const upcoming = events.filter((e) => e.kind === "upcoming");
   const past = events.filter((e) => e.kind === "past");
 
@@ -72,7 +76,11 @@ export default function EventsPage() {
                   </div>
 
                   <div>
-                    <h3 className="font-display text-2xl leading-tight">{event.title}</h3>
+                    <h3 className="font-display text-2xl leading-tight">
+                      <Link href={`/events/${event.slug}`} className="hover:text-ember">
+                        {event.title}
+                      </Link>
+                    </h3>
                     <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-quiet">
                       {event.time && (
                         <span className="flex items-center gap-1.5">
@@ -89,8 +97,14 @@ export default function EventsPage() {
                     <p className="mt-3 max-w-[58ch] text-sm leading-relaxed text-quiet">
                       {event.summary}
                     </p>
-                    <div className="mt-4">
+                    <div className="mt-4 flex flex-wrap items-center gap-4">
                       <EventCalendarLink event={event} />
+                      <Link
+                        href={`/events/${event.slug}`}
+                        className="link-underline text-sm font-semibold"
+                      >
+                        Details &amp; registration →
+                      </Link>
                     </div>
                   </div>
                 </div>

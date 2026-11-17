@@ -3,7 +3,10 @@ import Link from "next/link";
 import { PageHeader } from "@/components/PageHeader";
 import { CopyButton } from "@/components/CopyButton";
 import { giving } from "@/content/ministry";
+import { getGivingSettings } from "@/lib/data";
 import { Info, Landmark, ShieldCheck } from "lucide-react";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Give",
@@ -12,7 +15,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "/give" },
 };
 
-export default function GivePage() {
+export default async function GivePage() {
+  const giving = await getGivingSettings();
   const bank = giving.bank;
   const hasBank = Boolean(bank.accountNumber && bank.accountName);
   const rows = (

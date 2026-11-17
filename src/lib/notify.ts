@@ -1,4 +1,4 @@
-import webpush from "web-push";
+import * as webpush from "web-push";
 import { getServiceClient } from "@/lib/supabase/server";
 
 export type SubmissionRow = {

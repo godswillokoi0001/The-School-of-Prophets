@@ -7,9 +7,16 @@ export async function middleware(request: NextRequest) {
   if (request.nextUrl.pathname.startsWith("/admin")) {
     response.headers.set("X-Robots-Tag", "noindex, nofollow");
     if (request.nextUrl.pathname !== "/admin/login") {
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      if (!supabaseUrl || !supabaseAnonKey) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/admin/login";
+        return NextResponse.redirect(url);
+      }
       const sb = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        supabaseUrl,
+        supabaseAnonKey,
         {
           cookies: {
             getAll: () => request.cookies.getAll(),

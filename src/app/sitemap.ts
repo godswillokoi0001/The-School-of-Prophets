@@ -1,10 +1,17 @@
 import type { MetadataRoute } from "next";
 import { site } from "@/config/site";
-import { seriesList, teachings } from "@/content/teachings";
+import { getEvents, getSeries, getTeachings } from "@/lib/data";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export const dynamic = "force-dynamic";
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = site.url.replace(/\/$/, "");
   const now = new Date();
+  const [teachings, seriesList, events] = await Promise.all([
+    getTeachings(),
+    getSeries(),
+    getEvents(),
+  ]);
 
   const pages: { path: string; priority: number; freq: "weekly" | "monthly" | "yearly" }[] = [
     { path: "", priority: 1, freq: "weekly" },
@@ -35,6 +42,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...seriesList.map((series) => ({
       url: `${base}/teachings/series/${series.slug}`,
       lastModified: now,
+      changeFrequency: "monthly" as const,
+      priority: 0.4,
+    })),
+    ...events.map((event) => ({
+      url: `${base}/events/${event.slug}`,
+      lastModified: new Date(`${event.date}T12:00:00Z`),
       changeFrequency: "monthly" as const,
       priority: 0.4,
     })),

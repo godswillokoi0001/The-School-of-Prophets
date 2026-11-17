@@ -2,7 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, FileText, Headphones, Play } from "lucide-react";
 import type { Teaching } from "@/content/teachings";
-import { seriesBySlug } from "@/content/teachings";
 import { formatDate } from "@/lib/time";
 
 const formatIcon = {
@@ -14,11 +13,13 @@ const formatIcon = {
 export function TeachingCard({
   teaching,
   featured = false,
+  seriesTitle,
 }: {
   teaching: Teaching;
   featured?: boolean;
+  seriesTitle?: string;
 }) {
-  const series = seriesBySlug(teaching.series);
+  const seriesTitleFallback = seriesTitle ?? "Teaching";
   return (
     <article className="group relative flex flex-col">
       <div
@@ -33,7 +34,7 @@ export function TeachingCard({
         />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/10 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 flex flex-wrap items-center gap-2 p-4">
-          <span className="label bg-gold px-2 py-1 text-ink">{series?.title ?? "Teaching"}</span>
+          <span className="label bg-gold px-2 py-1 text-ink">{seriesTitleFallback}</span>
           {teaching.isSample && (
             <span className="label border border-parchment/30 px-2 py-1 text-parchment/80">
               Sample

@@ -3,7 +3,10 @@ import Link from "next/link";
 import { PageHeader } from "@/components/PageHeader";
 import { PrayerForm } from "@/components/forms/PrayerForm";
 import { Timetable } from "@/components/Timetable";
+import { getSchedule } from "@/lib/data";
 import { HandHeart, Lock, ShieldCheck, CalendarPlus } from "lucide-react";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Prayer",
@@ -12,7 +15,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "/prayer" },
 };
 
-export default function PrayerPage() {
+export default async function PrayerPage() {
+  const schedule = await getSchedule();
   return (
     <>
       <PageHeader
@@ -89,7 +93,7 @@ export default function PrayerPage() {
             </a>
           </div>
           <div className="mt-6">
-            <Timetable />
+            <Timetable sessions={schedule} />
           </div>
         </div>
       </section>

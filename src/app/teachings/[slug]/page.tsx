@@ -1,23 +1,33 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { TeachingVideo } from "@/components/TeachingVideo";
-import { seriesBySlug, teachings, teachingBySlug, teachingsBySeries } from "@/content/teachings";
+import { getSeries, getTeaching, getTeachings } from "@/lib/data";
+import { getServiceClient, supabaseConfigured } from "@/lib/supabase/server";
+import { sanitizeServerHtml } from "@/lib/sanitize-html";
 import { formatDate } from "@/lib/time";
 import { site } from "@/config/site";
 
 type Params = { params: Promise<{ slug: string }> };
 
-export function generateStaticParams() {
-  return teachings.map((t) => ({ slug: t.slug }));
+async function followRedirect(slug: string): Promise<string | null> {
+  if (!supabaseConfigured()) return null;
+  const { data } = await getServiceClient()!
+    .from("slug_redirects")
+    .select("new_path")
+    .eq("entity_type", "teaching")
+    .eq("old_slug", slug)
+    .limit(1);
+  return data?.[0]?.new_path ?? null;
 }
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
-  const teaching = teachingBySlug(slug);
+  const teaching = await getTeaching(slug);
   if (!teaching) return { title: "Teaching not found" };
-  const series = seriesBySlug(teaching.series);
+  const seriesList = await getSeries();
+  const series = seriesList.find((s) => s.slug === teaching.series);
   return {
     title: teaching.title,
     description: teaching.summary,
@@ -35,15 +45,23 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 
 export default async function TeachingPage({ params }: Params) {
   const { slug } = await params;
-  const teaching = teachingBySlug(slug);
-  if (!teaching) notFound();
+  const teaching = await getTeaching(slug);
+  if (!teaching) {
+    const target = await followRedirect(slug);
+    if (target) redirect(target);
+    notFound();
+  }
 
-  const series = seriesBySlug(teaching.series);
-  const inSeries = teachingsBySeries(teaching.series);
+  const [allTeachings, seriesList] = await Promise.all([getTeachings(), getSeries()]);
+  const series = seriesList.find((s) => s.slug === teaching.series);
+  const inSeries = allTeachings
+    .filter((t) => t.series === teaching.series)
+    .sort((a, b) => b.date.localeCompare(a.date));
   const index = inSeries.findIndex((t) => t.slug === teaching.slug);
   const next = inSeries[index + 1];
   const previous = inSeries[index - 1];
 
+  const hasBody = !!teaching.body?.trim();
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -133,11 +151,18 @@ export default async function TeachingPage({ params }: Params) {
 
           <div className="mt-12 space-y-5 border-t border-ink/15 pt-8">
             <p className="label text-ember">Outline</p>
-            {teaching.notes.map((note, i) => (
-              <p key={i} className="measure text-[0.975rem] leading-relaxed text-ink/80">
-                {note}
-              </p>
-            ))}
+            {hasBody ? (
+              <div
+                className="prose-editor max-w-none"
+                dangerouslySetInnerHTML={{ __html: sanitizeServerHtml(teaching.body!) }}
+              />
+            ) : (
+              teaching.notes.map((note, i) => (
+                <p key={i} className="measure text-[0.975rem] leading-relaxed text-ink/80">
+                  {note}
+                </p>
+              ))
+            )}
           </div>
 
           <div className="mt-12 flex flex-wrap gap-3 border-t border-ink/15 pt-8">

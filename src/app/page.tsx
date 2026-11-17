@@ -20,9 +20,22 @@ import { TeachingCard } from "@/components/TeachingCard";
 import { SocialLinks } from "@/components/SocialLinks";
 import { EnrolmentBanner } from "@/components/EnrolmentBanner";
 import { Reveal } from "@/components/Reveal";
-import { teachingOfTheWeek, teachings } from "@/content/teachings";
+import { getContactSettings, getEnrolmentSettings, getSchedule, getSeries, getSetting, getTeachings } from "@/lib/data";
 import { site } from "@/config/site";
 import { training } from "@/content/ministry";
+
+const defaultSections = {
+  intro: true,
+  strip: true,
+  systems: true,
+  week: true,
+  teaching: true,
+  training: true,
+  quote: true,
+  cta: true,
+};
+
+type HomeSections = Partial<typeof defaultSections>;
 
 const systems = [
   {
@@ -66,8 +79,20 @@ const strip = [
   },
 ];
 
-export default function HomePage() {
-  const featured = teachings.find((t) => t.slug === teachingOfTheWeek) ?? teachings[0];
+export const dynamic = "force-dynamic";
+
+export default async function HomePage() {
+  const [teachings, schedule, seriesList, contact, enrolment, homeSetting] = await Promise.all([
+    getTeachings(),
+    getSchedule(),
+    getSeries(),
+    getContactSettings(),
+    getEnrolmentSettings(),
+    getSetting("homepage", {}),
+  ]);
+  const show = { ...defaultSections, ...(homeSetting as HomeSections) };
+  const featured = teachings.find((t) => t.featured) ?? teachings[0];
+  const seriesTitle = seriesList.find((s) => s.slug === featured?.series)?.title;
 
   return (
     <>
@@ -132,7 +157,10 @@ export default function HomePage() {
           </div>
 
           <div className="lg:col-span-5 lg:pl-6">
-            <NextGathering />
+            <NextGathering
+              sessions={schedule}
+              joinHref={contact.whatsapp || undefined}
+            />
             <p className="mt-4 text-xs leading-relaxed text-parchment/40">
               Times are entered in WAT and converted to your own timezone. Every
               session is held online.
@@ -160,6 +188,7 @@ export default function HomePage() {
       </section>
 
       {/* INTRO */}
+      {show.intro && (
       <section className="wrap grid gap-12 py-16 md:grid-cols-12 md:items-center md:py-24">
         <div className="md:col-span-7">
           <p className="label flex items-center gap-2 text-ember">
@@ -210,8 +239,10 @@ export default function HomePage() {
           </figure>
         </div>
       </section>
+      )}
 
       {/* IMAGE STRIP */}
+      {show.strip && (
       <section aria-label="The fellowship in image" className="border-y border-ink/15 bg-parchment-2/60">
         <div className="wrap grid gap-4 py-10 sm:grid-cols-3">
           {strip.map((item) => (
@@ -234,8 +265,10 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+      )}
 
       {/* THREE SYSTEMS */}
+      {show.systems && (
       <section className="bg-ink text-parchment">
         <div className="wrap py-16 md:py-24">
           <div className="grid gap-6 md:grid-cols-12 md:items-end">
@@ -275,8 +308,10 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+      )}
 
       {/* THIS WEEK */}
+      {show.week && (
       <section id="this-week" className="wrap grid gap-12 py-16 md:py-24 lg:grid-cols-12">
         <div className="lg:col-span-4">
           <p className="label flex items-center gap-2 text-ember">
@@ -302,15 +337,17 @@ export default function HomePage() {
           </div>
         </div>
         <div className="lg:col-span-8">
-          <Timetable />
+          <Timetable sessions={schedule} />
           <p className="mt-4 text-xs leading-relaxed text-quiet">
             * Awaiting confirmation from the ministry. Times shown in WAT
             (Africa/Lagos), converted to your device&apos;s timezone.
           </p>
         </div>
       </section>
+      )}
 
       {/* TEACHING OF THE WEEK */}
+      {show.teaching && (
       <section className="border-y border-ink/15 bg-parchment-2/70">
         <div className="wrap grid gap-10 py-16 md:grid-cols-12 md:py-20">
           <div className="md:col-span-3">
@@ -331,12 +368,14 @@ export default function HomePage() {
             </Link>
           </div>
           <div className="md:col-span-9">
-            <TeachingCard teaching={featured} featured />
+            <TeachingCard teaching={featured} featured seriesTitle={seriesTitle} />
           </div>
         </div>
       </section>
+      )}
 
       {/* TRAINING */}
+      {show.training && (
       <section className="bg-ink-2 text-parchment">
         <div className="wrap grid items-center gap-10 py-16 md:grid-cols-12 md:py-24">
           <div className="relative aspect-[4/3] overflow-hidden md:col-span-5 md:aspect-[4/5]">
@@ -363,13 +402,15 @@ export default function HomePage() {
             </h2>
             <p className="measure mt-5 text-parchment/65">{training.intro}</p>
             <div className="mt-7 max-w-md">
-              <EnrolmentBanner />
+              <EnrolmentBanner status={enrolment.status} />
             </div>
           </div>
         </div>
       </section>
+      )}
 
       {/* PULL QUOTE */}
+      {show.quote && (
       <section className="relative overflow-hidden bg-parchment py-16 md:py-24">
         <Crest
           className="pointer-events-none absolute -right-10 top-0 w-64 opacity-[0.05] md:w-96"
@@ -392,8 +433,10 @@ export default function HomePage() {
           </figure>
         </div>
       </section>
+      )}
 
       {/* CLOSING CTA */}
+      {show.cta && (
       <section className="relative overflow-hidden bg-ink text-parchment">
         <div className="wrap grid items-stretch gap-10 py-16 md:grid-cols-12 md:py-0">
           <div className="md:col-span-6 md:py-24">
@@ -433,6 +476,7 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+      )}
     </>
   );
 }

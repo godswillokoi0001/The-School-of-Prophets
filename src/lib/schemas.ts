@@ -53,6 +53,15 @@ export const newsletterSchema = z.object({
   name: optionalName,
 });
 
+export const registrationSchema = z.object({
+  name,
+  email,
+  guests: z.coerce.number().int().min(0).max(20).default(0),
+  notes: z.string().trim().max(500).optional(),
+  eventSlug: z.string().trim().max(120).optional(),
+  eventTitle: z.string().trim().max(200).optional(),
+});
+
 /** Every public form carries a honeypot and a client timestamp. */
 export const honeypotSchema = z.object({
   website: z.string().max(0, "Rejected.").optional(),
@@ -62,6 +71,7 @@ export type ContactInput = z.infer<typeof contactSchema>;
 export type PrayerInput = z.infer<typeof prayerSchema>;
 export type TestimonyInput = z.infer<typeof testimonySchema>;
 export type EnrolmentInput = z.infer<typeof enrolmentSchema>;
+export type RegistrationInput = z.infer<typeof registrationSchema>;
 
 export function fieldErrors(error: z.ZodError) {
   const out: Record<string, string> = {};

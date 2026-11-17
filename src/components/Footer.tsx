@@ -90,7 +90,7 @@ export function Footer() {
 
       <div className="border-t border-parchment/10">
         <div className="wrap flex flex-col gap-3 py-6 text-xs text-parchment/45 sm:flex-row sm:items-center sm:justify-between">
-          <p>
+          <p suppressHydrationWarning>
             © {new Date().getFullYear()} {site.name}. All rights reserved.
           </p>
           <p className="flex items-center gap-2">

@@ -4,6 +4,19 @@
 
 create extension if not exists "pgcrypto";
 
+-- ============ profiles table ============
+
+create table if not exists public.profiles (
+  id uuid primary key references auth.users(id) on delete cascade,
+  email text not null,
+  full_name text not null default '',
+  role text not null default 'viewer' check (role in ('owner','admin','moderator','viewer')),
+  status text not null default 'active' check (status in ('active','inactive')),
+  invited_by uuid references auth.users(id),
+  last_seen_at timestamptz,
+  created_at timestamptz not null default now()
+);
+
 -- ============ helpers ============
 
 create or replace function public.current_role() returns text
@@ -27,21 +40,13 @@ create or replace function public.touch_updated_at() returns trigger
 language plpgsql as $$
 begin new.updated_at = now(); return new; end $$;
 
--- ============ profiles / audit ============
+-- ============ profiles security policies ============
 
-create table public.profiles (
-  id uuid primary key references auth.users(id) on delete cascade,
-  email text not null,
-  full_name text not null default '',
-  role text not null default 'viewer' check (role in ('owner','admin','moderator','viewer')),
-  status text not null default 'active' check (status in ('active','inactive')),
-  invited_by uuid references auth.users(id),
-  last_seen_at timestamptz,
-  created_at timestamptz not null default now()
-);
 alter table public.profiles enable row level security;
+drop policy if exists profiles_read_self on public.profiles;
 create policy profiles_read_self on public.profiles for select to authenticated
   using (id = auth.uid() or public.is_owner());
+drop policy if exists profiles_owner_all on public.profiles;
 create policy profiles_owner_all on public.profiles for all to authenticated
   using (public.is_owner()) with check (public.is_owner());
 
@@ -533,3 +538,32 @@ begin
 end $$;
 
 -- audit trigger for submissions status changes is handled by the app layer.
+
+-- ============ auto-provision profiles on auth user creation ============
+
+create or replace function public.handle_new_user()
+returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  insert into public.profiles (id, email, full_name, role, status)
+  values (
+    new.id,
+    new.email,
+    coalesce(new.raw_user_meta_data->>'full_name', split_part(new.email, '@', 1)),
+    case when (select count(*) from public.profiles) = 0 then 'owner' else 'admin' end,
+    'active'
+  )
+  on conflict (id) do nothing;
+  return new;
+end;
+$$;
+
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute function public.handle_new_user();
+
+-- Backfill any pre-existing auth users as owner/active
+insert into public.profiles (id, email, full_name, role, status)
+select id, email, coalesce(raw_user_meta_data->>'full_name', split_part(email, '@', 1)), 'owner', 'active'
+from auth.users
+on conflict (id) do update set role = 'owner', status = 'active';

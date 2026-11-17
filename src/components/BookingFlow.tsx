@@ -135,6 +135,7 @@ export function BookingFlow({ initialTypes }: { initialTypes: CallType[] }) {
             className="input !w-auto"
             value={month}
             min={new Date().toISOString().slice(0, 7)}
+            suppressHydrationWarning
             onChange={(e) => {
               setMonth(e.target.value);
               setDate("");

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { PageHeader } from "@/components/PageHeader";
 import { ContactForm } from "@/components/forms/ContactForm";
 import { SocialLinks } from "@/components/SocialLinks";
-import { faqs } from "@/content/faq";
+import { getContactSettings, getFaqs } from "@/lib/data";
 import { site } from "@/config/site";
 import { Plus, Users, MessageSquare } from "lucide-react";
 import { FacebookIcon, YouTubeIcon } from "@/components/BrandIcons";
@@ -21,14 +21,17 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ContactPage() {
+export const dynamic = "force-dynamic";
+
+export default async function ContactPage() {
+  const [faqs, contact] = await Promise.all([getFaqs(), getContactSettings()]);
   const faqJsonLd = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
     mainEntity: faqs.map((f) => ({
       "@type": "Question",
-      name: f.q,
-      acceptedAnswer: { "@type": "Answer", text: f.a.replace(/\[[^\]]+\]/g, "").trim() },
+      name: f.question,
+      acceptedAnswer: { "@type": "Answer", text: f.answer.replace(/\[[^\]]+\]/g, "").trim() },
     })),
   };
 
@@ -55,7 +58,17 @@ export default function ContactPage() {
             <Users aria-hidden="true" className="h-3.5 w-3.5" />
             The community
           </p>
-          <SocialLinks variant="list" className="mt-4" />
+          <SocialLinks
+            variant="list"
+            className="mt-4"
+            links={{
+              whatsapp: contact.whatsapp,
+              telegram: contact.telegram,
+              facebookGroup: contact.facebookGroup,
+              facebookPage: contact.facebookPage,
+              youtube: contact.youtube,
+            }}
+          />
           <p className="mt-5 text-xs leading-relaxed text-quiet">
             WhatsApp and Telegram invites are sent on request while the public
             links are being refreshed. Ask below and an admin will send the
@@ -70,7 +83,7 @@ export default function ContactPage() {
             <ul className="mt-3 space-y-2 text-sm">
               <li>
                 <a
-                  href={site.social.youtube}
+                  href={contact.youtube}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="link-underline inline-flex items-center gap-2"
@@ -81,7 +94,7 @@ export default function ContactPage() {
               </li>
               <li>
                 <a
-                  href={site.social.facebookPage}
+                  href={contact.facebookPage}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="link-underline inline-flex items-center gap-2"
@@ -126,16 +139,16 @@ export default function ContactPage() {
           <div className="md:col-span-8">
             <div className="border-t border-ink/20">
               {faqs.map((faq) => (
-                <details key={faq.q} className="group border-b border-ink/15 py-4">
+                <details key={faq.id} className="group border-b border-ink/15 py-4">
                   <summary className="flex cursor-pointer list-none items-start justify-between gap-6">
-                    <span className="font-display text-xl leading-snug">{faq.q}</span>
+                    <span className="font-display text-xl leading-snug">{faq.question}</span>
                     <Plus
                       aria-hidden="true"
                       className="mt-1 h-4 w-4 shrink-0 text-ember transition-transform group-open:rotate-45"
                     />
                   </summary>
                   <p className="measure mt-3 text-sm leading-relaxed text-quiet">
-                    {faq.a}
+                    {faq.answer}
                   </p>
                 </details>
               ))}

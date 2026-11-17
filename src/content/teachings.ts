@@ -67,6 +67,10 @@ export type Teaching = {
   imageAlt: string;
   audioUrl?: string;
   notes: string[];
+  /** Rich-text body authored in the admin editor (DB-backed entries). */
+  body?: string;
+  /** Admin-marked "teaching of the week". */
+  featured?: boolean;
   /** Seed entries are labelled in the UI so nothing is passed off as real. */
   isSample?: boolean;
 };

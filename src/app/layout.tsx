@@ -4,6 +4,8 @@ import Script from "next/script";
 import "./globals.css";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { AnnouncementBar } from "@/components/AnnouncementBar";
+import { PublicOnly } from "@/components/PublicOnly";
 import { site } from "@/config/site";
 
 const fraunces = Fraunces({
@@ -75,21 +77,32 @@ const orgJsonLd = {
   sameAs: [site.social.facebookPage, site.social.facebookGroup, site.social.youtube],
 };
 
+export const dynamic = "force-dynamic";
+
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${manrope.variable}`}>
-      <body className="min-h-screen antialiased">
-        <a
-          href="#main"
-          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:bg-ink focus:px-4 focus:py-3 focus:text-parchment"
-        >
-          Skip to content
-        </a>
-        <Header />
+    <html
+      lang="en"
+      className={`${fraunces.variable} ${manrope.variable}`}
+      suppressHydrationWarning
+    >
+      <body className="min-h-screen antialiased" suppressHydrationWarning>
+        <PublicOnly>
+          <a
+            href="#main"
+            className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:bg-ink focus:px-4 focus:py-3 focus:text-parchment"
+          >
+            Skip to content
+          </a>
+          <AnnouncementBar />
+          <Header />
+        </PublicOnly>
         <main id="main">{children}</main>
-        <Footer />
+        <PublicOnly>
+          <Footer />
+        </PublicOnly>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
