@@ -7,7 +7,7 @@ import {
 import { seriesList, teachings as seedTeachings, type Teaching as SeedTeaching, type Series as SeedSeries } from "@/content/teachings";
 import { events as seedEvents, type EventItem as SeedEvent } from "@/content/events";
 import { testimonies as seedTestimonies, type Testimony as SeedTestimony } from "@/content/testimonies";
-import { faq as seedFaq } from "@/content/faq";
+import { faqs as seedFaq } from "@/content/faq";
 import { giving as seedGiving, training as seedTraining } from "@/content/ministry";
 import { site as seedSite } from "@/config/site";
 
@@ -149,7 +149,6 @@ export async function getEvents(): Promise<SeedEvent[]> {
       image: e.cover_url ?? "",
       imageAlt: e.cover_alt,
       isSample: false,
-      body: e.body ?? "",
       registrationRequired: e.registration_required,
       eventId: e.id,
     })) as unknown as SeedEvent[];
@@ -187,9 +186,9 @@ export async function getTestimonies(): Promise<SeedTestimony[]> {
 export async function getFaqs(): Promise<{ id: string; question: string; answer: string }[]> {
   return cached("faqs", async () => {
     const { data } = await db()!.from("faqs").select("*").eq("active", true).order("sort_order");
-    if (!data) return seedFaq;
+    if (!data) return seedFaq.map((f, i) => ({ id: String(i), question: f.q, answer: f.a }));
     return data.map((f: DbFaq) => ({ id: f.id, question: f.question, answer: f.answer }));
-  }, seedFaq);
+  }, seedFaq.map((f, i) => ({ id: String(i), question: f.q, answer: f.a })));
 }
 
 export async function getTeam(): Promise<DbTeamMember[]> {
