@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { LoaderCircle, Save, Trash2, CalendarX } from "lucide-react";
-import { RichTextEditor } from "@/components/admin/RichText";
+import { RichTextEditor, ImagePickerDialog } from "@/components/admin/RichText";
 import { saveEvent, deleteEvent, addEventException, type EventInput } from "@/app/admin/(shell)/actions/events";
 
 export function EventEditor({
@@ -170,6 +170,16 @@ export function EventEditor({
           <input className="admin-input" value={form.recap_video_url ?? ""} onChange={(e) => set("recap_video_url", e.target.value || null)} />
         </div>
       </div>
+
+      <ImagePickerDialog
+        open={pickerOpen}
+        onClose={() => setPickerOpen(false)}
+        list={media}
+        onPick={(path) => {
+          set("cover_url", path);
+          setPickerOpen(false);
+        }}
+      />
 
       {form.id && (
         <section className="admin-surface mt-3 p-4">
