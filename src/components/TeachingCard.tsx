@@ -15,19 +15,24 @@ export function TeachingCard({
   featured = false,
   seriesTitle,
 }: {
-  teaching: Teaching;
+  teaching?: Teaching | null;
   featured?: boolean;
   seriesTitle?: string;
 }) {
+  if (!teaching) return null;
+
   const seriesTitleFallback = seriesTitle ?? "Teaching";
+  const imageSrc = teaching.image || "/images/bible-bedside.webp";
+  const imageAlt = teaching.imageAlt || teaching.title || "Teaching";
+
   return (
     <article className="group relative flex flex-col">
       <div
         className={`relative overflow-hidden bg-ink ${featured ? "aspect-[16/9]" : "aspect-[16/10]"}`}
       >
         <Image
-          src={teaching.image}
-          alt={teaching.imageAlt}
+          src={imageSrc}
+          alt={imageAlt}
           fill
           sizes={featured ? "(max-width: 768px) 100vw, 60vw" : "(max-width: 768px) 100vw, 45vw"}
           className="object-cover opacity-90 transition-transform duration-500 group-hover:scale-[1.03]"
@@ -70,8 +75,9 @@ export function TeachingCard({
         </p>
 
         <div className="mt-auto flex flex-wrap items-center gap-4 pt-5">
-          {teaching.format.map((f) => {
+          {(teaching.format ?? []).map((f) => {
             const Icon = formatIcon[f];
+            if (!Icon) return null;
             return (
               <span key={f} className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.1em] text-ink/60">
                 <Icon aria-hidden="true" className="h-3.5 w-3.5 text-ember" />

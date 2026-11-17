@@ -54,20 +54,22 @@ export default async function TeachingsPage() {
         }
       />
 
-      <section className="border-b border-ink/15 bg-parchment-2/70">
-        <div className="wrap grid gap-8 py-12 md:grid-cols-12 md:py-16">
-          <div className="md:col-span-3">
-            <p className="label text-ember">Teaching of the week</p>
+      {featured && (
+        <section className="border-b border-ink/15 bg-parchment-2/70">
+          <div className="wrap grid gap-8 py-12 md:grid-cols-12 md:py-16">
+            <div className="md:col-span-3">
+              <p className="label text-ember">Teaching of the week</p>
+            </div>
+            <div className="md:col-span-9">
+              <TeachingCard
+                teaching={featured}
+                featured
+                seriesTitle={seriesList.find((s) => s.slug === featured?.series)?.title}
+              />
+            </div>
           </div>
-          <div className="md:col-span-9">
-            <TeachingCard
-              teaching={featured}
-              featured
-              seriesTitle={seriesList.find((s) => s.slug === featured.series)?.title}
-            />
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       <section className="wrap py-14 md:py-20">
         <div className="flex flex-wrap items-baseline justify-between gap-4">

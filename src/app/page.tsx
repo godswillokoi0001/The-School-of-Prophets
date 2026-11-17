@@ -347,7 +347,7 @@ export default async function HomePage() {
       )}
 
       {/* TEACHING OF THE WEEK */}
-      {show.teaching && (
+      {show.teaching && featured && (
       <section className="border-y border-ink/15 bg-parchment-2/70">
         <div className="wrap grid gap-10 py-16 md:grid-cols-12 md:py-20">
           <div className="md:col-span-3">

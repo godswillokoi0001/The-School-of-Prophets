@@ -68,7 +68,7 @@ export async function getSchedule(): Promise<SeedSession[]> {
       .select("*")
       .eq("active", true)
       .order("sort_order");
-    if (!data) return seedSessions;
+    if (!data || data.length === 0) return seedSessions;
     return data.map((s: DbSession) => ({
       id: s.id,
       day: s.day as SeedSession["day"],
@@ -85,7 +85,7 @@ export async function getSchedule(): Promise<SeedSession[]> {
 export async function getSeries(): Promise<SeedSeries[]> {
   return cached("series", async () => {
     const { data } = await db()!.from("series").select("*").eq("status", "published").order("sort_order");
-    if (!data) return seriesList;
+    if (!data || data.length === 0) return seriesList;
     return data.map((s: DbSeries) => ({ slug: s.slug, title: s.title, blurb: s.description }));
   }, seriesList);
 }
@@ -98,7 +98,7 @@ export async function getTeachings(): Promise<SeedTeaching[]> {
       .select("*")
       .or(`status.eq.published,and(status.eq.scheduled,publish_at.lte.${nowIso})`)
       .order("date_taught", { ascending: false });
-    if (!data) return seedTeachings;
+    if (!data || data.length === 0) return seedTeachings;
     const series = await db()!.from("series").select("id,slug").eq("status", "published");
     const map = new Map((series.data ?? []).map((s) => [s.id, s.slug]));
     return data.map((t: DbTeaching) => {
@@ -143,7 +143,7 @@ export function extractYouTubeId(url: string): string | null {
 export async function getEvents(): Promise<SeedEvent[]> {
   return cached("events", async () => {
     const { data } = await db()!.from("events").select("*").eq("status", "published").order("starts_at");
-    if (!data) return seedEvents;
+    if (!data || data.length === 0) return seedEvents;
     return data.map((e: DbEvent) => ({
       slug: e.slug,
       title: e.title,
@@ -174,7 +174,7 @@ export async function getTestimonies(): Promise<SeedTestimony[]> {
       .eq("status", "approved")
       .is("deleted_at", null)
       .order("created_at", { ascending: false });
-    if (!data) return seedTestimonies;
+    if (!data || data.length === 0) return seedTestimonies;
     return data.map((s) => {
       const p = s.payload as Record<string, string>;
       return {
