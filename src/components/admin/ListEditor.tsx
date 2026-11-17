@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { LoaderCircle, PlusCircle, Save, Trash2 } from "lucide-react";
+import { AdminBack } from "@/components/admin/AdminBack";
 
 type Field = {
   key: string;
@@ -46,6 +47,7 @@ export function ListEditor<Row extends Record<string, unknown>>({
 
   return (
     <div className="mx-auto max-w-3xl">
+      <AdminBack href="/admin/settings" label="Back to settings" />
       <h1 className="font-display text-2xl">{title}</h1>
       <p className="mb-4 text-xs opacity-60">{description}</p>
       <div className="admin-surface p-3">

@@ -90,7 +90,7 @@ export async function POST(request: Request) {
         method: "POST",
         headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
         body: JSON.stringify({
-          from: process.env.FORMS_FROM ?? "TSOP Website <onboarding@resend.dev>",
+          from: process.env.FORMS_FROM ?? "The School of Prophets <onboarding@resend.dev>",
           to: [email],
           subject: `Your call is booked: ${new Date(startsAt).toLocaleString("en-GB", { timeZone: "Africa/Lagos" })} (WAT)`,
           text: `Hello ${name},\n\nYour ${callType.name} call is booked for ${new Date(startsAt).toLocaleString("en-GB", { timeZone: "Africa/Lagos" })} WAT (shown in your timezone when you open the calendar file).\n\nCancel or reschedule: ${site}/book/cancel?b=${booking.id}&t=${token}\n\nThe School of Prophets`,

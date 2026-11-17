@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { LoaderCircle, Save, Trash2, CalendarX } from "lucide-react";
 import { RichTextEditor, ImagePickerDialog } from "@/components/admin/RichText";
 import { saveEvent, deleteEvent, addEventException, type EventInput } from "@/app/admin/(shell)/actions/events";
+import { AdminBack } from "@/components/admin/AdminBack";
 
 export function EventEditor({
   initial,
@@ -54,6 +55,7 @@ export function EventEditor({
 
   return (
     <form onSubmit={submit} className="mx-auto max-w-3xl">
+      <AdminBack href="/admin/events" label="Back to events" />
       <div className="mb-3 flex items-center justify-between">
         <h1 className="font-display text-2xl">{form.id ? "Edit event" : "New event"}</h1>
         <button className="admin-btn admin-btn-gold" disabled={busy}>

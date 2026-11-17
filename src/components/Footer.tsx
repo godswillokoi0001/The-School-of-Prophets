@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowUpRight, Mail } from "lucide-react";
+import { Mail } from "lucide-react";
 import {
   FacebookIcon,
   TelegramIcon,
@@ -94,11 +94,7 @@ export function Footer() {
             © {new Date().getFullYear()} {site.name}. All rights reserved.
           </p>
           <p className="flex items-center gap-2">
-            Interdenominational · Founded {site.founded} ·{" "}
-            <Link href="/demo-notes" className="inline-flex items-center gap-1 underline underline-offset-4 hover:text-parchment/70">
-              Re-brand notes
-              <ArrowUpRight aria-hidden="true" className="h-3 w-3" />
-            </Link>
+            Interdenominational · Founded {site.founded}
           </p>
         </div>
       </div>

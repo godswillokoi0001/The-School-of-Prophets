@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getStaff } from "@/lib/admin";
-import { getServiceClient, supabaseConfigured } from "@/lib/supabase/server";
+import { getAdminClient, createSupabaseServer, getServiceClient } from "@/lib/supabase/server";
 import { audit } from "@/lib/admin";
 
 export async function GET(request: Request) {
@@ -12,8 +12,8 @@ export async function GET(request: Request) {
   const from = url.searchParams.get("from");
   const to = url.searchParams.get("to");
 
-  const svc = getServiceClient();
-  if (!svc || !supabaseConfigured())
+  const svc = (await getAdminClient()) || (await createSupabaseServer()) || getServiceClient();
+  if (!svc)
     return NextResponse.json({ error: "no database" }, { status: 400 });
 
   let query = svc

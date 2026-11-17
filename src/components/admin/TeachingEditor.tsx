@@ -9,6 +9,7 @@ import { RichTextEditor, RichTextView, ImagePickerDialog } from "@/components/ad
 import {
   saveTeaching, duplicateTeaching, type TeachingInput,
 } from "@/app/admin/(shell)/actions/teachings";
+import { AdminBack } from "@/components/admin/AdminBack";
 
 type SeriesOption = { id: string; title: string; status: string };
 
@@ -95,6 +96,7 @@ export function TeachingEditor({
 
   return (
     <form onSubmit={submit} className="mx-auto max-w-4xl">
+      <AdminBack href="/admin/teachings" label="Back to teachings" />
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <h1 className="font-display text-2xl">
           {form.id ? "Edit teaching" : "New teaching"}

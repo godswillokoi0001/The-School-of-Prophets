@@ -111,6 +111,25 @@ export async function setUserStatus(id: string, status: string) {
   return { ok: true };
 }
 
+export async function deleteUser(id: string) {
+  const staff = await requireStaff("owner");
+  const svc = await getAdminClient();
+  if (!svc) return { ok: false, error: "No database" };
+  if (id === staff.id) return { ok: false, error: "You cannot delete yourself." };
+
+  try {
+    await svc.auth.admin.deleteUser(id);
+  } catch (err) {
+    console.warn("Could not delete from auth.users directly:", err);
+  }
+
+  const { error } = await svc.from("profiles").delete().eq("id", id);
+  if (error) return { ok: false, error: error.message };
+
+  await audit(staff, "delete", "profiles", id);
+  return { ok: true };
+}
+
 /* Privacy tools */
 export async function personSearch(term: string) {
   await requireStaff("owner");
@@ -180,7 +199,7 @@ export async function sendBroadcast(subject: string, body: string, segment: stri
   }
 
   const key = process.env.RESEND_API_KEY;
-  const from = process.env.FORMS_FROM ?? "TSOP Website <onboarding@resend.dev>";
+  const from = process.env.FORMS_FROM ?? "The School of Prophets <onboarding@resend.dev>";
   let sent = 0;
   if (key) {
     for (const email of emails) {

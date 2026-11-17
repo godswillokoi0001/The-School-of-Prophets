@@ -34,22 +34,29 @@ async function log(
 ) {
   const svc = getServiceClient();
   if (!svc) return;
-  await svc.from("notification_log").insert({
-    channel, target, subject, body, status, error,
-    related_type: "submission",
-    related_id: relatedId ?? null,
-  });
+  try {
+    await svc.from("notification_log").insert({
+      channel, target, subject, body, status, error,
+      related_type: "submission",
+      related_id: relatedId ?? null,
+    });
+  } catch {
+    // Logging to DB is secondary to actual dispatch
+  }
 }
 
 async function sendEmail(to: string, subject: string, body: string, replyTo?: string) {
   const key = process.env.RESEND_API_KEY;
-  if (!key || !to) return "skipped:no-config";
+  if (!key || !to) {
+    console.warn("[notify:sendEmail] Skipped: no RESEND_API_KEY or recipient", { to, hasKey: Boolean(key) });
+    return "skipped:no-config";
+  }
   try {
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        from: process.env.FORMS_FROM ?? "TSOP Website <onboarding@resend.dev>",
+        from: process.env.FORMS_FROM ?? "The School of Prophets <onboarding@resend.dev>",
         to: [to],
         subject,
         text: body,
@@ -58,12 +65,16 @@ async function sendEmail(to: string, subject: string, body: string, replyTo?: st
     });
     if (!res.ok) {
       const text = await res.text();
+      console.error(`[notify:sendEmail] Resend API error (${res.status}):`, text);
       await log("email", to, subject, body, "failed", `${res.status} ${text}`);
       return "failed";
     }
+    const data = await res.json().catch(() => ({}));
+    console.info(`[notify:sendEmail] Email sent successfully to ${to} (id: ${(data as Record<string, unknown>).id})`);
     await log("email", to, subject, body, "sent", "");
     return "sent";
   } catch (err) {
+    console.error("[notify:sendEmail] Network/runtime error sending email:", err);
     await log("email", to, subject, body, "failed", String(err));
     return "failed";
   }
@@ -180,16 +191,56 @@ export async function sendConfirmation(s: SubmissionRow, to: string) {
   return sendEmail(to, subject, body);
 }
 
+const defaultTemplates: Record<string, { subject: string; body: string }> = {
+  confirmation: {
+    subject: "Thank you for reaching out — The School of Prophets",
+    body: "Hello {{name}},\n\nThank you for reaching out to The School of Prophets. We have received your {{type}} and a member of the team will respond soon.\n\nBlessings,\nThe School of Prophets",
+  },
+  booking_confirmed: {
+    subject: "Your call is confirmed — The School of Prophets",
+    body: "Hello {{name}},\n\nYour call has been confirmed for {{time}} (WAT).\n\nJoin link: {{link}}\n\nBlessings,\nThe School of Prophets",
+  },
+  booking_cancelled: {
+    subject: "Update regarding your booking — The School of Prophets",
+    body: "Hello {{name}},\n\nYour call scheduled for {{time}} has been cancelled.\n\nReason: {{reason}}\n\nYou can book a new time here: {{link}}\n\nThe School of Prophets",
+  },
+  acceptance: {
+    subject: "Welcome to The School of Prophets — Application Accepted",
+    body: "Hello {{name}},\n\nWe are joyful to inform you that your enrolment application has been accepted! Please check your portal for orientation details.\n\nThe School of Prophets",
+  },
+  decline: {
+    subject: "Update regarding your application — The School of Prophets",
+    body: "Hello {{name}},\n\nThank you for your interest in The School of Prophets. After prayerful review, we are unable to offer you a seat for this intake.\n\nGrace and peace,\nThe School of Prophets",
+  },
+  waitlist_open: {
+    subject: "Applications are now open — The School of Prophets",
+    body: "Hello {{name}},\n\nApplications have just opened for the upcoming intake! As you joined our waitlist, you have priority access:\n\n{{link}}\n\nThe School of Prophets",
+  },
+};
+
 export async function sendTemplated(key: string, to: string, vars: Record<string, string>) {
+  const normalizedKey = key === "cancellation" ? "booking_cancelled" : key === "confirmed" ? "booking_confirmed" : key;
   const svc = getServiceClient();
-  let subject = "The School of Prophets";
-  let body = fill("Hello {{name}},\n\nThe School of Prophets", vars);
+  const fallback = defaultTemplates[normalizedKey] ?? {
+    subject: "The School of Prophets",
+    body: "Hello {{name}},\n\nBlessings,\nThe School of Prophets",
+  };
+  let subject = fallback.subject;
+  let bodyTemplate = fallback.body;
+
   if (svc) {
-    const { data } = await svc.from("email_templates").select("*").eq("key", key).maybeSingle();
-    if (data) {
-      subject = data.subject;
-      body = fill(data.body, vars);
+    try {
+      const { data } = await svc.from("email_templates").select("subject,body").eq("key", normalizedKey).maybeSingle();
+      if (data) {
+        if (data.subject) subject = data.subject;
+        if (data.body) bodyTemplate = data.body;
+      }
+    } catch {
+      // Use fallback
     }
   }
-  return sendEmail(to, subject, body);
+
+  const finalSubject = fill(subject, vars);
+  const finalBody = fill(bodyTemplate, vars);
+  return sendEmail(to, finalSubject, finalBody);
 }

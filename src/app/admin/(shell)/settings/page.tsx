@@ -4,16 +4,12 @@ import { requireStaff } from "@/lib/admin";
 export const dynamic = "force-dynamic";
 
 const cards = [
-  { href: "/admin/enrolment", title: "Enrolment", desc: "Open/close applications, cohort details, waitlist." },
-  { href: "/admin/announcements", title: "Announcement bar", desc: "Notices and emergency banners." },
-  { href: "/admin/homepage", title: "Homepage", desc: "Hero, featured teaching & event, section toggles." },
-  { href: "/admin/settings/giving", title: "Giving", desc: "Bank details and Paystack." },
-  { href: "/admin/settings/contact", title: "Contact & socials", desc: "WhatsApp/Telegram invites, pages, YouTube." },
-  { href: "/admin/settings/faq", title: "FAQ", desc: "Questions shown on the public site." },
-  { href: "/admin/settings/team", title: "Team & leaders", desc: "Public team list with photos and bios." },
+  { href: "/admin/enrolment", title: "Enrolment", desc: "Open/close cohort applications, dates, fee note, waitlist." },
+  { href: "/admin/announcements", title: "Announcement Pop-up", desc: "Site-wide popup modal and notice banner for visitors." },
+  { href: "/admin/settings/giving", title: "Giving details", desc: "Bank account details, currency and Paystack link." },
+  { href: "/admin/settings/contact", title: "Contact & socials", desc: "WhatsApp, Telegram invites, phone, email and address." },
+  { href: "/admin/settings/team", title: "Team & leaders", desc: "Leadership and ministry team members." },
   { href: "/admin/settings/emails", title: "Email templates", desc: "Confirmation, acceptance, decline, waitlist, reminders." },
-  { href: "/admin/settings/legal", title: "Legal", desc: "Privacy policy and terms." },
-  { href: "/admin/settings/seo", title: "SEO & analytics", desc: "Defaults, share image, Plausible." },
   { href: "/admin/settings/notifications", title: "My notifications", desc: "Which forms alert you, quiet hours, digest." },
   { href: "/admin/settings/privacy", title: "Privacy tools", desc: "Search a person, export or erase their data." },
 ];

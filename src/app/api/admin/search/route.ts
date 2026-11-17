@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { getServiceClient } from "@/lib/supabase/server";
+import { getAdminClient, createSupabaseServer, getServiceClient } from "@/lib/supabase/server";
 import { getStaff } from "@/lib/admin";
 
 export async function GET(request: Request) {
   const staff = await getStaff();
   if (!staff) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  const svc = getServiceClient();
+  const svc = (await getAdminClient()) || (await createSupabaseServer()) || getServiceClient();
   if (!svc) return NextResponse.json({ results: [] });
   const q = new URL(request.url).searchParams.get("q")?.trim() ?? "";
   if (q.length < 2) return NextResponse.json({ results: [] });

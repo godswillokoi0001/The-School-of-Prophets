@@ -21,6 +21,8 @@ export default async function EnrolmentPage() {
       title="Enrolment"
       description="Controls the public Training page form: applications when open, waitlist when closed."
       initial={initial}
+      backHref="/admin/settings"
+      backLabel="Back to settings"
       fields={[
         {
           key: "status",

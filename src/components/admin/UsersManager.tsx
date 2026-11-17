@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { LoaderCircle, MailPlus } from "lucide-react";
-import { inviteUser, setUserRole, setUserStatus } from "@/app/admin/(shell)/actions/site-admin";
+import { LoaderCircle, MailPlus, Trash2 } from "lucide-react";
+import { deleteUser, inviteUser, setUserRole, setUserStatus } from "@/app/admin/(shell)/actions/site-admin";
 
 type Member = {
   id: string; email: string; full_name: string; role: string;
@@ -94,21 +94,38 @@ export function UsersManager({ members, selfId }: { members: Member[]; selfId: s
                 </td>
                 <td>
                   {m.id !== selfId && (
-                    <button
-                      className="admin-btn admin-btn-ghost !py-1"
-                      disabled={busy}
-                      onClick={async () => {
-                        const next = m.status === "active" ? "inactive" : "active";
-                        if (!confirm(next === "inactive" ? `Deactivate ${m.email}? They will lose access immediately.` : `Reactivate ${m.email}?`)) return;
-                        setBusy(true);
-                        const res = await setUserStatus(m.id, next);
-                        setBusy(false);
-                        if (!res.ok) alert(res.error ?? "Failed");
-                        window.location.reload();
-                      }}
-                    >
-                      {m.status === "active" ? "Deactivate" : "Reactivate"}
-                    </button>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        className="admin-btn admin-btn-ghost !py-1 text-xs"
+                        disabled={busy}
+                        onClick={async () => {
+                          const next = m.status === "active" ? "inactive" : "active";
+                          if (!confirm(next === "inactive" ? `Deactivate ${m.email}? They will lose access immediately.` : `Reactivate ${m.email}?`)) return;
+                          setBusy(true);
+                          const res = await setUserStatus(m.id, next);
+                          setBusy(false);
+                          if (!res.ok) alert(res.error ?? "Failed");
+                          window.location.reload();
+                        }}
+                      >
+                        {m.status === "active" ? "Deactivate" : "Reactivate"}
+                      </button>
+                      <button
+                        className="admin-btn !border-red-500/40 !bg-red-500/10 !text-red-400 hover:!bg-red-500/20 !py-1 text-xs"
+                        disabled={busy}
+                        title="Delete user"
+                        onClick={async () => {
+                          if (!confirm(`Are you sure you want to permanently delete user ${m.email} (${m.full_name || "No name"})? This action cannot be undone.`)) return;
+                          setBusy(true);
+                          const res = await deleteUser(m.id);
+                          setBusy(false);
+                          if (!res.ok) alert(res.error ?? "Failed to delete user");
+                          window.location.reload();
+                        }}
+                      >
+                        <Trash2 size={12} className="mr-1 inline" /> Delete
+                      </button>
+                    </div>
                   )}
                 </td>
               </tr>

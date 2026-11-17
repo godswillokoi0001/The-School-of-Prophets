@@ -233,12 +233,13 @@ export async function getGivingSettings() {
   const s = await getSetting("giving", {});
   return {
     ...seedGiving,
+    intro: String(s.instructions || seedGiving.intro),
     bank: {
       bankName: String(s.bankName ?? seedGiving.bank.bankName),
       accountName: String(s.accountName ?? seedGiving.bank.accountName),
       accountNumber: String(s.accountNumber ?? seedGiving.bank.accountNumber),
-      sortCode: seedGiving.bank.sortCode,
-      currency: seedGiving.bank.currency,
+      sortCode: String(s.sortCode ?? seedGiving.bank.sortCode ?? ""),
+      currency: String(s.currency ?? seedGiving.bank.currency ?? "NGN"),
     },
     paystack: {
       link: String(s.paystackLink ?? seedGiving.paystack.link),
@@ -262,6 +263,20 @@ export async function getContactSettings() {
 }
 
 export async function getAnnouncement() {
-  const s = await getSetting("announcement", { active: false, message: "", link: "", variant: "default" });
-  return s as { active: boolean; message: string; link: string; variant: "default" | "emergency" };
+  const s = await getSetting("announcement", {
+    active: false,
+    headline: "",
+    message: "",
+    link: "",
+    buttonText: "",
+    variant: "default",
+  });
+  return s as {
+    active: boolean;
+    headline?: string;
+    message: string;
+    link: string;
+    buttonText?: string;
+    variant: "default" | "emergency";
+  };
 }

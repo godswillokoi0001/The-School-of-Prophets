@@ -56,7 +56,7 @@ export async function deliver(d: Delivery) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          from: process.env.FORMS_FROM ?? "TSOP Website <onboarding@resend.dev>",
+          from: process.env.FORMS_FROM ?? "The School of Prophets <onboarding@resend.dev>",
           to: [inbox],
           subject: d.subject,
           text: body,

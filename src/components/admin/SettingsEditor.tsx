@@ -4,6 +4,7 @@ import { useState } from "react";
 import { LoaderCircle, Save } from "lucide-react";
 import { saveSetting } from "@/app/admin/(shell)/actions/settings";
 import { UploadButton } from "@/components/admin/RichText";
+import { AdminBack } from "@/components/admin/AdminBack";
 
 type Field =
   | { key: string; label: string; type: "text" | "textarea" | "number" | "date"; hint?: string; placeholder?: string }
@@ -17,12 +18,16 @@ export function SettingsEditor({
   description,
   fields,
   initial,
+  backHref = "/admin/settings",
+  backLabel = "Back to settings",
 }: {
   settingKey: string;
   title: string;
   description: string;
   fields: Field[];
   initial: Record<string, unknown>;
+  backHref?: string;
+  backLabel?: string;
 }) {
   const [values, setValues] = useState<Record<string, unknown>>(initial);
   const [busy, setBusy] = useState(false);
@@ -42,6 +47,7 @@ export function SettingsEditor({
 
   return (
     <form onSubmit={submit} className="mx-auto max-w-3xl">
+      <AdminBack href={backHref} label={backLabel} />
       <h1 className="font-display text-2xl">{title}</h1>
       <p className="mb-4 text-xs opacity-60">{description}</p>
       <div className="admin-surface grid gap-4 p-4 md:grid-cols-2">

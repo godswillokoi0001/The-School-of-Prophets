@@ -22,6 +22,8 @@ export default async function ContactSettings() {
       title="Contact & social links"
       description="Paste the current invite links; they update the site instantly without a developer."
       initial={initial}
+      backHref="/admin/settings"
+      backLabel="Back to settings"
       fields={[
         { key: "whatsapp", label: "WhatsApp invite link", type: "text", placeholder: "https://chat.whatsapp.com/…" },
         { key: "telegram", label: "Telegram invite link", type: "text", placeholder: "https://t.me/…" },

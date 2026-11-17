@@ -12,6 +12,7 @@ import {
   convertWaitlist,
 } from "@/app/admin/(shell)/actions/inbox";
 import type { Role } from "@/lib/admin";
+import { AdminBack } from "@/components/admin/AdminBack";
 
 export type SubmissionRow = {
   id: string; type: string; status: string; private: boolean;
@@ -180,7 +181,7 @@ export function SubmissionDetail({
   return (
     <div className="mx-auto max-w-3xl">
       <div className="mb-3 flex items-center justify-between gap-2">
-        <Link href="/admin/inbox" className="admin-link text-xs">Back to inbox</Link>
+        <AdminBack href="/admin/inbox" label="Back to inbox" />
         <button className="admin-btn admin-btn-ghost !py-1" onClick={() => window.print()}>
           <Printer size={12} /> Print
         </button>

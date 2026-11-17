@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { getStaff } from "@/lib/admin";
-import { getServiceClient, supabaseConfigured } from "@/lib/supabase/server";
+import { getAdminClient, createSupabaseServer, getServiceClient } from "@/lib/supabase/server";
 
 export async function GET(request: Request) {
   const staff = await getStaff();
   if (!staff || staff.role === "viewer") return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  const svc = getServiceClient();
-  if (!svc || !supabaseConfigured()) return NextResponse.json({ bookings: [], events: [] });
+  const svc = (await getAdminClient()) || (await createSupabaseServer()) || getServiceClient();
+  if (!svc) return NextResponse.json({ bookings: [], events: [] });
   const url = new URL(request.url);
   const month = url.searchParams.get("month") ?? new Date().toISOString().slice(0, 7);
   const rangeStart = `${month}-01T00:00:00+01:00`;

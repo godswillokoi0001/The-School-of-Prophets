@@ -91,7 +91,6 @@ export function AdminShell({
       name: "Site",
       items: [
         { href: "/admin/settings", label: "Site settings", icon: Settings, min: "admin", group: "Site" },
-        { href: "/admin/homepage", label: "Homepage", icon: LayoutDashboard, min: "admin", group: "Site" },
         { href: "/admin/enrolment", label: "Enrolment", icon: ShieldCheck, min: "admin", group: "Site" },
         { href: "/admin/announcements", label: "Announcements", icon: Radio, min: "admin", group: "Site" },
         { href: "/admin/subscribers", label: "Newsletter", icon: Mail, min: "admin", group: "Site" },

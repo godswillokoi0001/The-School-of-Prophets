@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowDown, ArrowUp, LoaderCircle, Save, Trash2 } from "lucide-react";
 import { ImagePickerDialog, UploadButton } from "@/components/admin/RichText";
 import { saveSeries, reorderSeries, deleteSeries, type SeriesInput } from "@/app/admin/(shell)/actions/teachings";
+import { AdminBack } from "@/components/admin/AdminBack";
 
 export type SeriesRow = {
   id: string; title: string; slug: string; description: string;
@@ -139,6 +140,7 @@ export function SeriesEditor({ initial }: { initial: SeriesInput }) {
 
   return (
     <form onSubmit={submit} className="mx-auto max-w-2xl">
+      <AdminBack href="/admin/series" label="Back to series" />
       <h1 className="mb-3 font-display text-2xl">{form.id ? "Edit series" : "New series"}</h1>
       {message && <p className="admin-surface mb-3 p-2 text-xs">{message}</p>}
       <div className="admin-surface grid gap-3 p-4 md:grid-cols-2">
