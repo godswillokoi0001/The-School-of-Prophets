@@ -1,11 +1,10 @@
 import Link from "next/link";
 import {
-  BookOpen, CalendarDays, Clock, Inbox, PlusCircle, Radio, ShieldCheck,
-  CalendarClock, LoaderCircle,
+  PlusCircle, Radio, Clock,
 } from "lucide-react";
 import { requireStaff } from "@/lib/admin";
 import { getServiceClient, supabaseConfigured } from "@/lib/supabase/server";
-import { getSchedule, getEnrolmentSettings, revalidateTag } from "@/lib/data";
+import { getSchedule, getEnrolmentSettings } from "@/lib/data";
 import { nextOccurrence } from "@/lib/schedule-time";
 import { toggleEnrolment } from "@/app/admin/(shell)/actions/enrolment";
 import { WeekChart } from "@/components/admin/WeekChart";

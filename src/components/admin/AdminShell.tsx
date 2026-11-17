@@ -11,6 +11,7 @@ import {
 import { Crest } from "@/components/Crest";
 import { AdminSearch } from "@/components/admin/AdminSearch";
 import { NotificationBell } from "@/components/admin/NotificationBell";
+import { PushSetup } from "@/components/admin/PushSetup";
 import type { Role } from "@/lib/admin";
 
 const rank: Record<Role, number> = { viewer: 1, moderator: 2, admin: 3, owner: 4 };
@@ -26,14 +27,13 @@ export function AdminShell({
   email,
   fullName,
   unread,
-  pendingTestimonies,
 }: {
   children: React.ReactNode;
   role: Role;
   email: string;
   fullName: string;
   unread: number;
-  pendingTestimonies: number;
+  pendingTestimonies?: number;
 }) {
   const [open, setOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -159,6 +159,7 @@ export function AdminShell({
 
   return (
     <div className="admin-body min-h-screen flex">
+      <PushSetup />
       <aside className="hidden md:flex w-56 shrink-0 flex-col border-r border-parchment/10">
         {sidebar}
       </aside>

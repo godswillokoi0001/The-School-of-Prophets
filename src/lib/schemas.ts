@@ -48,6 +48,11 @@ export const enrolmentSchema = z.object({
   heardVia: z.string().trim().max(120).optional(),
 });
 
+export const newsletterSchema = z.object({
+  email,
+  name: optionalName,
+});
+
 /** Every public form carries a honeypot and a client timestamp. */
 export const honeypotSchema = z.object({
   website: z.string().max(0, "Rejected.").optional(),
