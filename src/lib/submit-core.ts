@@ -60,7 +60,12 @@ export async function handleFormSubmission(
   const schema = formSchemas[type];
   if (!schema) return json({ ok: false, message: "Unknown form." }, 400);
 
-  const parsed = schema.safeParse(body.payload);
+  const rawPayload =
+    body.payload && typeof body.payload === "object"
+      ? (body.payload as Record<string, unknown>)
+      : body;
+
+  const parsed = schema.safeParse(rawPayload);
   if (!parsed.success) {
     return json(
       {
@@ -76,21 +81,33 @@ export async function handleFormSubmission(
   const email = String(payload.email ?? "") || null;
   const name = String(payload.name ?? payload.fullName ?? "");
 
-  if (!supabaseConfigured()) {
+  const svc = getServiceClient();
+  const db =
+    svc ||
+    (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+      ? createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+        )
+      : null);
+
+  if (!db) {
     console.info(`[forms] ${type} ${name}\n${JSON.stringify(payload, null, 2)}`);
     return json({ ok: true, message: "Thank you. Your message has been received." });
   }
 
-  const svc = getServiceClient()!;
   const isPrivate = privateTypes.has(type) || payload.isPrivate === true;
 
-  const { data, error } = await svc
+  const { data, error } = await db
     .from("submissions")
     .insert({ type, payload, private: isPrivate, ip: clientKey(request).split(":")[0] })
     .select("id,created_at")
     .single();
 
-  if (error) return json({ ok: false, message: "Something went wrong. Please try again." }, 500);
+  if (error) {
+    console.error(`[forms] Error inserting submission:`, error);
+    return json({ ok: false, message: "Something went wrong. Please try again." }, 500);
+  }
 
   const submission = { id: data.id, type, payload, created_at: data.created_at };
   await notifySubmission(submission);
@@ -98,7 +115,7 @@ export async function handleFormSubmission(
   if (email) {
     await sendConfirmation(submission, email);
     if (type === "newsletter") {
-      await svc.from("subscribers").upsert({ email, name, source: "site" });
+      await db.from("subscribers").upsert({ email, name, source: "site" });
     }
   }
 
@@ -107,7 +124,15 @@ export async function handleFormSubmission(
 
 async function enrolmentOpen(): Promise<boolean> {
   const svc = getServiceClient();
-  if (!svc) return false;
-  const { data } = await svc.from("site_settings").select("value").eq("key", "enrolment").maybeSingle();
+  const db =
+    svc ||
+    (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+      ? createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+        )
+      : null);
+  if (!db) return false;
+  const { data } = await db.from("site_settings").select("value").eq("key", "enrolment").maybeSingle();
   return (data?.value as { status?: string })?.status === "open";
 }
