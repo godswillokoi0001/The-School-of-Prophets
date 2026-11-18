@@ -1,5 +1,15 @@
 import * as webpush from "web-push";
 import { getServiceClient } from "@/lib/supabase/server";
+import {
+  buildHtmlEmail,
+  renderConfirmationEmail,
+  renderBookingConfirmedEmail,
+  renderBookingCancelledEmail,
+  renderEnrolmentAcceptedEmail,
+  renderEnrolmentDeclinedEmail,
+  renderWaitlistOpenEmail,
+  renderGenericEmail,
+} from "@/lib/email-templates";
 
 export type SubmissionRow = {
   id: string;
@@ -45,7 +55,13 @@ async function log(
   }
 }
 
-async function sendEmail(to: string, subject: string, body: string, replyTo?: string) {
+export async function sendEmail(
+  to: string,
+  subject: string,
+  body: string,
+  replyTo?: string,
+  html?: string,
+) {
   const key = process.env.RESEND_API_KEY;
   if (!key || !to) {
     console.warn("[notify:sendEmail] Skipped: no RESEND_API_KEY or recipient", { to, hasKey: Boolean(key) });
@@ -60,6 +76,7 @@ async function sendEmail(to: string, subject: string, body: string, replyTo?: st
         to: [to],
         subject,
         text: body,
+        ...(html ? { html } : {}),
         ...(replyTo ? { reply_to: replyTo } : {}),
       }),
     });
@@ -81,7 +98,17 @@ async function sendEmail(to: string, subject: string, body: string, replyTo?: st
 }
 
 export async function sendReplyEmail(to: string, subject: string, body: string) {
-  return sendEmail(to, subject, body);
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://theschoolofprophets.org";
+  const rendered = renderGenericEmail({
+    title: subject,
+    badge: "Ministry Response",
+    bodyText: body,
+    cta: {
+      label: "Visit The School of Prophets",
+      url: siteUrl,
+    },
+  });
+  return sendEmail(to, subject, body, undefined, rendered.html);
 }
 
 async function pushToAdmins(title: string, body: string, relatedId?: string) {
@@ -145,19 +172,47 @@ function renderFields(payload: Record<string, unknown>) {
 export async function notifySubmission(s: SubmissionRow) {
   const label = typeLabels[s.type] ?? s.type;
   const name = String(s.payload.name ?? s.payload.fullName ?? "");
-  const link = `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/admin/inbox/${s.id}`;
-  const body = `${label}\n\n${renderFields(s.payload)}\n\nOpen in dashboard: ${link}\nSubmitted: ${s.created_at}`;
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const link = `${siteUrl}/admin/inbox/${s.id}`;
+  const textBody = `${label}\n\n${renderFields(s.payload)}\n\nOpen in dashboard: ${link}\nSubmitted: ${s.created_at}`;
+
+  const fieldItems = Object.entries(s.payload)
+    .filter(([, v]) => v !== undefined && v !== "" && v !== null)
+    .map(([k, v]) => ({
+      label: k.charAt(0).toUpperCase() + k.slice(1).replace(/([A-Z])/g, " $1"),
+      value: String(v),
+    }));
+
+  const subject = `TSOP ${label}${name ? ` · ${name}` : ""}`;
+  const htmlBody = buildHtmlEmail({
+    badge: "New Submission",
+    title: `New ${label} Received`,
+    preheader: name ? `New ${label} received from ${name}` : `New ${label} received`,
+    paragraphs: [
+      `A new <strong>${label}</strong> has been submitted through the ministry website.`,
+      `Review the submission details below or jump directly to the administrative inbox to respond or flag.`,
+    ],
+    highlightBox: {
+      label: "Submission Data",
+      items: fieldItems.length > 0 ? fieldItems : [{ label: "Type", value: label }],
+    },
+    cta: {
+      label: "Open in Dashboard",
+      url: link,
+    },
+    closing: "Ministry Notification Engine,<br /><strong>The School of Prophets</strong>",
+  });
 
   const targets = [process.env.NOTIFY_EMAILS, process.env.FORMS_INBOX]
     .flatMap((v) => (v ? v.split(",").map((t) => t.trim()) : []))
     .filter(Boolean);
 
   for (const to of targets) {
-    await sendEmail(to, `TSOP ${label}${name ? ` · ${name}` : ""}`, body, undefined);
+    await sendEmail(to, subject, textBody, undefined, htmlBody);
   }
 
   await pushToAdmins(label, name ? `${label} from ${name}` : label, s.id);
-  await sendTelegram(body);
+  await sendTelegram(textBody);
 
   const webhook = process.env.FORMS_WEBHOOK_URL;
   if (webhook) {
@@ -174,21 +229,10 @@ export async function notifySubmission(s: SubmissionRow) {
 }
 
 export async function sendConfirmation(s: SubmissionRow, to: string) {
-  const svc = getServiceClient();
   const name = String(s.payload.name ?? s.payload.fullName ?? "");
-  let subject = "We received your message";
-  let template =
-    "Hello {{name}},\n\nThank you for reaching out to The School of Prophets. We have received your {{type}} and a member of the team will respond soon.\n\nThe School of Prophets";
-  if (svc) {
-    const { data } = await svc.from("email_templates").select("*").eq("key", "confirmation").maybeSingle();
-    if (data) {
-      subject = data.subject;
-      template = data.body;
-    }
-  }
   const typeLabel = (typeLabels[s.type] ?? s.type).toLowerCase();
-  const body = fill(template, { name, type: typeLabel });
-  return sendEmail(to, subject, body);
+  const rendered = renderConfirmationEmail({ name, type: typeLabel });
+  return sendEmail(to, rendered.subject, rendered.text, undefined, rendered.html);
 }
 
 const defaultTemplates: Record<string, { subject: string; body: string }> = {
@@ -221,26 +265,99 @@ const defaultTemplates: Record<string, { subject: string; body: string }> = {
 export async function sendTemplated(key: string, to: string, vars: Record<string, string>) {
   const normalizedKey = key === "cancellation" ? "booking_cancelled" : key === "confirmed" ? "booking_confirmed" : key;
   const svc = getServiceClient();
+
+  // Check if there is an explicit DB template override
+  let dbOverride: { subject?: string; body?: string } | null = null;
+  if (svc) {
+    try {
+      const { data } = await svc.from("email_templates").select("subject,body").eq("key", normalizedKey).maybeSingle();
+      if (data && (data.subject || data.body)) {
+        dbOverride = data;
+      }
+    } catch {
+      // Use standard renderers
+    }
+  }
+
+  // If a custom DB override exists, fill placeholders and wrap with generic HTML template
+  if (dbOverride) {
+    const fallback = defaultTemplates[normalizedKey] ?? {
+      subject: "The School of Prophets",
+      body: "Hello {{name}},\n\nBlessings,\nThe School of Prophets",
+    };
+    const finalSubject = fill(dbOverride.subject || fallback.subject, vars);
+    const finalBody = fill(dbOverride.body || fallback.body, vars);
+    const rendered = renderGenericEmail({
+      title: finalSubject,
+      bodyText: finalBody,
+      cta: vars.link ? { label: "Open Link", url: vars.link } : undefined,
+    });
+    return sendEmail(to, finalSubject, finalBody, undefined, rendered.html);
+  }
+
+  // Use specialized rich HTML template renderers for canonical actions
+  if (normalizedKey === "booking_confirmed") {
+    const rendered = renderBookingConfirmedEmail({
+      name: vars.name,
+      time: vars.time,
+      joinLink: vars.link,
+      cancelLink: vars.cancelUrl,
+    });
+    return sendEmail(to, rendered.subject, rendered.text, undefined, rendered.html);
+  }
+
+  if (normalizedKey === "booking_cancelled") {
+    const rendered = renderBookingCancelledEmail({
+      name: vars.name,
+      time: vars.time,
+      reason: vars.reason,
+      bookLink: vars.link,
+    });
+    return sendEmail(to, rendered.subject, rendered.text, undefined, rendered.html);
+  }
+
+  if (normalizedKey === "acceptance") {
+    const rendered = renderEnrolmentAcceptedEmail({
+      name: vars.name,
+      cohortName: vars.cohort,
+    });
+    return sendEmail(to, rendered.subject, rendered.text, undefined, rendered.html);
+  }
+
+  if (normalizedKey === "decline") {
+    const rendered = renderEnrolmentDeclinedEmail({
+      name: vars.name,
+    });
+    return sendEmail(to, rendered.subject, rendered.text, undefined, rendered.html);
+  }
+
+  if (normalizedKey === "waitlist_open") {
+    const rendered = renderWaitlistOpenEmail({
+      name: vars.name,
+      link: vars.link,
+    });
+    return sendEmail(to, rendered.subject, rendered.text, undefined, rendered.html);
+  }
+
+  if (normalizedKey === "confirmation") {
+    const rendered = renderConfirmationEmail({
+      name: vars.name,
+      type: vars.type || "message",
+    });
+    return sendEmail(to, rendered.subject, rendered.text, undefined, rendered.html);
+  }
+
+  // Fallback for any other custom key
   const fallback = defaultTemplates[normalizedKey] ?? {
     subject: "The School of Prophets",
     body: "Hello {{name}},\n\nBlessings,\nThe School of Prophets",
   };
-  let subject = fallback.subject;
-  let bodyTemplate = fallback.body;
-
-  if (svc) {
-    try {
-      const { data } = await svc.from("email_templates").select("subject,body").eq("key", normalizedKey).maybeSingle();
-      if (data) {
-        if (data.subject) subject = data.subject;
-        if (data.body) bodyTemplate = data.body;
-      }
-    } catch {
-      // Use fallback
-    }
-  }
-
-  const finalSubject = fill(subject, vars);
-  const finalBody = fill(bodyTemplate, vars);
-  return sendEmail(to, finalSubject, finalBody);
+  const finalSubject = fill(fallback.subject, vars);
+  const finalBody = fill(fallback.body, vars);
+  const rendered = renderGenericEmail({
+    title: finalSubject,
+    bodyText: finalBody,
+    cta: vars.link ? { label: "View Details", url: vars.link } : undefined,
+  });
+  return sendEmail(to, finalSubject, finalBody, undefined, rendered.html);
 }

@@ -22,6 +22,8 @@ export function UsersManager({ members, selfId }: { members: Member[]; selfId: s
   const [role, setRole] = useState("admin");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  const [lastInviteLink, setLastInviteLink] = useState("");
+  const [copied, setCopied] = useState(false);
 
   return (
     <div>
@@ -30,11 +32,11 @@ export function UsersManager({ members, selfId }: { members: Member[]; selfId: s
         <div className="flex flex-wrap items-end gap-2">
           <div className="flex-1 min-w-40">
             <label className="admin-label">Full name</label>
-            <input className="admin-input" value={fullName} onChange={(e) => setFullName(e.target.value)} />
+            <input className="admin-input" placeholder="e.g. John Doe" value={fullName} onChange={(e) => setFullName(e.target.value)} />
           </div>
           <div className="flex-1 min-w-48">
             <label className="admin-label">Email</label>
-            <input className="admin-input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <input className="admin-input" placeholder="name@domain.com" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
           <div>
             <label className="admin-label">Role</label>
@@ -49,17 +51,56 @@ export function UsersManager({ members, selfId }: { members: Member[]; selfId: s
             disabled={busy || !email}
             onClick={async () => {
               setBusy(true);
+              setMessage("");
+              setLastInviteLink("");
               const res = await inviteUser(email.trim(), role, fullName.trim());
               setBusy(false);
-              setMessage(res.ok ? "Invitation sent by email." : res.error ?? "Failed");
-              if (res.ok) window.location.reload();
+              if (res.ok) {
+                setMessage(res.message || "Invitation email sent successfully.");
+                if (res.inviteLink) setLastInviteLink(res.inviteLink);
+                setEmail("");
+                setFullName("");
+                setTimeout(() => window.location.reload(), 2500);
+              } else {
+                setMessage(res.error ?? "Failed to send invitation.");
+              }
             }}
           >
             <MailPlus size={13} /> Invite
           </button>
         </div>
-        {busy && <LoaderCircle size={13} className="mt-2 animate-spin" />}
-        {message && <p className="mt-2 text-xs opacity-80">{message}</p>}
+        {busy && (
+          <div className="flex items-center gap-2 mt-3 text-xs opacity-80">
+            <LoaderCircle size={13} className="animate-spin text-gold" />
+            <span>Sending branded invitation email…</span>
+          </div>
+        )}
+        {message && (
+          <div className="mt-3 p-3 rounded bg-gold/10 border border-gold/30 text-xs">
+            <p className="font-semibold text-parchment">{message}</p>
+            {lastInviteLink && (
+              <div className="mt-2 flex items-center gap-2">
+                <span className="opacity-70">Invite link:</span>
+                <input
+                  readOnly
+                  value={lastInviteLink}
+                  className="admin-input !py-1 text-xs font-mono flex-1 !bg-black/30"
+                />
+                <button
+                  type="button"
+                  className="admin-btn admin-btn-ghost !py-1 text-xs"
+                  onClick={() => {
+                    navigator.clipboard.writeText(lastInviteLink);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                  }}
+                >
+                  {copied ? "Copied!" : "Copy Link"}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="admin-surface mt-4 overflow-x-auto">

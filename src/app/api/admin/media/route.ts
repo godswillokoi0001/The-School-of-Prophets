@@ -51,27 +51,35 @@ export async function POST(request: Request) {
   }
 
   const safe = file.name.replace(/[^\w.-]+/g, "-").toLowerCase();
-  const storagePath = `uploads/${Date.now()}-${safe}`;
+  const filename = `${Date.now()}-${safe}`;
+  const storagePath = `uploads/${filename}`;
+
+  let publicUrl = "";
+
   const { error: uploadError } = await svc.storage.from("media").upload(storagePath, file, {
     contentType: file.type,
     upsert: false,
   });
 
-  if (uploadError) {
-    if (uploadError.message.includes("Bucket not found") || uploadError.message.includes("NoSuchBucket")) {
-      return NextResponse.json(
-        {
-          error:
-            "Supabase storage bucket 'media' does not exist yet. Please create a public bucket named 'media' in Supabase Storage or run the setup SQL script.",
-        },
-        { status: 500 },
-      );
+  if (!uploadError) {
+    const { data: urlData } = svc.storage.from("media").getPublicUrl(storagePath);
+    publicUrl = urlData.publicUrl;
+  } else {
+    console.warn("[media] Supabase storage upload notice (saving to local public/uploads):", uploadError.message);
+    try {
+      const fs = await import("fs/promises");
+      const path = await import("path");
+      const uploadDir = path.join(process.cwd(), "public", "uploads");
+      await fs.mkdir(uploadDir, { recursive: true });
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const localFilePath = path.join(uploadDir, filename);
+      await fs.writeFile(localFilePath, buffer);
+      publicUrl = `/uploads/${filename}`;
+    } catch (fsErr) {
+      console.error("[media] Failed to save to local uploads directory:", fsErr);
+      return NextResponse.json({ error: uploadError.message }, { status: 500 });
     }
-    return NextResponse.json({ error: uploadError.message }, { status: 500 });
   }
-
-  const { data: urlData } = svc.storage.from("media").getPublicUrl(storagePath);
-  const publicUrl = urlData.publicUrl;
 
   const { error: insertError } = await svc.from("media").insert({
     path: publicUrl,

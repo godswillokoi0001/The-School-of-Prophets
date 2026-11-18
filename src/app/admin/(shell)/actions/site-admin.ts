@@ -3,6 +3,9 @@
 import { revalidateTag } from "next/cache";
 import { getAdminClient } from "@/lib/supabase/server";
 import { audit, requireStaff, getStaff } from "@/lib/admin";
+import { generateInviteToken } from "@/lib/invites";
+import { renderInviteEmail, buildHtmlEmail } from "@/lib/email-templates";
+import { sendEmail } from "@/lib/notify";
 
 /* FAQ */
 export async function saveFaqs(rows: { id?: string; question: string; answer: string; sort_order: number; active: boolean }[]) {
@@ -75,17 +78,64 @@ export async function inviteUser(email: string, role: string, fullName: string) 
   const staff = await requireStaff("owner");
   const svc = await getAdminClient();
   if (!svc) return { ok: false, error: "No database" };
+
+  const cleanEmail = email.toLowerCase().trim();
   const site = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-  const { data, error } = await svc.auth.admin.inviteUserByEmail(email, {
-    data: { full_name: fullName },
-    redirectTo: `${site}/admin/auth/callback`,
-  });
-  if (error) return { ok: false, error: error.message };
-  if (data.user) {
-    await svc.from("profiles").upsert({ id: data.user.id, email, full_name: fullName, role, invited_by: staff.id });
+  const token = generateInviteToken(cleanEmail, role, fullName);
+  const inviteLink = `${site}/admin/accept-invite?token=${token}`;
+
+  // 1. Try to pre-provision user in Supabase auth if service role key is configured
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (serviceKey) {
+    try {
+      const { data: userData } = await svc.auth.admin.createUser({
+        email: cleanEmail,
+        email_confirm: true,
+        user_metadata: { full_name: fullName },
+      });
+      if (userData?.user) {
+        await svc.from("profiles").upsert({
+          id: userData.user.id,
+          email: cleanEmail,
+          full_name: fullName,
+          role,
+          invited_by: staff.id,
+          status: "active",
+        });
+      }
+    } catch (err) {
+      console.warn("[inviteUser] Auth user pre-provisioning notice:", err);
+    }
   }
-  await audit(staff, "invite", "profiles", email, { role });
-  return { ok: true };
+
+  // 2. Render and send high-fidelity branded HTML email via Resend
+  const emailContent = renderInviteEmail({
+    fullName,
+    email: cleanEmail,
+    role,
+    inviteLink,
+    invitedByName: staff.fullName || "An Owner",
+  });
+
+  const sendResult = await sendEmail(
+    cleanEmail,
+    emailContent.subject,
+    emailContent.text,
+    undefined,
+    emailContent.html
+  );
+
+  await audit(staff, "invite", "profiles", cleanEmail, { role, sendResult });
+
+  if (sendResult === "failed") {
+    return {
+      ok: true,
+      message: "Invitation link generated, but email delivery was rejected by Resend (verify recipient or domain in Resend).",
+      inviteLink,
+    };
+  }
+
+  return { ok: true, message: `Invitation email sent to ${cleanEmail}.`, inviteLink };
 }
 
 export async function setUserRole(id: string, role: string) {
@@ -200,6 +250,12 @@ export async function sendBroadcast(subject: string, body: string, segment: stri
 
   const key = process.env.RESEND_API_KEY;
   const from = process.env.FORMS_FROM ?? "The School of Prophets <onboarding@resend.dev>";
+  const html = buildHtmlEmail({
+    badge: "Ministry Broadcast",
+    title: subject,
+    paragraphs: body.split("\n\n").filter(Boolean),
+    footerNote: "You are receiving this because you subscribed to The School of Prophets updates.",
+  });
   let sent = 0;
   if (key) {
     for (const email of emails) {
@@ -212,6 +268,7 @@ export async function sendBroadcast(subject: string, body: string, segment: stri
             to: [email],
             subject,
             text: body.replace(/\{\{name\}\}/g, ""),
+            html,
             headers: { "List-Unsubscribe": `<${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/api/unsubscribe>` },
           }),
         });
