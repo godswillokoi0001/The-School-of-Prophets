@@ -34,11 +34,11 @@ export async function middleware(request: NextRequest) {
           cookies: {
             getAll: () => request.cookies.getAll(),
             setAll: (list) => {
-              list.forEach(({ name, value, options }) => {
-                request.cookies.set(name, value);
-                response = NextResponse.next({ request });
-                response.cookies.set(name, value, options);
-              });
+              list.forEach(({ name, value }) => request.cookies.set(name, value));
+              response = NextResponse.next({ request });
+              list.forEach(({ name, value, options }) =>
+                response.cookies.set(name, value, options)
+              );
             },
           },
         },

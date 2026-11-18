@@ -36,8 +36,7 @@ export default function AdminLogin() {
         setBusy(false);
         return;
       }
-      router.push("/admin");
-      router.refresh();
+      window.location.href = "/admin";
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to sign in");
       setBusy(false);
