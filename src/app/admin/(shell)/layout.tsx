@@ -44,16 +44,26 @@ async function getDashboardData(role: string) {
     recentQuery,
   ]);
 
+  const labels: Record<string, string> = {
+    beta_feedback: "Beta review",
+    contact: "Message",
+    prayer: "Prayer request",
+    testimony: "Testimony",
+  };
   const notifications: NotificationItem[] = (recentRes.data ?? []).map((row) => {
     const payload = (row.payload as Record<string, unknown>) ?? {};
     const name = String(payload.name ?? payload.fullName ?? "Someone");
     const type = String(row.type);
-    const subtitle = String(payload.message ?? payload.prayerRequest ?? payload.notes ?? payload.email ?? "");
+    const rating = Number(payload.overall_rating ?? 0);
+    const subtitle = String(
+      payload.take ?? payload.message ?? payload.prayerRequest ?? payload.notes ?? payload.email ?? "",
+    );
+    const label = labels[type] ?? type.charAt(0).toUpperCase() + type.slice(1).replace("_", " ");
 
     return {
       id: row.id,
       type,
-      title: `${type.charAt(0).toUpperCase() + type.slice(1)} from ${name}`,
+      title: `${type === "beta_feedback" && rating > 0 ? `${rating}/5 · ` : ""}${label} from ${name}`,
       subtitle: subtitle ? subtitle.slice(0, 80) : undefined,
       created_at: row.created_at,
       status: row.status,

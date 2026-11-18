@@ -62,6 +62,117 @@ export const registrationSchema = z.object({
   eventTitle: z.string().trim().max(200).optional(),
 });
 
+/* ------------------------------------------------------------------
+   Beta tester feedback. Long free text, a custom rating scale, and up to
+   five issues with screenshots sent as data URLs (stripped server-side).
+   ------------------------------------------------------------------ */
+
+const stripTags = (value: string) =>
+  value
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, " ")
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+
+const betaText = (max: number, min = 0, minMessage?: string) => {
+  const base = z
+    .string()
+    .max(max, "This is longer than we can accept. Please shorten it.");
+  return (min > 0 ? base.min(min, minMessage) : base).transform(stripTags);
+};
+
+const betaLine = (max: number) =>
+  z
+    .string()
+    .max(max)
+    .transform((v) => stripTags(v).replace(/\s+/g, " "));
+
+const rating = z.coerce.number().int().min(1, "Choose a rating from 1 to 5.").max(5);
+
+const betaIssueSchema = z.object({
+  page: betaLine(60).default("Other"),
+  description: betaText(2000).default(""),
+  severity: z.enum(["Small annoyance", "Hard to use", "Something broke"]).default("Small annoyance"),
+  screenshots: z.array(z.string().max(7_500_000)).max(3).default([]),
+});
+
+export const betaFeedbackSchema = z
+  .object({
+    name: z.string().trim().min(2, "Please tell us your name so we can thank you.").max(80),
+    email: z.string().trim().email("Please add your email so we can say thank you.").max(160),
+    whatsapp: betaLine(40).optional(),
+    location: betaLine(120).optional(),
+    device: z.enum(["Phone", "Tablet", "Computer", "More than one"]).optional(),
+    overall_rating: rating,
+    area_ratings: z
+      .object({
+        design: rating.optional(),
+        ease: rating.optional(),
+        speed: rating.optional(),
+        content: rating.optional(),
+        mobile: rating.optional(),
+      })
+      .partial()
+      .default({}),
+    liked: betaText(1200).optional(),
+    take: betaText(2000, 10, "A sentence or two is enough — just tell us how it felt."),
+    issues: z.array(betaIssueSchema).max(5).default([]),
+    improve: betaText(2000, 1, "Tell us one thing we could do better."),
+    wish: betaText(1200).optional(),
+    story: betaText(1500).optional(),
+    story_consent: z
+      .enum(["public_named", "public_anonymous", "private"])
+      .default("private"),
+    display_name: betaLine(80).optional(),
+    may_contact: z.boolean().default(true),
+    wants_call: z.boolean().default(false),
+    meta: z
+      .object({
+        browser: betaLine(120).optional(),
+        os: betaLine(120).optional(),
+        screen: betaLine(40).optional(),
+        referrer: betaLine(300).optional(),
+        timestamp: betaLine(40).optional(),
+      })
+      .default({}),
+    isSample: z.boolean().optional(),
+    sample_label: betaLine(40).optional(),
+  })
+  .superRefine((value, ctx) => {
+    if (value.take.trim().length < 10) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["take"],
+        message: "A sentence or two is enough — just tell us how it felt.",
+      });
+    }
+    if (!value.improve.trim()) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["improve"],
+        message: "Tell us one thing we could do better.",
+      });
+    }
+    if (value.story && value.story.length > 0 && !value.story_consent) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["story_consent"],
+        message: "Please choose what we may do with your story.",
+      });
+    }
+    value.issues.forEach((issue, index) => {
+      if (value.issues.length > 0 && !issue.description.trim()) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["issues", index, "description"],
+          message: "A line about what happened is enough.",
+        });
+      }
+    });
+  });
+
 /** Every public form carries a honeypot and a client timestamp. */
 export const honeypotSchema = z.object({
   website: z.string().max(0, "Rejected.").optional(),
@@ -72,6 +183,7 @@ export type PrayerInput = z.infer<typeof prayerSchema>;
 export type TestimonyInput = z.infer<typeof testimonySchema>;
 export type EnrolmentInput = z.infer<typeof enrolmentSchema>;
 export type RegistrationInput = z.infer<typeof registrationSchema>;
+export type BetaFeedbackInput = z.infer<typeof betaFeedbackSchema>;
 
 export function fieldErrors(error: z.ZodError) {
   const out: Record<string, string> = {};

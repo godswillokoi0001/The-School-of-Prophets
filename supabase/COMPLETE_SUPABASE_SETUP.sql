@@ -146,3 +146,108 @@ BEGIN
     END IF;
   END LOOP;
 END $$;
+
+-- ================================================================
+-- BETA TESTER FEEDBACK (mirrors migrations/0004_beta_feedback.sql)
+-- Run this block after setup, or run the migration file instead.
+-- ================================================================
+
+INSERT INTO public.form_definitions (type, label, schema, is_private, notify)
+VALUES (
+  'beta_feedback',
+  'Beta tester feedback',
+  '{"steps":4,"requires":["name","email"],"screenshots":"private","consent":["public_named","public_anonymous","private"]}'::jsonb,
+  true,
+  true
+)
+ON CONFLICT (type) DO UPDATE SET label = EXCLUDED.label, schema = EXCLUDED.schema, is_private = true, notify = true;
+
+ALTER TABLE public.submissions DROP CONSTRAINT IF EXISTS submissions_status_check;
+ALTER TABLE public.submissions ADD CONSTRAINT submissions_status_check
+  CHECK (status IN ('new','seen','triaged','in_progress','fixed','wont_fix','replied','approved','declined','archived','spam','prayed','answered'));
+
+CREATE INDEX IF NOT EXISTS submissions_beta_email
+  ON public.submissions ((payload->>'email')) WHERE type = 'beta_feedback';
+
+INSERT INTO public.site_settings (key, value)
+VALUES ('beta_feedback', '{"status":"open"}'::jsonb)
+ON CONFLICT (key) DO NOTHING;
+
+INSERT INTO public.email_templates (key, label, subject, body)
+VALUES
+  ('beta_confirmation', 'Beta review thank-you', 'Thank you for reviewing the site — The School of Prophets',
+   'Hello {{name}},
+
+Thank you for taking the time to test the site and tell us the truth about it. Your review is now with the team, and every one is read.
+
+Here is what you sent us, for your own records:
+{{summary}}
+
+If we fixed something you found, we will write again.
+
+With gratitude,
+The School of Prophets'),
+  ('beta_fixed', 'Beta issue fixed', 'We fixed what you found — The School of Prophets',
+   'Hello {{name}},
+
+A short note to say thank you again. We have worked on what you reported in your beta review.
+
+If it still is not right, reply to this email and tell us. That is exactly what this beta is for.
+
+With gratitude,
+The School of Prophets')
+ON CONFLICT (key) DO UPDATE SET label = EXCLUDED.label, subject = EXCLUDED.subject, body = EXCLUDED.body;
+
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES ('beta-screenshots', 'beta-screenshots', false, 5242880, ARRAY['image/jpeg','image/png','image/webp'])
+ON CONFLICT (id) DO UPDATE SET public = false, file_size_limit = 5242880, allowed_mime_types = ARRAY['image/jpeg','image/png','image/webp'];
+
+DROP POLICY IF EXISTS "Beta screenshots staff read" ON storage.objects;
+CREATE POLICY "Beta screenshots staff read" ON storage.objects
+  FOR SELECT TO authenticated
+  USING (
+    bucket_id = 'beta-screenshots'
+    AND EXISTS (
+      SELECT 1 FROM public.profiles p
+      WHERE p.id = auth.uid() AND p.status = 'active' AND p.role IN ('owner','admin','moderator')
+    )
+  );
+
+CREATE OR REPLACE FUNCTION public.is_staff() RETURNS boolean
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.id = auth.uid() AND p.status = 'active'
+      AND p.role IN ('owner','admin','moderator','viewer')
+  );
+$$;
+
+CREATE OR REPLACE FUNCTION public.is_beta_staff() RETURNS boolean
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.id = auth.uid() AND p.status = 'active'
+      AND p.role IN ('owner','admin','moderator')
+  );
+$$;
+
+-- Close the hole the unlock loop above opens on submissions: the public may
+-- insert a form, only staff may read responses.
+DROP POLICY IF EXISTS submissions_all ON public.submissions;
+DROP POLICY IF EXISTS submissions_public_insert ON public.submissions;
+DROP POLICY IF EXISTS submissions_staff_read ON public.submissions;
+DROP POLICY IF EXISTS submissions_staff_update ON public.submissions;
+DROP POLICY IF EXISTS submissions_admin_delete ON public.submissions;
+
+CREATE POLICY submissions_public_insert ON public.submissions
+  FOR INSERT TO anon, authenticated WITH CHECK (true);
+CREATE POLICY submissions_staff_read ON public.submissions
+  FOR SELECT TO authenticated USING (public.is_staff());
+CREATE POLICY submissions_staff_update ON public.submissions
+  FOR UPDATE TO authenticated USING (public.is_beta_staff()) WITH CHECK (public.is_beta_staff());
+CREATE POLICY submissions_admin_delete ON public.submissions
+  FOR DELETE TO authenticated
+  USING (EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.id = auth.uid() AND p.status = 'active' AND p.role IN ('owner','admin')
+  ));

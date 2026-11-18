@@ -1,9 +1,11 @@
 import { z } from "zod";
 import { createClient } from "@supabase/supabase-js";
 import { getServiceClient } from "@/lib/supabase/server";
-import { fieldErrors, honeypotSchema, contactSchema, prayerSchema, testimonySchema, enrolmentSchema, newsletterSchema, registrationSchema } from "@/lib/schemas";
+import { fieldErrors, honeypotSchema, contactSchema, prayerSchema, testimonySchema, enrolmentSchema, newsletterSchema, registrationSchema, betaFeedbackSchema } from "@/lib/schemas";
 import { clientKey, rateLimit } from "@/lib/forms";
-import { notifySubmission, sendConfirmation } from "@/lib/notify";
+import { notifySubmission, sendBetaConfirmation, sendConfirmation } from "@/lib/notify";
+import { BETA_TYPE } from "@/lib/beta";
+import { betaAccepting, betaDuplicate, prepareBetaSubmission } from "@/lib/beta-server";
 
 export const formSchemas: Record<string, z.ZodType<Record<string, unknown>>> = {
   contact: contactSchema as unknown as z.ZodType<Record<string, unknown>>,
@@ -13,9 +15,10 @@ export const formSchemas: Record<string, z.ZodType<Record<string, unknown>>> = {
   waitlist: enrolmentSchema as unknown as z.ZodType<Record<string, unknown>>,
   newsletter: newsletterSchema as unknown as z.ZodType<Record<string, unknown>>,
   registration: registrationSchema as unknown as z.ZodType<Record<string, unknown>>,
+  [BETA_TYPE]: betaFeedbackSchema as unknown as z.ZodType<Record<string, unknown>>,
 };
 
-const privateTypes = new Set(["prayer", "enrolment", "waitlist"]);
+const privateTypes = new Set(["prayer", "enrolment", "waitlist", BETA_TYPE]);
 
 function json(body: unknown, status = 200) {
   return Response.json(body, { status, headers: { "Cache-Control": "no-store" } });
@@ -41,9 +44,19 @@ export async function handleFormSubmission(
   request: Request,
   body: { type?: string; payload?: unknown; website?: string; turnstileToken?: string },
 ) {
-  const limit = rateLimit(clientKey(request));
+  const isBeta = (body.type ?? "") === BETA_TYPE;
+  // Beta reviews get five attempts an hour; the rest keep the tighter default.
+  const limit = rateLimit(clientKey(request), isBeta ? 5 : 4, isBeta ? 3_600_000 : 10 * 60_000);
   if (!limit.ok)
-    return json({ ok: false, message: "Please wait a little before sending again." }, 429);
+    return json(
+      {
+        ok: false,
+        message: isBeta
+          ? "We already have your review. If you need to add something, reply to our confirmation email."
+          : "Please wait a little before sending again.",
+      },
+      429,
+    );
 
   if (!(await verifyTurnstile(body.turnstileToken)))
     return json({ ok: false, message: "Spam check failed. Please try again." }, 400);
@@ -59,6 +72,16 @@ export async function handleFormSubmission(
 
   const schema = formSchemas[type];
   if (!schema) return json({ ok: false, message: "Unknown form." }, 400);
+
+  if (type === BETA_TYPE && !(await betaAccepting())) {
+    return json(
+      {
+        ok: false,
+        message: "Thank you — the beta has closed and we are no longer collecting reviews.",
+      },
+      403,
+    );
+  }
 
   const rawPayload =
     body.payload && typeof body.payload === "object"
@@ -77,9 +100,23 @@ export async function handleFormSubmission(
     );
   }
 
-  const payload = parsed.data as Record<string, unknown>;
+  let payload = parsed.data as Record<string, unknown>;
   const email = String(payload.email ?? "") || null;
   const name = String(payload.name ?? payload.fullName ?? "");
+
+  if (type === BETA_TYPE) {
+    if (email && (await betaDuplicate(email))) {
+      return json(
+        {
+          ok: false,
+          message:
+            "We already have a review from this email a moment ago. If you want to add something, reply to our confirmation email.",
+        },
+        409,
+      );
+    }
+    payload = await prepareBetaSubmission(payload);
+  }
 
   const svc = getServiceClient();
   const db =
@@ -121,7 +158,8 @@ export async function handleFormSubmission(
     };
     await notifySubmission(fallbackSubmission).catch(() => {});
     if (email) {
-      await sendConfirmation(fallbackSubmission, email).catch(() => {});
+      if (type === BETA_TYPE) await sendBetaConfirmation(fallbackSubmission, email).catch(() => {});
+      else await sendConfirmation(fallbackSubmission, email).catch(() => {});
     }
     return json({ ok: true, message: "Thank you. Your message has been received." });
   }
@@ -130,7 +168,11 @@ export async function handleFormSubmission(
   await notifySubmission(submission);
 
   if (email) {
-    await sendConfirmation(submission, email);
+    if (type === BETA_TYPE) {
+      await sendBetaConfirmation(submission, email).catch(() => {});
+    } else {
+      await sendConfirmation(submission, email);
+    }
     if (type === "newsletter") {
       await db.from("subscribers").upsert({ email, name, source: "site" });
     }

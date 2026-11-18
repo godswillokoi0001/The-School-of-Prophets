@@ -10,8 +10,9 @@ const typeLabels: Record<string, string> = {
   all: "All forms", enrolment: "Applications", waitlist: "Waitlist",
   prayer: "Prayer", testimony: "Testimonies", contact: "Messages",
   registration: "Registrations", booking: "Bookings", newsletter: "Sign-ups",
+  beta_feedback: "Beta feedback",
 };
-const statuses = ["all", "new", "seen", "in_progress", "replied", "approved", "declined", "waitlist", "archived", "spam"];
+const statuses = ["all", "new", "seen", "triaged", "in_progress", "fixed", "wont_fix", "replied", "approved", "declined", "waitlist", "archived", "spam"];
 
 export default async function InboxPage({
   searchParams,
@@ -94,7 +95,9 @@ export default async function InboxPage({
           <label className="admin-label" htmlFor="f-status">Status</label>
           <select id="f-status" name="status" defaultValue={status} className="admin-select">
             {statuses.map((s) => (
-              <option key={s} value={s}>{s === "in_progress" ? "In progress" : s.replace("_", " ")}</option>
+              <option key={s} value={s}>
+                {s === "wont_fix" ? "Won't fix" : s.replace("_", " ")}
+              </option>
             ))}
           </select>
         </div>

@@ -26,14 +26,15 @@ export type SubmissionRow = {
 const typeLabels: Record<string, string> = {
   enrolment: "Application", waitlist: "Waitlist", prayer: "Prayer",
   testimony: "Testimony", contact: "Message", registration: "Registration",
-  booking: "Booking", newsletter: "Sign-up",
+  booking: "Booking", newsletter: "Sign-up", beta_feedback: "Beta feedback",
 };
 
 const statusStyles: Record<string, string> = {
   new: "admin-badge-new", seen: "admin-badge-warn", in_progress: "admin-badge-warn",
   replied: "admin-badge-ok", approved: "admin-badge-ok", declined: "admin-badge-bad",
   archived: "admin-badge-warn", spam: "admin-badge-bad", prayed: "admin-badge-ok",
-  answered: "admin-badge-ok",
+  answered: "admin-badge-ok", triaged: "admin-badge-new", fixed: "admin-badge-ok",
+  wont_fix: "admin-badge-warn",
 };
 
 export function InboxList({ rows, role }: { rows: SubmissionRow[]; role: Role }) {
@@ -175,9 +176,19 @@ export function InboxList({ rows, role }: { rows: SubmissionRow[]; role: Role })
                 <td>
                   <span className="admin-badge">{typeLabels[r.type] ?? r.type}</span>
                   {r.private && <span className="ml-1 admin-badge admin-badge-bad">Private</span>}
+                  {r.type === "beta_feedback" &&
+                    (Number(r.payload.overall_rating ?? 0) <= 2 ||
+                      (Array.isArray(r.payload.issues) &&
+                        (r.payload.issues as { severity?: string }[]).some(
+                          (issue) => issue?.severity === "Something broke",
+                        ))) && (
+                      <span className="ml-1 admin-badge admin-badge-bad">Priority</span>
+                    )}
                 </td>
                 <td>
-                  <span className={`admin-badge ${statusStyles[r.status] ?? ""}`}>{r.status.replace("_", " ")}</span>
+                  <span className={`admin-badge ${statusStyles[r.status] ?? ""}`}>
+                    {r.status === "wont_fix" ? "Won't fix" : r.status.replace("_", " ")}
+                  </span>
                 </td>
                 <td className="whitespace-nowrap text-[0.7rem] opacity-70">
                   {new Date(r.created_at).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}

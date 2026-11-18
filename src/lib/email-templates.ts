@@ -494,7 +494,82 @@ export function renderWaitlistOpenEmail(params: {
 }
 
 /**
- * 8. General Templated / Custom Email
+ * 8. Beta review — thank you to the tester, with a summary of what they sent.
+ */
+export function renderBetaConfirmationEmail(params: {
+  name: string;
+  lines: string[];
+  priority?: boolean;
+}): { subject: string; html: string; text: string } {
+  const subject = "Thank you for reviewing the site — The School of Prophets";
+  const paragraphs = [
+    `Hello ${params.name || "friend"},`,
+    `Thank you for taking the time to test the site and tell us the truth about it. Your review is now with the team, and every one is read.`,
+    `Here is what you sent us, for your own records. If we fixed something you found, we will write again.`,
+  ];
+
+  const html = buildHtmlEmail({
+    badge: "Beta Review Received",
+    title: "Thank you for being among the first",
+    preheader: "Your review of the site has been received. The team reads every one.",
+    paragraphs,
+    highlightBox: {
+      label: "What you sent",
+      items: params.lines.map((line) => {
+        const [label, ...rest] = line.split(":");
+        return { label, value: rest.join(":").trim() || "—" };
+      }),
+    },
+    cta: {
+      label: "Return to the site",
+      url: SITE_URL,
+    },
+    closing: "With gratitude,<br /><strong>The School of Prophets</strong>",
+  });
+
+  const text = `Hello ${params.name || "friend"},\n\n` +
+    `Thank you for taking the time to test the site and tell us the truth about it. Your review is now with the team, and every one is read.\n\n` +
+    `${params.lines.join("\n")}\n\n` +
+    `With gratitude,\nThe School of Prophets`;
+
+  return { subject, html, text };
+}
+
+/**
+ * 9. "We fixed what you found" — optional note to a beta tester.
+ */
+export function renderBetaFixedEmail(params: {
+  name: string;
+  count: number;
+  note?: string;
+}): { subject: string; html: string; text: string } {
+  const what = params.count === 1 ? "the issue you found" : "the issues you found";
+  const subject = "We fixed what you found — The School of Prophets";
+  const paragraphs = [
+    `Hello ${params.name || "friend"},`,
+    `A short note to say thank you again. We have worked on ${what} in your beta review.`,
+    params.note ? String(params.note) : `If it still is not right, reply to this email and tell us. That is exactly what this beta is for.`,
+  ];
+
+  const html = buildHtmlEmail({
+    badge: "Beta Update",
+    title: "We fixed what you found",
+    preheader: `An update on ${what} from your beta review.`,
+    paragraphs,
+    cta: { label: "Open the site again", url: SITE_URL },
+    closing: "With gratitude,<br /><strong>The School of Prophets</strong>",
+  });
+
+  const text = `Hello ${params.name || "friend"},\n\n` +
+    `We have worked on ${what} in your beta review.\n\n` +
+    `${params.note ?? "If it still is not right, reply and tell us."}\n\n` +
+    `The School of Prophets`;
+
+  return { subject, html, text };
+}
+
+/**
+ * 10. General Templated / Custom Email
  */
 export function renderGenericEmail(params: {
   title: string;

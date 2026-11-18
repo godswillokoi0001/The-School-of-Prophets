@@ -9,8 +9,45 @@ insert into public.form_definitions (type, label, is_private, notify) values
   ('contact','Contact message', false, true),
   ('registration','Event registration', false, true),
   ('booking','Call booking', true, true),
-  ('newsletter','Newsletter signup', false, false)
+  ('newsletter','Newsletter signup', false, false),
+  ('beta_feedback','Beta tester feedback', true, true)
 on conflict (type) do nothing;
+
+-- One sample beta review so the dashboard, inbox and stories tab can be
+-- reviewed before real responses arrive. It is labelled "[sample]" and the
+-- /admin/beta page removes every sample in one click.
+insert into public.submissions (type, status, private, payload)
+select
+  'beta_feedback',
+  'new',
+  true,
+  jsonb_build_object(
+    'name', '[sample] Ada',
+    'email', 'sample@example.com',
+    'whatsapp', '',
+    'location', 'Lagos, Nigeria',
+    'device', 'Phone',
+    'overall_rating', 4,
+    'area_ratings', jsonb_build_object('design', 5, 'ease', 4, 'speed', 4, 'content', 5, 'mobile', 4),
+    'liked', 'The teachings are easy to find and the pages feel calm.',
+    'take', 'This is sample feedback used to preview the admin dashboard. The site reads like a letter rather than a brochure, and I could find the gatherings without hunting.',
+    'issues', jsonb_build_array(
+      jsonb_build_object('page', 'Teachings', 'description', 'Sample issue: the filter labels were small on my phone.', 'severity', 'Small annoyance', 'screenshots', jsonb_build_array())
+    ),
+    'improve', 'Sample answer: make the teaching filters a little easier to tap.',
+    'wish', 'Sample answer: a way to save a teaching for later.',
+    'story', 'Sample story: the weekly Bible study helped me read Scripture in order for the first time.',
+    'story_consent', 'public_anonymous',
+    'display_name', '',
+    'may_contact', true,
+    'wants_call', false,
+    'meta', jsonb_build_object('browser', 'Chrome', 'os', 'Android', 'screen', '390×844', 'referrer', '', 'timestamp', now()),
+    'isSample', true,
+    'sample_label', 'sample'
+  )
+where not exists (
+  select 1 from public.submissions where payload->>'isSample' = 'true'
+);
 
 insert into public.tags (name) values
   ('faith'), ('word-of-knowledge'), ('kingdom'), ('prayer'), ('prophecy')

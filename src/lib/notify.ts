@@ -9,7 +9,10 @@ import {
   renderEnrolmentDeclinedEmail,
   renderWaitlistOpenEmail,
   renderGenericEmail,
+  renderBetaConfirmationEmail,
+  renderBetaFixedEmail,
 } from "@/lib/email-templates";
+import { BETA_TYPE, RATING_LABELS, consentLabel, isHighPriority, summaryLines, type BetaPayload } from "@/lib/beta";
 
 export type SubmissionRow = {
   id: string;
@@ -27,6 +30,7 @@ const typeLabels: Record<string, string> = {
   registration: "Event registration",
   booking: "Call booking",
   newsletter: "Newsletter signup",
+  [BETA_TYPE]: "Beta review",
 };
 
 export function fill(template: string, vars: Record<string, string>) {
@@ -179,6 +183,11 @@ export async function notifySubmission(s: SubmissionRow) {
   const name = String(s.payload.name ?? s.payload.fullName ?? "");
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
   const link = `${siteUrl}/admin/inbox/${s.id}`;
+
+  if (s.type === BETA_TYPE) {
+    await notifyBetaSubmission(s, label, name, link);
+    return;
+  }
   const textBody = `${label}\n\n${renderFields(s.payload)}\n\nOpen in dashboard: ${link}\nSubmitted: ${s.created_at}`;
 
   const fieldItems = Object.entries(s.payload)
@@ -253,6 +262,156 @@ export async function notifySubmission(s: SubmissionRow) {
       // optional channel
     }
   }
+}
+
+/**
+ * Beta reviews get their own notification: rating in the subject, priority
+ * flag for 1–2 ratings and anything that broke, screenshots linked.
+ */
+async function notifyBetaSubmission(
+  s: SubmissionRow,
+  label: string,
+  name: string,
+  link: string,
+) {
+  const payload = s.payload as BetaPayload;
+  const rating = Number(payload.overall_rating ?? 0);
+  const priority = isHighPriority(payload);
+  const ratingText = rating > 0 ? `${rating}/5` : "unrated";
+  const subject = `${priority ? "[Priority] " : ""}New beta review: ${ratingText} from ${name || "a tester"}`;
+
+  const issues = (payload.issues ?? []).map((issue, index) => ({
+    label: `Issue ${index + 1} · ${issue.page}`,
+    value: `${issue.severity} — ${issue.description}${issue.screenshots?.length ? ` (${issue.screenshots.length} screenshot${issue.screenshots.length === 1 ? "" : "s"})` : ""}`,
+  }));
+
+  const items = [
+    { label: "Overall", value: rating > 0 ? `${rating}/5 · ${RATING_LABELS[rating]}` : "Not rated" },
+    { label: "Name", value: name || "—" },
+    { label: "Email", value: String(payload.email ?? "—") },
+    { label: "WhatsApp", value: String(payload.whatsapp ?? "—") },
+    { label: "Location", value: String(payload.location ?? "—") },
+    { label: "Device", value: String(payload.device ?? "—") },
+    {
+      label: "Areas",
+      value:
+        Object.entries(payload.area_ratings ?? {})
+          .filter(([, v]) => Number(v) > 0)
+          .map(([k, v]) => `${k} ${v}/5`)
+          .join(" · ") || "—",
+    },
+    { label: "Liked most", value: String(payload.liked ?? "—") },
+    { label: "Their take", value: String(payload.take ?? "—") },
+    { label: "Improve", value: String(payload.improve ?? "—") },
+    { label: "Wished for", value: String(payload.wish ?? "—") },
+    ...issues,
+    { label: "Story", value: String(payload.story ?? "—") },
+    { label: "Story consent", value: consentLabel(payload.story_consent) },
+    {
+      label: "Browser / screen",
+      value: `${payload.meta?.browser ?? "—"} · ${payload.meta?.os ?? "—"} · ${payload.meta?.screen ?? "—"}`,
+    },
+  ];
+
+  const textBody = `${priority ? "HIGH PRIORITY\n\n" : ""}${label} · ${ratingText}\n\n${renderFields(items.reduce<Record<string, unknown>>((acc, i) => ({ ...acc, [i.label]: i.value }), {}))}\n\nOpen in dashboard: ${link}\nSubmitted: ${s.created_at}`;
+
+  const htmlBody = buildHtmlEmail({
+    badge: priority ? "Priority beta review" : "New beta review",
+    title: `${priority ? "Priority: " : ""}${ratingText} from ${name || "a tester"}`,
+    preheader: `${label} · ${ratingText}${payload.device ? ` · ${payload.device}` : ""}`,
+    paragraphs: [
+      `A member of the fellowship has reviewed the site.`,
+      priority
+        ? `This is flagged for attention: a low rating or something that broke. Please read it today if you can.`
+        : `Every review is read. Reply to the tester from the inbox if a follow-up would help.`,
+    ],
+    highlightBox: { label: "The review", items },
+    cta: { label: "Open in Dashboard", url: link },
+    closing: "Ministry Notification Engine,<br /><strong>The School of Prophets</strong>",
+  });
+
+  const svc = getServiceClient();
+  let staffEmails: string[] = [];
+  if (svc) {
+    try {
+      const { data: members } = await svc
+        .from("profiles")
+        .select("email, role")
+        .eq("status", "active")
+        .in("role", ["owner", "admin", "moderator"]);
+      staffEmails = (members ?? []).map((m) => m.email).filter(Boolean);
+    } catch {
+      // ignore
+    }
+  }
+  const envTargets = [process.env.NOTIFY_EMAILS, process.env.FORMS_INBOX]
+    .flatMap((v) => (v ? v.split(",").map((t) => t.trim()) : []))
+    .filter(Boolean);
+  const targets = [...new Set([...staffEmails, ...envTargets])];
+
+  await Promise.allSettled(targets.map((to) => sendEmail(to, subject, textBody, String(payload.email ?? "") || undefined, htmlBody)));
+  await pushToAdmins(label, `${ratingText} from ${name || "a tester"}${priority ? " · priority" : ""}`, s.id);
+  await sendTelegram(textBody);
+
+  const webhook = process.env.FORMS_WEBHOOK_URL;
+  if (webhook) {
+    try {
+      await fetch(webhook, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...s, link, priority }),
+      });
+    } catch {
+      // optional channel
+    }
+  }
+}
+
+/** Editable default for the beta emails, overridden in Settings → Email templates. */
+async function betaTemplate(key: string) {
+  const svc = getServiceClient();
+  if (!svc) return null;
+  try {
+    const { data } = await svc
+      .from("email_templates")
+      .select("subject,body")
+      .eq("key", key)
+      .maybeSingle();
+    return data?.body ? data : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Thank-you email to the tester, summarising what they sent. */
+export async function sendBetaConfirmation(s: SubmissionRow, to: string) {
+  const payload = s.payload as BetaPayload;
+  const name = String(payload.name ?? "");
+  const lines = summaryLines(payload);
+  const override = await betaTemplate("beta_confirmation");
+
+  if (override) {
+    const subject = fill(override.subject, { name, summary: "" });
+    const body = fill(override.body, { name, summary: lines.join("\n") });
+    const rendered = renderGenericEmail({ title: subject, bodyText: body });
+    return sendEmail(to, subject, body, undefined, rendered.html);
+  }
+
+  const rendered = renderBetaConfirmationEmail({ name, lines });
+  return sendEmail(to, rendered.subject, rendered.text, undefined, rendered.html);
+}
+
+/** Optional "we fixed what you found" note, used from /admin/beta. */
+export async function sendBetaFixedEmail(to: string, name: string, count = 1, note?: string) {
+  const override = await betaTemplate("beta_fixed");
+  if (override) {
+    const subject = fill(override.subject, { name, count: String(count), note: note ?? "" });
+    const body = fill(override.body, { name, count: String(count), note: note ?? "" });
+    const rendered = renderGenericEmail({ title: subject, bodyText: body });
+    return sendEmail(to, subject, body, undefined, rendered.html);
+  }
+  const rendered = renderBetaFixedEmail({ name, count, note });
+  return sendEmail(to, rendered.subject, rendered.text, undefined, rendered.html);
 }
 
 export async function sendConfirmation(s: SubmissionRow, to: string) {

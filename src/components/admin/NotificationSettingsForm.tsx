@@ -24,7 +24,7 @@ export function NotificationSettingsForm({
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
 
-  const formTypes = ["all", "enrolment", "prayer", "testimony", "contact", "booking", "registration", "waitlist", "newsletter"];
+  const formTypes = ["all", "enrolment", "prayer", "testimony", "contact", "booking", "registration", "waitlist", "newsletter", "beta_feedback"];
 
   return (
     <div className="admin-surface max-w-2xl p-4">
@@ -73,7 +73,7 @@ export function NotificationSettingsForm({
                 checked={Boolean(values.types[t] ?? t === "all")}
                 onChange={(e) => setValues({ ...values, types: { ...values.types, [t]: e.target.checked } })}
               />
-              {t.replace("_", " ")}
+              {t === "beta_feedback" ? "beta feedback" : t.replace("_", " ")}
             </label>
           ))}
         </div>

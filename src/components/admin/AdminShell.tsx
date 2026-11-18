@@ -6,7 +6,7 @@ import { useState, useEffect, useRef } from "react";
 import {
   LayoutDashboard, Inbox, BookOpen, LibraryBig, CalendarDays, Clock,
   CalendarClock, Settings, Image as ImageIcon, Users, Mail, Search, Menu, X,
-  LogOut, Radio, ShieldCheck, PanelLeftClose, PanelLeftOpen,
+  LogOut, Radio, ShieldCheck, PanelLeftClose, PanelLeftOpen, Star,
 } from "lucide-react";
 import { Crest } from "@/components/Crest";
 import { AdminSearch } from "@/components/admin/AdminSearch";
@@ -98,6 +98,7 @@ export function AdminShell({
       items: [
         { href: "/admin", label: "Dashboard", icon: LayoutDashboard, group: "Today" },
         { href: "/admin/inbox", label: "Inbox", icon: Inbox, min: "moderator", badge: unread, group: "Today" },
+        { href: "/admin/beta", label: "Beta feedback", icon: Star, min: "moderator", group: "Today" },
         { href: "/admin/calendar", label: "Calendar", icon: CalendarClock, min: "moderator", group: "Today" },
       ],
     },

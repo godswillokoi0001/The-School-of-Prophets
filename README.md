@@ -98,8 +98,9 @@ visitor ever lands on a dead link.
 
 ## Forms
 
-Four endpoints, all in `src/app/api/`: `contact`, `prayer`, `testimony`,
-`enrolment`.
+Public endpoints live in `src/app/api/`: `submit`, `contact`, `prayer`,
+`testimony`, `enrolment`, `book` and `beta`. All of them share
+`src/lib/submit-core.ts`.
 
 - Validated with zod in `src/lib/schemas.ts`.
 - Honeypot field plus per-address rate limiting (4 submissions per 10 minutes).
@@ -107,6 +108,101 @@ Four endpoints, all in `src/app/api/`: `contact`, `prayer`, `testimony`,
   the email subject.
 - Testimonies require the consent checkbox and are held for approval — they are
   never published automatically.
+
+## Beta testing
+
+`/beta-testers` is the invited-members review page. It is `noindex` and not in
+the header navigation; share the link directly with the fellowship. It uses the
+same pipeline as every other form: `form_definitions.type = 'beta_feedback'`,
+one row per review in `submissions` with a JSON payload — no new table.
+
+**Run the migration once** in the Supabase SQL editor:
+`supabase/migrations/0004_beta_feedback.sql`. It adds the form definition, three
+workflow states, the private `beta-screenshots` bucket, the confirmation and
+"we fixed it" email templates, the open/closed setting, and closes the old
+`submissions` read policy so anonymous clients can insert a form but never read
+responses.
+
+### Reviewing responses
+
+- **Inbox → Beta feedback** filters the same submissions list. Opening a review
+  shows a dedicated view: the rating bars, area scores, every issue with its
+  screenshots, the story and its consent, device/browser, and the tester's
+  contact details.
+- **`/admin/beta`** is the summary: totals, average, distribution, per-area
+averages, issues by page and severity, device/browser counts, counted themes,
+  and a Stories tab.
+- Workflow is New → Seen → Triaged → In progress → Fixed / Won't fix → Archived,
+  with assignee, internal notes and tags (bug, design, content, feature request,
+  praise).
+- Ratings of 1–2 and any "Something broke" issue are flagged **Priority** in the
+  bell, the email subject (`[Priority] New beta review: 2/5 from …`) and the
+  inbox.
+- Notifications fire on every review through the existing channels: email to all
+  active owners/admins/moderators plus `NOTIFY_EMAILS`/`FORMS_INBOX`, Web Push
+  to subscribed devices, the Realtime bell, and Telegram if configured. Per-user
+  channel choices live in **Settings → My notifications**; `beta_feedback` is
+  listed as a type there.
+- Screenshots are re-encoded server-side (which strips EXIF/GPS), stored in the
+  private `beta-screenshots` bucket, and served to signed-in staff through
+  `/api/admin/beta/screenshot`, which returns a 120-second signed URL.
+- **Export CSV** on `/admin/beta` writes every review (ratings, issues, consent)
+  and records the export in the audit log.
+- Viewers can read ratings and text; email, phone and WhatsApp are masked for
+  that role in the review view.
+
+### Closing the beta
+
+`/admin/beta` → **Stop accepting feedback**. The setting is
+`site_settings.beta_feedback = {"status":"closed"}`. The form is replaced by a
+thank-you message, the API refuses new reviews, and the page can be unlinked
+from wherever it was shared. Nothing already received is deleted. **Reopen the
+beta** reverses it.
+
+### Stories → testimonies
+
+Stories live on the review payload (`story`, `story_consent`, `display_name`). In
+`/admin/beta → Stories` you can edit lightly for typos, approve, choose the
+display name according to the consent on record, and **Create testimony**. That
+inserts a draft in the existing Testimonies inbox (`submissions.type =
+'testimony'`, status `new`) using the name or `Anonymous`. It is disabled when
+the consent is `private`. Nothing appears on `/testimonies` until it is approved
+there.
+
+### Sample data
+
+`supabase/seed.sql` includes one review labelled **`[sample] Ada`** so the
+dashboard and stories tab can be inspected. **Remove N samples** on `/admin/beta`
+deletes every row with `payload.isSample = true` in one click. Tests written by
+`node scripts/beta-check.mjs` are labelled the same way.
+
+### Checks
+
+```bash
+npm run typecheck
+node scripts/beta-check.mjs          # against the running dev server
+BASE=http://localhost:3210 node scripts/beta-check.mjs
+```
+
+The script checks validation errors, the honeypot, the duplicate-email window,
+the per-IP limit, screenshot rejection and that anonymous clients cannot reach
+the beta data, export or screenshots. Email, push and Realtime delivery need
+`RESEND_API_KEY`, VAPID keys and Supabase configured; the script reports those
+as unverified rather than pretending they ran.
+
+### Choices worth knowing
+
+- **CAPTCHA** reuses the existing optional Turnstile check: set
+  `TURNSTILE_SECRET_KEY` and send `turnstileToken`. There is no visible widget by
+  default so the page stays calm; the honeypot, timing, rate limit and duplicate
+  window still apply.
+- **Rate limiting** is in-memory (5 per hour per IP/path, as before for other
+  forms), so it resets when the server restarts; use a shared store if the site
+  is ever deployed across several instances.
+- **Viewer masking** is enforced in the review view, not by column-level SQL
+  grants, so staff using the service role still see everything they moderate.
+- The page's Open Graph card is generated at
+  `/beta-testers/opengraph-image` and composes the supplied crest and headline.
 
 ## Deploy
 

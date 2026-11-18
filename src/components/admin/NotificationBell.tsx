@@ -24,6 +24,7 @@ const typeLabels: Record<string, string> = {
   registration: "Event Registration",
   booking: "Call Booking",
   newsletter: "Newsletter Subscription",
+  beta_feedback: "Beta Review",
 };
 
 function formatTimeAgo(isoString: string) {
@@ -80,12 +81,27 @@ export function NotificationBell({
           const payloadObj = (row.payload as Record<string, unknown>) ?? {};
           const name = String(payloadObj.name ?? payloadObj.fullName ?? "Someone");
           const label = typeLabels[type] ?? type;
+          const rating = Number(payloadObj.overall_rating ?? 0);
+          const priority =
+            type === "beta_feedback" &&
+            ((rating > 0 && rating <= 2) ||
+              (Array.isArray(payloadObj.issues) &&
+                (payloadObj.issues as { severity?: string }[]).some(
+                  (issue) => issue?.severity === "Something broke",
+                )));
 
           const newItem: NotificationItem = {
             id: String(row.id),
             type,
-            title: `New ${label} from ${name}`,
-            subtitle: String(payloadObj.message ?? payloadObj.prayerRequest ?? payloadObj.notes ?? payloadObj.email ?? ""),
+            title: `${priority ? "Priority · " : ""}New ${label} from ${name}${rating > 0 ? ` · ${rating}/5` : ""}`,
+            subtitle: String(
+              payloadObj.take ??
+                payloadObj.message ??
+                payloadObj.prayerRequest ??
+                payloadObj.notes ??
+                payloadObj.email ??
+                "",
+            ),
             created_at: new Date().toISOString(),
             status: "new",
           };
