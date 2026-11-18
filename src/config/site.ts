@@ -48,6 +48,16 @@ export const site = {
     // form is the front door and submissions go to FORMS_INBOX.
     publicAddress: "",
   },
+  /**
+   * Colophon credit. Left empty for this build: a studio name is a fact, not a
+   * design decision. Set both fields to print "Site by …" in the footer.
+   * TODO(studio): set credit.name (and credit.href) when the site ships.
+   */
+  credit: {
+    label: "Site by",
+    name: "",
+    href: "",
+  },
 } as const;
 
 export type SocialKey = keyof typeof site.social;

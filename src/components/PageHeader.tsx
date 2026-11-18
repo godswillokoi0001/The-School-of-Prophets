@@ -1,69 +1,63 @@
-import type { ReactNode } from "react";
-import { Crest } from "@/components/Crest";
+import Link from "next/link";
 
+/**
+ * The header for inner pages. Deliberately typographic: no lead image, no
+ * badge, no breadcrumb chip. Pages supply an aside when there is something
+ * genuinely useful to put beside the title (a form, a status, a link).
+ *
+ * `image` and `imageAlt` remain in the signature so older call sites keep
+ * compiling; they are intentionally not rendered.
+ */
 export function PageHeader({
   label,
   title,
   lead,
   aside,
-  image,
-  imageAlt,
+  meta,
 }: {
   label: string;
   title: string;
   lead?: string;
-  aside?: ReactNode;
+  aside?: React.ReactNode;
+  meta?: { label: string; value: string }[];
   image?: string;
   imageAlt?: string;
 }) {
   return (
-    <header className="relative overflow-hidden border-b border-ink/15 bg-parchment">
-      {image ? (
-        <div className="wrap relative grid gap-8 py-10 md:grid-cols-12 md:items-center md:gap-10 md:py-14">
-          <div className="md:col-span-7">
-            <p className="label text-ember">{label}</p>
-            <h1 className="mt-4 font-display text-hero text-ink">{title}</h1>
-            {lead && (
-              <p className="measure mt-6 text-base leading-relaxed text-quiet md:text-lg">
-                {lead}
-              </p>
-            )}
-            {aside && <div className="mt-8">{aside}</div>}
-          </div>
-          <div className="md:col-span-5">
-            <div className="relative aspect-[4/3] w-full overflow-hidden md:aspect-[3/4]">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={image}
-                alt={imageAlt ?? ""}
-                className="h-full w-full object-cover"
-                loading="eager"
-              />
-              <div className="pointer-events-none absolute inset-0 border border-ink/10" />
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-ink/60 to-transparent" />
-            </div>
-          </div>
+    <header className="border-b border-ink/15">
+      <div className="wrap grid gap-10 py-14 md:grid-cols-12 md:py-20">
+        <div className={aside ? "md:col-span-7" : "md:col-span-9"}>
+          <p className="label text-ember">{label}</p>
+          <h1 className="mt-5 font-display text-hero">{title}</h1>
+          {lead && (
+            <p className="measure mt-6 max-w-[56ch] text-lg leading-relaxed text-quiet">
+              {lead}
+            </p>
+          )}
+          {meta && meta.length > 0 && (
+            <dl className="mt-8 flex flex-wrap gap-x-10 gap-y-3 border-t border-ink/15 pt-4">
+              {meta.map((item) => (
+                <div key={item.label}>
+                  <dt className="label text-quiet">{item.label}</dt>
+                  <dd className="mt-1 text-sm">{item.value}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
         </div>
-      ) : (
-        <>
-          <Crest
-            className="pointer-events-none absolute -right-12 -top-16 w-80 opacity-[0.07] md:w-[26rem]"
-            decorative
-          />
-          <div className="wrap relative grid gap-8 py-14 md:grid-cols-12 md:py-20">
-            <div className="md:col-span-8">
-              <p className="label text-ember">{label}</p>
-              <h1 className="mt-4 font-display text-hero text-ink">{title}</h1>
-              {lead && (
-                <p className="measure mt-6 text-base leading-relaxed text-quiet md:text-lg">
-                  {lead}
-                </p>
-              )}
-            </div>
-            {aside && <div className="md:col-span-4 md:pt-2">{aside}</div>}
-          </div>
-        </>
-      )}
+
+        {aside && (
+          <div className="md:col-span-4 md:col-start-9 md:pl-4">{aside}</div>
+        )}
+      </div>
     </header>
+  );
+}
+
+export function PageFooterLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <Link href={href} className="link-quiet text-sm text-ink">
+      {children}
+    </Link>
   );
 }

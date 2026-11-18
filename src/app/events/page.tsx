@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { CalendarDays, MapPin, Clock } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
@@ -59,22 +58,7 @@ export default async function EventsPage() {
               >
                 <p className="label text-ember">{formatDate(event.date)}</p>
 
-                <div className="grid gap-6 sm:grid-cols-[15rem_1fr] sm:items-start">
-                  <div className="relative aspect-[4/3] overflow-hidden bg-ink">
-                    <Image
-                      src={event.image}
-                      alt={event.imageAlt}
-                      fill
-                      sizes="(max-width: 640px) 100vw, 240px"
-                      className="object-cover"
-                    />
-                    {event.isSample && (
-                      <span className="label absolute left-2 top-2 bg-ink/85 px-2 py-1 text-parchment/80">
-                        Sample
-                      </span>
-                    )}
-                  </div>
-
+                <div>
                   <div>
                     <h3 className="font-display text-2xl leading-tight">
                       <Link href={`/events/${event.slug}`} className="hover:text-ember">
@@ -97,14 +81,17 @@ export default async function EventsPage() {
                     <p className="mt-3 max-w-[58ch] text-sm leading-relaxed text-quiet">
                       {event.summary}
                     </p>
-                    <div className="mt-4 flex flex-wrap items-center gap-4">
+                    <div className="mt-4 flex flex-wrap items-center gap-5">
                       <EventCalendarLink event={event} />
                       <Link
                         href={`/events/${event.slug}`}
-                        className="link-underline text-sm font-semibold"
+                        className="link-quiet text-sm font-semibold text-ink"
                       >
-                        Details &amp; registration →
+                        Details and registration
                       </Link>
+                      {event.isSample && (
+                        <span className="label text-quiet">Sample entry</span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -123,16 +110,7 @@ export default async function EventsPage() {
                 <div className="grid gap-6 md:grid-cols-[9rem_1fr]">
                   <p className="label text-quiet">{formatDate(event.date)}</p>
 
-                  <div className="grid gap-6 md:grid-cols-[18rem_1fr] md:items-start">
-                    <div className="relative aspect-[16/10] overflow-hidden bg-ink">
-                      <Image
-                        src={event.image}
-                        alt={event.imageAlt}
-                        fill
-                        sizes="(max-width: 768px) 100vw, 288px"
-                        className="object-cover"
-                      />
-                    </div>
+                  <div>
                     <div>
                       <h3 className="font-display text-2xl leading-tight">{event.title}</h3>
                       <p className="mt-2 max-w-[62ch] text-sm leading-relaxed text-ink/80">

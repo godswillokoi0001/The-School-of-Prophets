@@ -6,7 +6,6 @@ import {
   YouTubeIcon,
 } from "@/components/BrandIcons";
 import { socialLinks } from "@/config/site";
-import { site } from "@/config/site";
 
 const iconFor = {
   whatsapp: WhatsAppIcon,

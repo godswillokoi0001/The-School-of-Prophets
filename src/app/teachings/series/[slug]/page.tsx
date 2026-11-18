@@ -49,8 +49,8 @@ export default async function SeriesPage({ params }: Params) {
           <div className="border-t border-ink/20 pt-4">
             <p className="label text-quiet">In this series</p>
             <p className="mt-2 font-display text-3xl">{items.length}</p>
-            <Link href="/teachings" className="link-underline mt-4 inline-block text-sm font-semibold">
-              All teachings →
+            <Link href="/teachings" className="link-quiet mt-4 inline-block text-sm font-semibold">
+              All teachings
             </Link>
           </div>
         }
@@ -58,7 +58,7 @@ export default async function SeriesPage({ params }: Params) {
 
       <section className="wrap py-14 md:py-20">
         {items.length > 0 ? (
-          <div className="grid gap-x-10 gap-y-12 md:grid-cols-2">
+          <div>
             {items.map((t) => (
               <TeachingCard key={t.slug} teaching={t} seriesTitle={series.title} />
             ))}

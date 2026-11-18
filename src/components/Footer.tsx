@@ -6,10 +6,12 @@ import {
   YouTubeIcon,
   WhatsAppIcon,
 } from "@/components/BrandIcons";
-import { Crest } from "@/components/Crest";
+import { Seal } from "@/components/Seal";
+import { NewsletterSubscribe } from "@/components/NewsletterSubscribe";
 import { navGroups } from "@/config/nav";
 import { site, socialLinks } from "@/config/site";
-import { NewsletterSubscribe } from "@/components/NewsletterSubscribe";
+import { sessions, dayNames } from "@/content/schedule";
+import { formatTimeWAT } from "@/lib/time";
 
 const iconFor = {
   whatsapp: WhatsAppIcon,
@@ -22,53 +24,58 @@ const iconFor = {
 export function Footer() {
   return (
     <footer className="bg-ink text-parchment">
-      {/* Strategic Newsletter Banner */}
-      <NewsletterSubscribe
-        variant="banner"
-        title="Stay Taught in the Word & Moving in the Spirit"
-        description="Subscribe to receive weekly study notes, recordings, announcements and prophetic updates directly in your inbox."
-      />
+      <div className="wrap border-b border-parchment/12 py-10">
+        <NewsletterSubscribe variant="inline" />
+      </div>
 
-      <div className="wrap grid gap-12 py-16 md:grid-cols-12 md:py-20">
+      <div className="wrap grid gap-12 py-14 md:grid-cols-12 md:py-16">
         <div className="md:col-span-4">
-          <Link href="/" className="flex items-center gap-3">
-            <Crest className="h-14 w-auto" decorative />
+          <Link href="/" className="inline-flex items-center gap-4" aria-label={`${site.name} home`}>
+            <Seal size={84} idKey="footer" />
             <span className="font-display text-xl leading-tight">
               The School
               <br />
               of Prophets
             </span>
           </Link>
-          <p className="measure mt-5 text-sm leading-relaxed text-parchment/60">
+          <p className="measure mt-6 text-sm leading-relaxed text-parchment/55">
             An interdenominational prophetic fellowship led by {site.leader}.
-            Taught in the Word, moved by the Spirit, built on prayer.
+            Founded {site.founded}, gathering online every week.
           </p>
-          <p className="label mt-6 text-gold/80">Watchers · Daniel 4:17</p>
+          <p className="label mt-6 text-gold-soft/80">Watchers · Daniel 4:17</p>
         </div>
 
-        <div className="grid gap-8 sm:grid-cols-2 md:col-span-5">
-          {navGroups.slice(0, 2).map((group) => (
-            <nav key={group.label} aria-label={group.label}>
-              <p className="label text-parchment/40">{group.label}</p>
-              <ul className="mt-4 space-y-2.5 text-sm">
-                {group.items.slice(0, 4).map((item) => (
-                  <li key={item.label}>
-                    <Link
-                      href={item.href}
-                      className="flex items-center gap-2 text-parchment/70 transition-colors hover:text-parchment"
-                    >
-                      <item.icon aria-hidden="true" className="h-3.5 w-3.5 text-gold/60" />
-                      {item.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-          ))}
+        <nav aria-label="Sitemap" className="md:col-span-3">
+          <p className="label text-parchment/35">Pages</p>
+          <ul className="mt-4 space-y-2 text-sm">
+            {[
+              ...navGroups.map((g) => ({ label: g.label, href: g.href })),
+              { label: "Testimonies", href: "/testimonies" },
+              { label: "Newsletter", href: "/newsletter" },
+            ].map((item) => (
+              <li key={item.label}>
+                <Link href={item.href} className="link-quiet text-parchment/65 hover:text-parchment">
+                  {item.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        <div className="md:col-span-2">
+          <p className="label text-parchment/35">The week</p>
+          <ul className="mt-4 space-y-2.5 text-xs leading-relaxed text-parchment/60">
+            {sessions.map((s) => (
+              <li key={s.id}>
+                <span className="block text-parchment/85">{dayNames[s.day]}</span>
+                {s.title}, {formatTimeWAT(s.start)} WAT
+              </li>
+            ))}
+          </ul>
         </div>
 
         <div className="md:col-span-3">
-          <p className="label text-parchment/40">The community</p>
+          <p className="label text-parchment/35">The community</p>
           <ul className="mt-4 space-y-2.5 text-sm">
             {socialLinks.map((link) => {
               const href = link.href || link.fallbackHref;
@@ -79,30 +86,48 @@ export function Footer() {
                   <a
                     href={href}
                     {...(external ? { rel: "noopener noreferrer", target: "_blank" } : {})}
-                    className="flex items-center gap-2 text-parchment/70 transition-colors hover:text-parchment"
+                    className="link-quiet inline-flex items-center gap-2 text-parchment/65 hover:text-parchment"
                   >
-                    <Icon aria-hidden="true" className="h-4 w-4 text-gold/70" />
+                    <Icon aria-hidden="true" className="h-3.5 w-3.5 text-gold/70" />
                     {link.label}
-                    {!link.href && <span className="text-parchment/35">· by request</span>}
+                    {!link.href && <span className="text-parchment/30">· by request</span>}
                   </a>
                 </li>
               );
             })}
           </ul>
-          <Link href="/contact" className="btn btn-outline mt-6 text-parchment">
-            <Mail aria-hidden="true" className="h-4 w-4" />
-            Contact us
+          <Link
+            href="/contact"
+            className="mt-5 inline-flex items-center gap-2 text-sm text-parchment/65 hover:text-parchment"
+          >
+            <Mail aria-hidden="true" className="h-3.5 w-3.5 text-gold/70" />
+            Write to the team
           </Link>
         </div>
       </div>
 
-      <div className="border-t border-parchment/10">
-        <div className="wrap flex flex-col gap-3 py-6 text-xs text-parchment/45 sm:flex-row sm:items-center sm:justify-between">
+      <div className="border-t border-parchment/12">
+        <div className="wrap flex flex-col gap-2 py-5 text-[0.7rem] tracking-wide text-parchment/60 sm:flex-row sm:items-center sm:justify-between">
           <p suppressHydrationWarning>
             © {new Date().getFullYear()} {site.name}. All rights reserved.
           </p>
-          <p className="flex items-center gap-2">
-            Interdenominational · Founded {site.founded}
+          <p className="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span>Gatherings are free · Giving is voluntary</span>
+            {site.credit.name && (
+              <span>
+                {site.credit.label}{" "}
+                {site.credit.href ? (
+                  <a href={site.credit.href} className="link-quiet text-parchment/60">
+                    {site.credit.name}
+                  </a>
+                ) : (
+                  site.credit.name
+                )}
+              </span>
+            )}
+            <Link href="/demo-notes" className="link-quiet">
+              Re-brand notes
+            </Link>
           </p>
         </div>
       </div>

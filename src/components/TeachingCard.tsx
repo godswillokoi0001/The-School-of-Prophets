@@ -1,15 +1,12 @@
-import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, FileText, Headphones, Play } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import type { Teaching } from "@/content/teachings";
 import { formatDate } from "@/lib/time";
 
-const formatIcon = {
-  video: Play,
-  audio: Headphones,
-  notes: FileText,
-} as const;
-
+/**
+ * A catalogue entry, set like a publisher's list: date, series, title, one
+ * sentence. No image, no card, no shadow.
+ */
 export function TeachingCard({
   teaching,
   featured = false,
@@ -21,75 +18,46 @@ export function TeachingCard({
 }) {
   if (!teaching) return null;
 
-  const seriesTitleFallback = seriesTitle ?? "Teaching";
-  const imageSrc = teaching.image || "/images/bible-bedside.webp";
-  const imageAlt = teaching.imageAlt || teaching.title || "Teaching";
-
   return (
-    <article className="group relative flex flex-col">
-      <div
-        className={`relative overflow-hidden bg-ink ${featured ? "aspect-[16/9]" : "aspect-[16/10]"}`}
-      >
-        <Image
-          src={imageSrc}
-          alt={imageAlt}
-          fill
-          sizes={featured ? "(max-width: 768px) 100vw, 60vw" : "(max-width: 768px) 100vw, 45vw"}
-          className="object-cover opacity-90 transition-transform duration-500 group-hover:scale-[1.03]"
-        />
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/10 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 flex flex-wrap items-center gap-2 p-4">
-          <span className="label bg-gold px-2 py-1 text-ink">{seriesTitleFallback}</span>
-          {teaching.isSample && (
-            <span className="label border border-parchment/30 px-2 py-1 text-parchment/80">
-              Sample
-            </span>
-          )}
-        </div>
+    <article
+      className={`group grid gap-3 border-t border-ink/15 py-6 md:grid-cols-12 md:gap-6 ${
+        featured ? "md:py-8" : ""
+      }`}
+    >
+      <div className="md:col-span-3">
+        <p className="label text-ember">{seriesTitle ?? "Teaching"}</p>
+        <p className="mt-1.5 text-xs tabular-nums text-quiet">
+          {formatDate(teaching.date)}
+        </p>
       </div>
 
-      <div className="flex flex-1 flex-col pt-5">
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-quiet">
-          <span>{formatDate(teaching.date)}</span>
-          <span aria-hidden="true">·</span>
-          <span className="font-semibold uppercase tracking-[0.12em] text-ember">
-            {teaching.scripture}
-          </span>
-        </div>
-
+      <div className="md:col-span-8">
         <h3
-          className={`mt-3 font-display leading-tight ${
-            featured ? "text-3xl sm:text-4xl lg:text-[2.6rem]" : "text-2xl"
+          className={`font-display leading-[1.08] ${
+            featured ? "text-3xl sm:text-4xl" : "text-2xl"
           }`}
         >
-          <Link href={`/teachings/${teaching.slug}`}>
-            <span className="absolute inset-0" aria-hidden="true" />
+          <Link href={`/teachings/${teaching.slug}`} className="link-quiet">
             {teaching.title}
           </Link>
         </h3>
-
-        <p
-          className={`mt-3 text-sm leading-relaxed text-quiet ${featured ? "measure text-base" : ""}`}
-        >
+        <p className={`mt-2 text-sm leading-relaxed text-quiet ${featured ? "measure" : ""}`}>
           {teaching.summary}
         </p>
+        <p className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-quiet">
+          <span className="uppercase tracking-[0.1em] text-ember">{teaching.scripture}</span>
+          {teaching.isSample && <span className="uppercase tracking-[0.1em]">Sample entry</span>}
+        </p>
+      </div>
 
-        <div className="mt-auto flex flex-wrap items-center gap-4 pt-5">
-          {(teaching.format ?? []).map((f) => {
-            const Icon = formatIcon[f];
-            if (!Icon) return null;
-            return (
-              <span key={f} className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.1em] text-ink/60">
-                <Icon aria-hidden="true" className="h-3.5 w-3.5 text-ember" />
-                {f === "notes" ? "Notes" : f === "video" ? "Video" : "Audio"}
-              </span>
-            );
-          })}
-          <span className="ml-auto flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.1em] text-ember">
-            Read
-            <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
-          </span>
-        </div>
+      <div className="md:col-span-1 md:text-right">
+        <Link
+          href={`/teachings/${teaching.slug}`}
+          aria-label={`Read ${teaching.title}`}
+          className="inline-flex text-quiet transition-colors group-hover:text-ember"
+        >
+          <ArrowRight aria-hidden="true" className="h-4 w-4" />
+        </Link>
       </div>
     </article>
   );

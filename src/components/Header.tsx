@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChevronDown, Menu, X, ArrowUpRight } from "lucide-react";
 import { Crest } from "@/components/Crest";
 import { navGroups } from "@/config/nav";
@@ -12,6 +12,8 @@ export function Header() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [openGroup, setOpenGroup] = useState<string | null>(null);
+  const [hidden, setHidden] = useState(false);
+  const lastY = useRef(0);
 
   useEffect(() => {
     setOpen(false);
@@ -25,195 +27,199 @@ export function Header() {
     };
   }, [open]);
 
+  // Retract on scroll down, return on scroll up. Never while a menu is open.
+  useEffect(() => {
+    const onScroll = () => {
+      if (open) return;
+      const y = window.scrollY;
+      const delta = y - lastY.current;
+      if (y < 120) setHidden(false);
+      else if (delta > 6) setHidden(true);
+      else if (delta < -4) setHidden(false);
+      lastY.current = y;
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [open]);
+
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
 
   return (
-    <header className="sticky top-0 z-50 bg-ink text-parchment">
-      <div className="hidden border-b border-parchment/10 lg:block">
-        <div className="wrap flex items-center justify-between py-1.5">
-          <p className="label text-gold/90">{site.crest}</p>
-          <p className="label text-parchment/45">
-            Founded {site.founded} · Gathering weekly, online
-          </p>
+    <>
+      <header
+        data-hidden={hidden}
+        className="sticky top-0 z-50 bg-ink text-parchment transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] data-[hidden=true]:-translate-y-full motion-reduce:transition-none"
+      >
+        <div className="hidden border-b border-parchment/10 lg:block">
+          <div className="wrap flex items-center justify-between py-1.5">
+            <p className="label text-gold-soft/90">{site.crest}</p>
+            <p className="label text-parchment/55">
+              Founded {site.founded} · Online, weekly
+            </p>
+          </div>
         </div>
-      </div>
 
-      <div className="wrap flex items-center gap-4 py-3">
-        <Link
-          href="/"
-          className="flex shrink-0 items-center gap-3"
-          aria-label={`${site.name} home`}
-        >
-          <Crest className="h-11 w-auto md:h-12" priority />
-          <span className="font-display text-[1.05rem] leading-[1.05] tracking-tight">
-            The School
-            <br />
-            of Prophets
-          </span>
-        </Link>
-
-        <nav aria-label="Primary" className="ml-auto hidden items-center gap-1 xl:flex">
-          {navGroups.map((group) => {
-            const active = isActive(group.href);
-            return (
-              <div key={group.label} className="group relative">
-                <Link
-                  href={group.href}
-                  aria-current={active ? "page" : undefined}
-                  className={`flex items-center gap-1.5 px-3 py-3 text-[0.72rem] font-semibold uppercase tracking-[0.13em] transition-colors ${
-                    active ? "text-gold" : "text-parchment/70 hover:text-parchment"
-                  }`}
-                >
-                  {group.label}
-                  <ChevronDown
-                    aria-hidden="true"
-                    className="h-3.5 w-3.5 transition-transform duration-200 group-hover:rotate-180 group-focus-within:rotate-180"
-                  />
-                </Link>
-
-                <div className="pointer-events-none absolute left-0 top-full z-50 w-[21rem] translate-y-1 border border-parchment/15 bg-ink opacity-0 shadow-2xl transition-all duration-150 group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:translate-y-0 group-focus-within:opacity-100">
-                  <div className="h-0.5 w-full bg-gold/70" />
-                  <ul className="py-2">
-                    {group.items.map((item) => (
-                      <li key={item.label}>
-                        <Link
-                          href={item.href}
-                          {...(item.external
-                            ? { target: "_blank", rel: "noopener noreferrer" }
-                            : {})}
-                          className="flex gap-3 px-4 py-2.5 transition-colors hover:bg-parchment/[0.06]"
-                        >
-                          <item.icon
-                            aria-hidden="true"
-                            className="mt-0.5 h-4 w-4 shrink-0 text-gold"
-                          />
-                          <span>
-                            <span className="flex items-center gap-1.5 text-sm font-medium text-parchment">
-                              {item.label}
-                              {item.external && (
-                                <ArrowUpRight aria-hidden="true" className="h-3 w-3 text-parchment/40" />
-                              )}
-                            </span>
-                            <span className="mt-0.5 block text-xs leading-relaxed text-parchment/45">
-                              {item.description}
-                            </span>
-                          </span>
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            );
-          })}
-        </nav>
-
-        <div className="ml-auto hidden items-center gap-2.5 xl:flex">
+        <div className="wrap flex items-center gap-4 py-3.5">
           <Link
-            href="/give"
-            className="flex items-center gap-1.5 border border-gold/80 px-3.5 py-2 text-[0.72rem] font-bold uppercase tracking-[0.14em] text-gold transition-colors hover:bg-gold hover:text-ink shadow-sm"
+            href="/"
+            className="flex shrink-0 items-center gap-3"
+            aria-label={`${site.name} home`}
           >
-            Donate
+            <Crest className="h-11 w-auto md:h-12" priority />
+            <span className="font-display text-[1.05rem] leading-[1.05] tracking-tight">
+              The School
+              <br />
+              of Prophets
+            </span>
           </Link>
-          <Link href="/gatherings" className="btn btn-gold">
-            Join a gathering
-          </Link>
-        </div>
 
-        <Link
-          href="/give"
-          className="ml-auto border border-gold/70 px-2.5 py-1.5 text-[0.68rem] font-bold uppercase tracking-[0.12em] text-gold hover:bg-gold hover:text-ink xl:hidden"
-        >
-          Donate
-        </Link>
-
-        <button
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          aria-expanded={open}
-          aria-controls="mobile-nav"
-          className="ml-2 flex items-center gap-2 border border-parchment/25 px-3 py-2 xl:hidden"
-        >
-          {open ? <X aria-hidden="true" className="h-4 w-4" /> : <Menu aria-hidden="true" className="h-4 w-4" />}
-          <span className="label">{open ? "Close" : "Menu"}</span>
-        </button>
-      </div>
-
-      {open && (
-        <div
-          id="mobile-nav"
-          className="absolute inset-x-0 top-full z-40 max-h-[calc(100dvh-4.75rem)] overflow-y-auto border-t border-parchment/10 bg-ink xl:hidden"
-        >
-          <nav aria-label="Mobile" className="wrap py-4">
-            <Link
-              href="/"
-              className="flex items-center justify-between border-b border-parchment/10 py-4"
-            >
-              <span className="font-display text-2xl">Home</span>
-              <Crest className="h-7 w-auto opacity-60" decorative />
-            </Link>
-
+          <nav aria-label="Primary" className="ml-auto hidden items-stretch gap-1 xl:flex">
             {navGroups.map((group) => {
-              const expanded = openGroup === group.label;
+              const active = isActive(group.href);
               return (
-                <div key={group.label} className="border-b border-parchment/10">
-                  <button
-                    type="button"
-                    onClick={() => setOpenGroup(expanded ? null : group.label)}
-                    aria-expanded={expanded}
-                    className="flex w-full items-center justify-between py-4 text-left"
+                <div key={group.label} className="group relative flex">
+                  <Link
+                    href={group.href}
+                    aria-current={active ? "page" : undefined}
+                    className={`relative flex items-center gap-1.5 px-3 text-[0.7rem] font-semibold uppercase tracking-[0.14em] transition-colors ${
+                      active ? "text-gold-soft" : "text-parchment/65 hover:text-parchment"
+                    }`}
                   >
-                    <span className="font-display text-2xl">{group.label}</span>
+                    {group.label}
                     <ChevronDown
                       aria-hidden="true"
-                      className={`h-4 w-4 text-gold transition-transform ${expanded ? "rotate-180" : ""}`}
+                      className="h-3 w-3 transition-transform duration-200 group-hover:rotate-180 group-focus-within:rotate-180"
                     />
-                  </button>
+                    <span
+                      aria-hidden="true"
+                      className={`absolute inset-x-3 bottom-0 h-px bg-gold transition-opacity ${
+                        active ? "opacity-100" : "opacity-0"
+                      }`}
+                    />
+                  </Link>
 
-                  {expanded && (
-                    <ul className="pb-3">
-                      <li>
-                        <Link
-                          href={group.href}
-                          className="flex items-center gap-3 py-2 text-sm text-gold"
-                        >
-                          <ArrowUpRight aria-hidden="true" className="h-4 w-4" />
-                          Open {group.label}
-                        </Link>
-                      </li>
+                  <div className="pointer-events-none absolute left-0 top-full z-50 w-[22rem] -translate-y-1 border border-parchment/15 border-t-gold/40 bg-ink opacity-0 transition-[opacity,transform] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:translate-y-0 group-focus-within:opacity-100">
+                    <p className="label border-b border-parchment/10 px-4 py-2.5 text-parchment/35">
+                      {group.label}
+                    </p>
+                    <ul>
                       {group.items.map((item) => (
-                        <li key={item.label}>
+                        <li key={item.label} className="border-b border-parchment/[0.07] last:border-0">
                           <Link
                             href={item.href}
                             {...(item.external
                               ? { target: "_blank", rel: "noopener noreferrer" }
                               : {})}
-                            className="flex items-center gap-3 py-2 text-sm text-parchment/70"
+                            className="flex gap-3 px-4 py-3 transition-colors hover:bg-parchment/[0.05]"
                           >
-                            <item.icon aria-hidden="true" className="h-4 w-4 text-parchment/40" />
-                            {item.label}
+                            <item.icon
+                              aria-hidden="true"
+                              className="mt-0.5 h-3.5 w-3.5 shrink-0 text-gold/80"
+                            />
+                            <span>
+                              <span className="flex items-center gap-1.5 font-display text-[0.98rem] leading-tight text-parchment">
+                                {item.label}
+                                {item.external && (
+                                  <ArrowUpRight aria-hidden="true" className="h-3 w-3 text-parchment/35" />
+                                )}
+                              </span>
+                              <span className="mt-0.5 block text-[0.72rem] leading-relaxed text-parchment/60">
+                                {item.description}
+                              </span>
+                            </span>
                           </Link>
                         </li>
                       ))}
                     </ul>
-                  )}
+                  </div>
                 </div>
               );
             })}
-
-            <div className="mt-6 grid grid-cols-2 gap-2">
-              <Link href="/give" className="btn btn-outline text-center">
-                Donate
-              </Link>
-              <Link href="/gatherings" className="btn btn-gold text-center">
-                Join a gathering
-              </Link>
-            </div>
-            <p className="label mt-6 text-parchment/40">{site.crest}</p>
           </nav>
+
+          <Link href="/gatherings" className="btn btn-gold ml-auto hidden xl:ml-4 xl:inline-flex">
+            Join a gathering
+          </Link>
+
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            aria-expanded={open}
+            aria-controls="mobile-nav"
+            className="ml-auto flex min-h-11 items-center gap-2 border border-parchment/25 px-3 xl:hidden"
+          >
+            {open ? <X aria-hidden="true" className="h-4 w-4" /> : <Menu aria-hidden="true" className="h-4 w-4" />}
+            <span className="label">{open ? "Close" : "Menu"}</span>
+          </button>
+        </div>
+      </header>
+
+      {open && (
+        <div
+          id="mobile-nav"
+          className="fixed inset-0 z-40 overflow-y-auto bg-ink text-parchment xl:hidden"
+        >
+          <div className="wrap pb-16 pt-24">
+            <nav aria-label="Mobile">
+              <Link
+                href="/"
+                className="flex items-baseline justify-between border-b border-parchment/15 py-4"
+              >
+                <span className="font-display text-3xl">Home</span>
+                <span className="label text-parchment/30">01</span>
+              </Link>
+
+              {navGroups.map((group, index) => {
+                const expanded = openGroup === group.label;
+                return (
+                  <div key={group.label} className="border-b border-parchment/15">
+                    <button
+                      type="button"
+                      onClick={() => setOpenGroup(expanded ? null : group.label)}
+                      aria-expanded={expanded}
+                      className="flex w-full items-baseline justify-between py-4 text-left"
+                    >
+                      <span className="font-display text-3xl">{group.label}</span>
+                      <ChevronDown
+                        aria-hidden="true"
+                        className={`h-4 w-4 text-gold transition-transform duration-200 ${
+                          expanded ? "rotate-180" : ""
+                        }`}
+                      />
+                    </button>
+
+                    {expanded && (
+                      <ul className="pb-4">
+                        {group.items.map((item) => (
+                          <li key={item.label}>
+                            <Link
+                              href={item.href}
+                              {...(item.external
+                                ? { target: "_blank", rel: "noopener noreferrer" }
+                                : {})}
+                              className="flex items-center gap-3 py-2.5 text-[0.95rem] text-parchment/70"
+                            >
+                              <item.icon aria-hidden="true" className="h-3.5 w-3.5 text-gold/70" />
+                              {item.label}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    <span className="sr-only">Section {index + 2}</span>
+                  </div>
+                );
+              })}
+            </nav>
+
+            <Link href="/gatherings" className="btn btn-gold mt-8 w-full">
+              Join a gathering
+            </Link>
+            <p className="label mt-8 text-parchment/35">{site.crest}</p>
+          </div>
         </div>
       )}
-    </header>
+    </>
   );
 }

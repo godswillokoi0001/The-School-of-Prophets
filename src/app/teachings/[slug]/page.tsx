@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ExternalLink, Headphones } from "lucide-react";
@@ -109,16 +108,9 @@ export default async function TeachingPage({ params }: Params) {
             {teaching.isSample && <span className="tag text-quiet">Sample entry</span>}
           </div>
 
-          <div className="relative mt-8 aspect-[21/9] overflow-hidden bg-ink">
-            <Image
-              src={teaching.image}
-              alt={teaching.imageAlt}
-              fill
-              sizes="100vw"
-              className="object-cover"
-              priority
-            />
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/50 to-transparent" />
+          <div className="mt-9 max-w-[34rem] border-y border-ink/25 py-6">
+            <p className="label text-ember">The text</p>
+            <p className="mt-2 font-display text-2xl leading-snug">{teaching.scripture}</p>
           </div>
         </div>
       </header>
@@ -132,9 +124,9 @@ export default async function TeachingPage({ params }: Params) {
               <TeachingVideo youtubeId={teaching.youtubeId} title={teaching.title} />
             </div>
           ) : (
-            <div className="mt-8 border border-ink/15 bg-parchment-2/50 p-5">
+            <div className="mt-8 border-t border-ink/20 pt-5">
               <p className="label text-quiet">Recording</p>
-              <p className="mt-2 text-sm leading-relaxed text-ink/75">
+              <p className="mt-2 max-w-[56ch] text-sm leading-relaxed text-quiet">
                 The video for this teaching has not been attached to the site yet.
                 The written outline below is complete; the recording lives on the
                 YouTube channel.
@@ -143,35 +135,35 @@ export default async function TeachingPage({ params }: Params) {
                 href={site.social.youtube}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="link-underline mt-3 inline-block text-sm font-semibold"
+                className="link-quiet mt-3 inline-block text-sm font-semibold"
               >
-                Watch on YouTube →
+                Watch on YouTube
               </a>
             </div>
           )}
 
           {teaching.audioUrl && (
-            <div className="mt-6 rounded-lg border border-gold/40 bg-parchment-2/80 p-5">
-              <div className="flex items-center gap-2 mb-2 text-xs font-semibold text-ember uppercase tracking-wider">
-                <Headphones size={15} />
-                <span>Audio Recording</span>
-              </div>
-              <audio controls className="w-full mt-2" src={teaching.audioUrl}>
+            <div className="mt-6 border-y border-ink/20 py-5">
+              <p className="label flex items-center gap-2 text-ember">
+                <Headphones aria-hidden="true" size={13} />
+                Audio recording
+              </p>
+              <audio controls className="mt-3 w-full" src={teaching.audioUrl}>
                 Your browser does not support the audio element.
               </audio>
             </div>
           )}
 
           <div className="mt-12 space-y-5 border-t border-ink/15 pt-8">
-            <p className="label text-ember">Outline & Study Notes</p>
+            <p className="label text-ember">Outline and study notes</p>
             {hasBody ? (
               <div
-                className="prose-editor max-w-none"
+                className="prose-tsop measure"
                 dangerouslySetInnerHTML={{ __html: sanitizeServerHtml(teaching.body!) }}
               />
             ) : (
               (teaching.notes ?? []).map((note, i) => (
-                <p key={i} className="measure text-[0.975rem] leading-relaxed text-ink/80">
+                <p key={i} className="measure text-[0.975rem] leading-relaxed">
                   {note}
                 </p>
               ))
@@ -179,8 +171,8 @@ export default async function TeachingPage({ params }: Params) {
           </div>
 
           {((teaching as { links?: { label: string; url: string }[] }).links ?? []).length > 0 && (
-            <div className="mt-10 border border-ink/15 bg-parchment-2/50 p-6 rounded-lg">
-              <p className="label text-ember">Additional Links & Resources</p>
+            <div className="mt-10 border-t border-ink/20 pt-5">
+              <p className="label text-ember">Further reading</p>
               <ul className="mt-3 space-y-2.5">
                 {((teaching as { links?: { label: string; url: string }[] }).links ?? []).map((l, i) => (
                   <li key={i}>
@@ -188,7 +180,7 @@ export default async function TeachingPage({ params }: Params) {
                       href={l.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink hover:text-ember underline decoration-ink/30 underline-offset-4"
+                      className="link-quiet inline-flex items-center gap-1.5 text-sm text-ink"
                     >
                       <span>{l.label || l.url}</span>
                       <ExternalLink size={13} className="text-gold shrink-0" />

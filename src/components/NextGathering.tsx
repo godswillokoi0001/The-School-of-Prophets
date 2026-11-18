@@ -65,7 +65,7 @@ export function NextGathering({
     >
       <div className="flex items-baseline justify-between gap-4">
         <p className={`label ${light ? "text-ember" : "text-gold"}`}>Next gathering</p>
-        <p className={`label ${light ? "text-quiet" : "text-parchment/45"}`} suppressHydrationWarning>
+        <p className={`label ${light ? "text-quiet" : "text-parchment/60"}`} suppressHydrationWarning>
           {now ? localZoneLabel(start) : "local time"}
         </p>
       </div>
@@ -113,7 +113,7 @@ export function NextGathering({
                 ? "––"
                 : String(unit.value).padStart(2, "0")}
             </p>
-            <p className={`label mt-1 ${light ? "text-quiet" : "text-parchment/45"}`}>
+            <p className={`label mt-1 ${light ? "text-quiet" : "text-parchment/60"}`}>
               {unit.label}
             </p>
           </div>
@@ -133,7 +133,7 @@ export function NextGathering({
         </Link>
       </div>
 
-      <p className={`mt-4 text-xs ${light ? "text-quiet" : "text-parchment/45"}`}>
+      <p className={`mt-4 text-xs ${light ? "text-quiet" : "text-parchment/60"}`}>
         Add to calendar:{" "}
         <a
           className="link-underline"

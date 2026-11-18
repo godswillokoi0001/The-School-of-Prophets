@@ -135,7 +135,7 @@ export default async function GivePage() {
               </div>
             ) : (
               <div className="border border-ink/15 bg-parchment-2/40 p-6">
-                <p className="label flex items-center gap-2 text-gold">
+                <p className="label flex items-center gap-2 text-ember">
                   <Globe aria-hidden="true" className="h-3.5 w-3.5" />
                   Giving from outside Nigeria
                 </p>

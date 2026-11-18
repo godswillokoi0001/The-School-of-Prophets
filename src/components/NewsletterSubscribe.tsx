@@ -1,12 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { LoaderCircle, Mail, CheckCircle2, Sparkles } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 export function NewsletterSubscribe({
   variant = "banner",
-  title = "Stay Connected with the House",
-  description = "Receive apostolic teachings, gathering reminders, and prophetic insights delivered straight to your email.",
 }: {
   variant?: "banner" | "card" | "inline";
   title?: string;
@@ -21,7 +19,10 @@ export function NewsletterSubscribe({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!email) return;
+    if (!email.trim()) {
+      setError("Add an email address so we know where to send it.");
+      return;
+    }
     setBusy(true);
     setError("");
 
@@ -33,7 +34,7 @@ export function NewsletterSubscribe({
           type: "newsletter",
           email: email.trim(),
           name: name.trim() || undefined,
-          website: honeypot, // Honeypot
+          website: honeypot,
         }),
       });
 
@@ -43,133 +44,110 @@ export function NewsletterSubscribe({
         setEmail("");
         setName("");
       } else {
-        setError(data.error || data.message || "Failed to subscribe. Please try again.");
+        setError(
+          data.error ||
+            data.message ||
+            "That did not go through. Try again, or write to the team instead.",
+        );
       }
     } catch {
-      setError("Network error. Please try again in a moment.");
+      setError("The connection dropped. Try again in a moment.");
     } finally {
       setBusy(false);
     }
   }
 
-  if (variant === "card") {
-    return (
-      <div className="border border-gold/40 bg-ink p-6 text-parchment shadow-xl">
-        <div className="flex items-center gap-2 text-gold">
-          <Sparkles className="h-4 w-4" />
-          <span className="text-xs font-semibold uppercase tracking-wider">Weekly Epistle</span>
-        </div>
-        <h3 className="mt-2 font-display text-xl text-parchment">{title}</h3>
-        <p className="mt-1 text-xs leading-relaxed text-parchment/70">{description}</p>
+  const onDark = variant !== "card";
 
-        {success ? (
-          <div className="mt-4 flex items-center gap-2 rounded border border-gold/50 bg-gold/10 p-3 text-xs text-gold">
-            <CheckCircle2 className="h-4 w-4 shrink-0" />
-            <span>Thank you for subscribing! You will receive our latest updates.</span>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="mt-4 space-y-2.5">
-            <input
-              type="text"
-              name="website"
-              value={honeypot}
-              onChange={(e) => setHoneypot(e.target.value)}
-              className="hidden"
-              tabIndex={-1}
-              autoComplete="off"
-            />
-            <input
-              type="email"
-              required
-              placeholder="Your email address"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full border border-parchment/25 bg-parchment/5 px-3 py-2 text-xs text-parchment placeholder:text-parchment/40 focus:border-gold focus:outline-none"
-            />
-            <button
-              type="submit"
-              disabled={busy}
-              className="btn btn-gold w-full text-xs font-semibold tracking-wider uppercase"
-            >
-              {busy ? <LoaderCircle className="h-3.5 w-3.5 animate-spin mx-auto" /> : "Subscribe"}
-            </button>
-            {error && <p className="text-[0.7rem] text-red-400">{error}</p>}
-          </form>
-        )}
+  const form = success ? (
+    <p role="status" className={`text-sm ${onDark ? "text-gold-soft" : "text-ember"}`}>
+      You&apos;re on the list. The next letter will arrive after Sunday.
+    </p>
+  ) : (
+    <form onSubmit={handleSubmit} className="w-full">
+      <input
+        type="text"
+        name="website"
+        value={honeypot}
+        onChange={(e) => setHoneypot(e.target.value)}
+        className="hidden"
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+      />
+      <div className="flex flex-col gap-2 sm:flex-row">
+        <label className="flex-1">
+          <span className="sr-only">Email address</span>
+          <input
+            type="email"
+            required
+            autoComplete="email"
+            inputMode="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
+            aria-invalid={Boolean(error)}
+            aria-describedby={error ? "newsletter-error" : undefined}
+            className={`min-h-11 w-full border bg-transparent px-3 text-sm focus:border-gold ${
+              onDark
+                ? "border-parchment/25 text-parchment placeholder:text-parchment/35"
+                : "border-ink/25 text-ink placeholder:text-quiet/60"
+            }`}
+          />
+        </label>
+        <button type="submit" disabled={busy} className="btn btn-gold shrink-0">
+          {busy ? "Sending" : "Subscribe"}
+          {!busy && <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />}
+        </button>
+      </div>
+      {error && (
+        <p
+          id="newsletter-error"
+          role="alert"
+          className={`mt-2 text-xs ${onDark ? "text-gold-soft" : "text-ember"}`}
+        >
+          {error}
+        </p>
+      )}
+    </form>
+  );
+
+  if (variant === "inline") {
+    return (
+      <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+        <div className="max-w-[42ch]">
+          <p className="label text-gold-soft/85">The weekly letter</p>
+          <p className="mt-2 text-sm leading-relaxed text-parchment/60">
+            One email a week: the teaching outline, the times for the week, and
+            anything the fellowship needs to say. Nothing else.
+          </p>
+        </div>
+        <div className="w-full md:max-w-md">{form}</div>
       </div>
     );
   }
 
   return (
-    <div className="border-b border-parchment/10 bg-ink/95 px-4 py-12 text-parchment sm:py-16">
-      <div className="wrap mx-auto max-w-4xl text-center">
-        <div className="inline-flex items-center gap-2 rounded-full border border-gold/30 bg-gold/10 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-gold">
-          <Mail className="h-3.5 w-3.5" />
-          <span>The School of Prophets Newsletter</span>
-        </div>
-        <h2 className="mt-4 font-display text-2xl text-parchment sm:text-3xl md:text-4xl">
-          {title}
-        </h2>
-        <p className="mx-auto mt-2 max-w-2xl text-sm leading-relaxed text-parchment/70 sm:text-base">
-          {description}
-        </p>
-
-        {success ? (
-          <div className="mx-auto mt-6 flex max-w-md items-center justify-center gap-2.5 rounded border border-gold/50 bg-gold/10 p-4 text-sm text-gold">
-            <CheckCircle2 className="h-5 w-5 shrink-0" />
-            <span className="font-medium">
-              You are subscribed! Welcome to The School of Prophets community.
-            </span>
-          </div>
-        ) : (
-          <form
-            onSubmit={handleSubmit}
-            className="mx-auto mt-6 flex max-w-xl flex-col items-center gap-2 sm:flex-row"
-          >
-            <input
-              type="text"
-              name="website"
-              value={honeypot}
-              onChange={(e) => setHoneypot(e.target.value)}
-              className="hidden"
-              tabIndex={-1}
-              autoComplete="off"
-            />
-            <input
-              type="text"
-              placeholder="Your name (optional)"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full border border-parchment/25 bg-parchment/5 px-4 py-3 text-sm text-parchment placeholder:text-parchment/40 focus:border-gold focus:outline-none sm:w-1/3"
-            />
-            <input
-              type="email"
-              required
-              placeholder="Enter your email address"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full border border-parchment/25 bg-parchment/5 px-4 py-3 text-sm text-parchment placeholder:text-parchment/40 focus:border-gold focus:outline-none sm:flex-1"
-            />
-            <button
-              type="submit"
-              disabled={busy}
-              className="btn btn-gold w-full whitespace-nowrap px-6 py-3 text-xs font-bold uppercase tracking-widest sm:w-auto"
-            >
-              {busy ? (
-                <span className="flex items-center gap-2">
-                  <LoaderCircle className="h-4 w-4 animate-spin" /> Subscribing…
-                </span>
-              ) : (
-                "Subscribe Free"
-              )}
-            </button>
-          </form>
-        )}
-        {error && <p className="mt-2 text-xs text-red-400">{error}</p>}
-        <p className="mt-4 text-[0.7rem] text-parchment/40">
-          No spam. Unsubscribe with one click at any time.
-        </p>
-      </div>
+    <div
+      className={
+        variant === "card"
+          ? "border border-ink/20 bg-paper p-6"
+          : "border-y border-parchment/15 bg-ink-2 p-6 text-parchment"
+      }
+    >
+      <p className={`label ${variant === "card" ? "text-ember" : "text-gold-soft/85"}`}>
+        The weekly letter
+      </p>
+      <h2 className="mt-3 font-display text-2xl">One letter a week.</h2>
+      <p
+        className={`measure mt-2 text-sm leading-relaxed ${
+          variant === "card" ? "text-quiet" : "text-parchment/60"
+        }`}
+      >
+        The teaching outline, the times for the week, and anything the fellowship
+        needs to say. Nothing else.
+      </p>
+      <div className="mt-5">{form}</div>
     </div>
   );
 }
