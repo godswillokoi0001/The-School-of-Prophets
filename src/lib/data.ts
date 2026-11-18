@@ -367,14 +367,14 @@ export async function getGivingSettings() {
 export async function getContactSettings() {
   const s = await getSetting("contact", {});
   return {
-    whatsapp: String(s.whatsapp ?? seedSite.social.whatsappInvite),
-    telegram: String(s.telegram ?? seedSite.social.telegramInvite),
-    facebookPage: String(s.facebookPage ?? seedSite.social.facebookPage),
-    facebookGroup: String(s.facebookGroup ?? seedSite.social.facebookGroup),
-    youtube: String(s.youtube ?? seedSite.social.youtube),
-    email: String(s.email ?? seedSite.email.publicAddress),
-    phone: String(s.phone ?? ""),
-    address: String(s.address ?? ""),
+    whatsapp: String(s.whatsapp || seedSite.social.whatsappInvite),
+    telegram: String(s.telegram || seedSite.social.telegramInvite),
+    facebookPage: String(s.facebookPage || seedSite.social.facebookPage),
+    facebookGroup: String(s.facebookGroup || seedSite.social.facebookGroup),
+    youtube: String(s.youtube || seedSite.social.youtube),
+    email: String(s.email || seedSite.email.publicAddress),
+    phone: String(s.phone || ""),
+    address: String(s.address || ""),
   };
 }
 

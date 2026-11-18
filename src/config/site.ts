@@ -37,11 +37,8 @@ export const site = {
     facebookPage: "https://web.facebook.com/lawrence.iwara.581",
     facebookGroup: "https://web.facebook.com/groups/549551002660877",
     youtube: "https://youtube.com/@prophetlawrencefiwara",
-    // TODO(ministry): paste the current invite links. While empty, every join
-    // button routes to /contact so visitors can request access instead of
-    // landing on a dead link.
-    whatsappInvite: "",
-    telegramInvite: "",
+    whatsappInvite: "https://chat.whatsapp.com/LlmNwMMQawl4wbSrwPh60R?s=cl&p=i&mlu=4&ilr=4&iam=2",
+    telegramInvite: "https://t.me/naiotr",
   },
   email: {
     // TODO(ministry): a mailbox for general enquiries. Until then the contact

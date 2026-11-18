@@ -271,10 +271,14 @@ export default function AboutPage() {
               Prophets. He teaches weekly, trains those called into ministry at the
               Bible institute, and shepherds the fellowship in prayer.
             </p>
-            <p className="border-l border-gold pl-4 text-sm">
-              [To be confirmed] A short paragraph on his calling, his church and his
-              years in ministry, supplied by the Prophet himself.
-            </p>
+            <div className="border-l-2 border-gold pl-4 space-y-3 text-sm leading-relaxed text-ink/80 italic">
+              <p>
+                “I was born on 5 February 2002. I gave my life to Christ in September 2018 and began serving and seeking to know God more deeply. That same year, I discovered my calling.
+              </p>
+              <p>
+                I started the work of ministry in 2019 under the Assemblies of God Church, Ketabebe, Ugep. In 2020, I pastored a church in Port Harcourt. Since 2024, I have served as a youth pastor at Kingdomlife Threshold Assembly.”
+              </p>
+            </div>
           </div>
 
           <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 border-y border-ink/15 py-4 text-sm">
