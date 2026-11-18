@@ -102,7 +102,11 @@ export async function handleFormSubmission(
 
   let payload = parsed.data as Record<string, unknown>;
   const email = String(payload.email ?? "") || null;
-  const name = String(payload.name ?? payload.fullName ?? "");
+  const fullNameCalculated = (payload.firstName || payload.lastName)
+    ? `${payload.firstName ?? ""} ${payload.lastName ?? ""}`.trim()
+    : String(payload.name ?? payload.fullName ?? "");
+  const name = fullNameCalculated;
+  payload.name = fullNameCalculated;
 
   if (type === BETA_TYPE) {
     if (email && (await betaDuplicate(email))) {

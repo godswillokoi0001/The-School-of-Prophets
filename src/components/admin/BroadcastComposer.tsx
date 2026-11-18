@@ -2,10 +2,11 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Copy, LoaderCircle, Send, RotateCcw, Eye, Clock, CheckCircle2 } from "lucide-react";
+import { Copy, LoaderCircle, Send, RotateCcw, Eye, CheckCircle2 } from "lucide-react";
 import { sendBroadcast, snippetFor } from "@/app/admin/(shell)/actions/site-admin";
 import { AdminModal } from "@/components/admin/AdminModal";
 import { AdminPagination } from "@/components/admin/AdminPagination";
+import { RichTextEditor, RichTextView } from "@/components/admin/RichText";
 
 type RefOption = { kind: "teaching" | "event"; id: string; label: string };
 
@@ -30,7 +31,8 @@ export function BroadcastComposer({
 }) {
   const router = useRouter();
   const composerRef = useRef<HTMLFormElement>(null);
-  const [broadcastList, setBroadcastList] = useState<BroadcastRecord[]>(pastBroadcasts);
+  const [broadcastList, setBroadcastList] =
+    useState<BroadcastRecord[]>(pastBroadcasts);
   const [page, setPage] = useState(1);
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
@@ -49,12 +51,20 @@ export function BroadcastComposer({
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
   const [modalMessage, setModalMessage] = useState("");
-  const [modalMode, setModalMode] = useState<"danger" | "warning" | "info" | "success">("warning");
-  const [modalConfirmLabel, setModalConfirmLabel] = useState<string | undefined>(undefined);
-  const [pendingAction, setPendingAction] = useState<(() => Promise<void>) | null>(null);
+  const [modalMode, setModalMode] = useState<
+    "danger" | "warning" | "info" | "success"
+  >("warning");
+  const [modalConfirmLabel, setModalConfirmLabel] = useState<
+    string | undefined
+  >(undefined);
+  const [pendingAction, setPendingAction] = useState<
+    (() => Promise<void>) | null
+  >(null);
 
   // Content Preview Modal
-  const [previewContent, setPreviewContent] = useState<BroadcastRecord | null>(null);
+  const [previewContent, setPreviewContent] = useState<BroadcastRecord | null>(
+    null,
+  );
 
   function openConfirm(opts: {
     title: string;
@@ -85,14 +95,23 @@ export function BroadcastComposer({
         confirmLabel: "Schedule Broadcast",
         onConfirm: async () => {
           setBusy(true);
-          const res = (await sendBroadcast(subject, body, segment, scheduled)) as {
+          const res = (await sendBroadcast(
+            subject,
+            body,
+            segment,
+            scheduled,
+          )) as {
             ok: boolean;
             message?: string;
             error?: string;
             broadcast?: BroadcastRecord;
           };
           setBusy(false);
-          setMessage(res.ok ? res.message ?? "Scheduled successfully." : res.error ?? "Failed");
+          setMessage(
+            res.ok
+              ? (res.message ?? "Scheduled successfully.")
+              : (res.error ?? "Failed"),
+          );
           if (res.ok) {
             if (res.broadcast) {
               setBroadcastList((prev) => [res.broadcast!, ...prev]);
@@ -119,7 +138,11 @@ export function BroadcastComposer({
             broadcast?: BroadcastRecord;
           };
           setBusy(false);
-          setMessage(res.ok ? res.message ?? "Dispatched successfully." : res.error ?? "Failed");
+          setMessage(
+            res.ok
+              ? (res.message ?? "Dispatched successfully.")
+              : (res.error ?? "Failed"),
+          );
           if (res.ok) {
             if (res.broadcast) {
               setBroadcastList((prev) => [res.broadcast!, ...prev]);
@@ -138,33 +161,55 @@ export function BroadcastComposer({
     setSubject(b.subject);
     setBody(b.body);
     setSegment(b.segment);
-    setMessage(`Loaded broadcast "${b.subject}" into composer. You can now modify and resend or schedule it.`);
+    setMessage(
+      `Loaded broadcast "${b.subject}" into composer. You can now modify and resend or schedule it.`,
+    );
     composerRef.current?.scrollIntoView({ behavior: "smooth" });
   }
 
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2">
-        <form ref={composerRef} onSubmit={handleSendClick} className="admin-surface p-4">
+        <form
+          ref={composerRef}
+          onSubmit={handleSendClick}
+          className="admin-surface p-4"
+        >
           <h2 className="mb-3 font-display text-lg">Compose Email Broadcast</h2>
-          <label className="admin-label">Subject</label>
+          <div className="flex items-center justify-between mb-1">
+            <label className="admin-label !mb-0">Subject</label>
+            <span className="text-[10px] opacity-60">
+              {Math.max(0, 120 - subject.length)} characters left
+            </span>
+          </div>
           <input
             className="admin-input mb-3"
             required
+            maxLength={120}
             placeholder="e.g. A Word for the Season: The School of Prophets"
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
           />
-          <label className="admin-label">Message (Paragraphs separated by blank lines)</label>
-          <textarea
-            className="admin-textarea mb-3 !min-h-36"
-            required
-            placeholder="Write your apostolic message or announcements here..."
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
-          />
+
+          <div className="flex items-center justify-between mb-1">
+            <label className="admin-label !mb-0">Message & Announcement</label>
+            <span className="text-[10px] opacity-60">
+              Personalize with &#123;&#123;name&#125;&#125; or &#123;&#123;first_name&#125;&#125;
+            </span>
+          </div>
+          <div className="mb-3">
+            <RichTextEditor
+              value={body}
+              onChange={setBody}
+              ariaLabel="Newsletter broadcast message"
+            />
+          </div>
           <label className="admin-label">Audience Segment</label>
-          <select className="admin-select mb-3" value={segment} onChange={(e) => setSegment(e.target.value)}>
+          <select
+            className="admin-select mb-3"
+            value={segment}
+            onChange={(e) => setSegment(e.target.value)}
+          >
             <option value="all">All subscribers (Site newsletter list)</option>
             <option value="waitlist">Waitlist entries (Training)</option>
             <option value="applicants">Applicants (Enrolments)</option>
@@ -200,13 +245,20 @@ export function BroadcastComposer({
               </button>
             )}
           </div>
-          {message && <p className="mt-2 text-xs border border-gold/30 bg-gold/10 p-2 rounded text-gold">{message}</p>}
+          {message && (
+            <p className="mt-2 text-xs border border-gold/30 bg-gold/10 p-2 rounded text-gold">
+              {message}
+            </p>
+          )}
         </form>
 
         <div className="admin-surface p-4">
-          <h2 className="mb-3 font-display text-lg">WhatsApp / Telegram Snippet</h2>
+          <h2 className="mb-3 font-display text-lg">
+            WhatsApp / Telegram Snippet
+          </h2>
           <p className="mb-2 text-xs opacity-60">
-            Generate a ready-to-copy announcement for any published teaching or upcoming event.
+            Generate a ready-to-copy announcement for any published teaching or
+            upcoming event.
           </p>
           <div className="flex gap-2">
             <select
@@ -260,9 +312,12 @@ export function BroadcastComposer({
       <section className="admin-surface p-4">
         <div className="mb-3 flex items-center justify-between">
           <div>
-            <h2 className="font-display text-lg">Sent Newsletters & Past Broadcasts</h2>
+            <h2 className="font-display text-lg">
+              Sent Newsletters & Past Broadcasts
+            </h2>
             <p className="text-xs opacity-60">
-              Access previously sent messages. Click &ldquo;Load & Modify&rdquo; to reuse, edit, and resend.
+              Access previously sent messages. Click &ldquo;Load & Modify&rdquo;
+              to reuse, edit, and resend.
             </p>
           </div>
         </div>
@@ -288,29 +343,38 @@ export function BroadcastComposer({
                 <tbody>
                   {broadcastList.slice((page - 1) * 10, page * 10).map((b) => {
                     const sentCount = (b.stats as { sent?: number })?.sent;
-                    const recCount = (b.stats as { recipients?: number })?.recipients;
+                    const recCount = (b.stats as { recipients?: number })
+                      ?.recipients;
                     return (
                       <tr key={b.id} className="admin-row hover:bg-parchment/5">
                         <td className="max-w-[220px]">
-                          <span className="font-medium text-parchment line-clamp-1">{b.subject}</span>
-                          <span className="text-[0.7rem] opacity-60 line-clamp-1">{b.body}</span>
+                          <span className="font-medium text-parchment line-clamp-1">
+                            {b.subject}
+                          </span>
+                          <span className="text-[0.7rem] opacity-60 line-clamp-1">
+                            {b.body}
+                          </span>
                         </td>
-                        <td className="text-xs opacity-75 capitalize">{b.segment}</td>
+                        <td className="text-xs opacity-75 capitalize">
+                          {b.segment}
+                        </td>
                         <td>
                           <span
                             className={`admin-badge ${
                               b.status === "sent"
                                 ? "admin-badge-ok"
                                 : b.status === "scheduled"
-                                ? "admin-badge-warn"
-                                : ""
+                                  ? "admin-badge-warn"
+                                  : ""
                             }`}
                           >
                             {b.status}
                           </span>
                         </td>
                         <td className="text-xs whitespace-nowrap opacity-70">
-                          {new Date(b.sent_at || b.scheduled_at || b.created_at).toLocaleString("en-GB", {
+                          {new Date(
+                            b.sent_at || b.scheduled_at || b.created_at,
+                          ).toLocaleString("en-GB", {
                             timeZone: "Africa/Lagos",
                             day: "numeric",
                             month: "short",
@@ -322,7 +386,8 @@ export function BroadcastComposer({
                         <td className="text-xs opacity-75">
                           {sentCount !== undefined && recCount !== undefined ? (
                             <span className="inline-flex items-center gap-1 text-emerald-400">
-                              <CheckCircle2 size={12} /> {sentCount} / {recCount}
+                              <CheckCircle2 size={12} /> {sentCount} /{" "}
+                              {recCount}
                             </span>
                           ) : (
                             "—"
@@ -336,7 +401,8 @@ export function BroadcastComposer({
                               title="Load and modify this newsletter"
                               onClick={() => loadIntoComposer(b)}
                             >
-                              <RotateCcw size={12} className="mr-1 inline" /> Load & Modify
+                              <RotateCcw size={12} className="mr-1 inline" />{" "}
+                              Load & Modify
                             </button>
                             <button
                               type="button"
@@ -370,9 +436,15 @@ export function BroadcastComposer({
           <div className="admin-surface max-w-xl w-full p-6 border border-gold/40 max-h-[85vh] overflow-y-auto">
             <div className="flex items-start justify-between gap-4 border-b border-parchment/10 pb-3">
               <div>
-                <span className="admin-badge admin-badge-ok mb-1 inline-block">{previewContent.status}</span>
-                <h3 className="font-display text-lg text-parchment">{previewContent.subject}</h3>
-                <p className="text-xs opacity-60">Sent to: {previewContent.segment}</p>
+                <span className="admin-badge admin-badge-ok mb-1 inline-block">
+                  {previewContent.status}
+                </span>
+                <h3 className="font-display text-lg text-parchment">
+                  {previewContent.subject}
+                </h3>
+                <p className="text-xs opacity-60">
+                  Sent to: {previewContent.segment}
+                </p>
               </div>
               <button
                 type="button"
@@ -382,8 +454,8 @@ export function BroadcastComposer({
                 Close
               </button>
             </div>
-            <div className="mt-4 whitespace-pre-wrap text-sm leading-relaxed text-parchment/85 font-sans">
-              {previewContent.body}
+            <div className="mt-4 text-sm leading-relaxed text-parchment/85 font-sans">
+              <RichTextView html={previewContent.body} />
             </div>
             <div className="mt-6 flex justify-end gap-2 border-t border-parchment/10 pt-4">
               <button
@@ -394,7 +466,8 @@ export function BroadcastComposer({
                   setPreviewContent(null);
                 }}
               >
-                <RotateCcw size={12} className="mr-1 inline" /> Load into Composer to Modify
+                <RotateCcw size={12} className="mr-1 inline" /> Load into
+                Composer to Modify
               </button>
             </div>
           </div>

@@ -12,7 +12,8 @@ export type BaseEmailOptions = {
   preheader?: string;
   badge?: string;
   title: string;
-  paragraphs: string[];
+  paragraphs?: string[];
+  htmlBody?: string;
   highlightBox?: {
     label?: string;
     items: { label: string; value: string }[];
@@ -34,7 +35,8 @@ export function buildHtmlEmail(options: BaseEmailOptions): string {
     preheader = "",
     badge = "The School of Prophets",
     title,
-    paragraphs,
+    paragraphs = [],
+    htmlBody,
     highlightBox,
     cta,
     closing = "Grace and peace,<br /><strong>The School of Prophets</strong>",
@@ -43,12 +45,14 @@ export function buildHtmlEmail(options: BaseEmailOptions): string {
 
   const crestUrl = `${SITE_URL}/images/tsop-crest.png`;
 
-  const paragraphsHtml = paragraphs
-    .map(
-      (p) =>
-        `<p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.65; color: #2d261e;">${p}</p>`
-    )
-    .join("");
+  const paragraphsHtml = htmlBody
+    ? `<div style="font-size: 15px; line-height: 1.65; color: #2d261e;">${htmlBody}</div>`
+    : paragraphs
+        .map(
+          (p) =>
+            `<p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.65; color: #2d261e;">${p}</p>`
+        )
+        .join("");
 
   const highlightHtml = highlightBox
     ? `

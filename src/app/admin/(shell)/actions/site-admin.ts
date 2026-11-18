@@ -262,48 +262,86 @@ export async function sendBroadcast(subject: string, body: string, segment: stri
     return { ok: true, message: "Scheduled." };
   }
 
-  let emails: string[] = [];
+  let recipients: { email: string; name: string }[] = [];
   if (segment === "waitlist" || segment === "applicants") {
     const { data } = await svc
       .from("submissions")
       .select("payload")
       .eq("type", segment === "waitlist" ? "waitlist" : "enrolment")
       .is("deleted_at", null);
-    emails = [...new Set((data ?? []).map((r) => String((r.payload as Record<string, unknown>).email ?? "")).filter(Boolean))];
+    const map = new Map<string, string>();
+    for (const r of data ?? []) {
+      const p = (r.payload as Record<string, unknown>) ?? {};
+      const em = String(p.email ?? "").trim().toLowerCase();
+      if (em && !map.has(em)) {
+        map.set(em, String(p.firstName ?? p.name ?? "").trim());
+      }
+    }
+    recipients = [...map.entries()].map(([email, name]) => ({ email, name }));
   } else {
-    const { data } = await svc.from("subscribers").select("email").is("unsubscribed_at", null);
-    emails = (data ?? []).map((r) => r.email);
+    const map = new Map<string, string>();
+    const { data: subData } = await svc.from("subscribers").select("email, name").is("unsubscribed_at", null);
+    for (const s of subData ?? []) {
+      const em = String(s.email ?? "").trim().toLowerCase();
+      if (em) map.set(em, String(s.name ?? "").trim());
+    }
+    const { data: subSubmissions } = await svc
+      .from("submissions")
+      .select("payload")
+      .eq("type", "newsletter")
+      .is("deleted_at", null);
+    for (const sub of subSubmissions ?? []) {
+      const p = (sub.payload as Record<string, unknown>) ?? {};
+      const em = String(p.email ?? "").trim().toLowerCase();
+      if (em && !map.has(em)) {
+        map.set(em, String(p.firstName ?? p.name ?? "").trim());
+      }
+    }
+    recipients = [...map.entries()].map(([email, name]) => ({ email, name }));
   }
 
   const key = process.env.RESEND_API_KEY;
   const from = process.env.FORMS_FROM ?? "The School of Prophets <onboarding@resend.dev>";
   const siteUrl = getPublicSiteUrl();
-  const html = buildHtmlEmail({
-    badge: "Ministry Broadcast",
-    title: subject,
-    paragraphs: body.split("\n\n").filter(Boolean),
-    footerNote: "You are receiving this because you subscribed to The School of Prophets updates.",
-  });
+
   let sent = 0;
-  if (key && emails.length > 0) {
+  if (key && recipients.length > 0) {
     const BATCH_SIZE = 5;
-    for (let i = 0; i < emails.length; i += BATCH_SIZE) {
-      const batch = emails.slice(i, i + BATCH_SIZE);
+    for (let i = 0; i < recipients.length; i += BATCH_SIZE) {
+      const batch = recipients.slice(i, i + BATCH_SIZE);
       const results = await Promise.allSettled(
-        batch.map((email) =>
-          fetch("https://api.resend.com/emails", {
+        batch.map((recip) => {
+          const firstName = recip.name.split(" ")[0] || "Beloved";
+          const personalizedText = body
+            .replace(/<[^>]+>/g, " ")
+            .replace(/\{\{name\}\}/gi, recip.name || "Beloved")
+            .replace(/\{\{first_name\}\}/gi, firstName)
+            .replace(/\s+/g, " ")
+            .trim();
+          const personalizedHtmlBody = body
+            .replace(/\{\{name\}\}/gi, recip.name || "Beloved")
+            .replace(/\{\{first_name\}\}/gi, firstName);
+
+          const emailHtml = buildHtmlEmail({
+            badge: "Ministry Broadcast",
+            title: subject,
+            htmlBody: personalizedHtmlBody,
+            footerNote: "You are receiving this because you subscribed to The School of Prophets updates.",
+          });
+
+          return fetch("https://api.resend.com/emails", {
             method: "POST",
             headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
             body: JSON.stringify({
               from,
-              to: [email],
+              to: [recip.email],
               subject,
-              text: body.replace(/\{\{name\}\}/g, ""),
-              html,
+              text: personalizedText,
+              html: emailHtml,
               headers: { "List-Unsubscribe": `<${siteUrl}/api/unsubscribe>` },
             }),
-          }).then((r) => r.ok)
-        )
+          }).then((r) => r.ok);
+        })
       );
       for (const res of results) {
         if (res.status === "fulfilled" && res.value) sent += 1;
@@ -313,10 +351,10 @@ export async function sendBroadcast(subject: string, body: string, segment: stri
   const now = new Date().toISOString();
   await svc
     .from("broadcasts")
-    .update({ status: "sent", sent_at: now, stats: { recipients: emails.length, sent } })
+    .update({ status: "sent", sent_at: now, stats: { recipients: recipients.length, sent } })
     .eq("id", inserted.id);
 
-  audit(staff, "send-broadcast", "broadcasts", inserted.id, { subject, recipients: emails.length, sent }).catch(() => {});
+  audit(staff, "send-broadcast", "broadcasts", inserted.id, { subject, recipients: recipients.length, sent }).catch(() => {});
   revalidatePath("/admin/broadcasts");
   revalidatePath("/newsletter");
 
@@ -328,7 +366,7 @@ export async function sendBroadcast(subject: string, body: string, segment: stri
 
   return {
     ok: true,
-    message: `Sent to ${sent} of ${emails.length} recipients.`,
+    message: `Sent to ${sent} of ${recipients.length} recipients.`,
     broadcast: updatedRecord,
   };
 }

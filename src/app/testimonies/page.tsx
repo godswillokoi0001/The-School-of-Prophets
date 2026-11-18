@@ -15,7 +15,9 @@ export const metadata: Metadata = {
 };
 
 export default async function TestimoniesPage() {
-  const testimonies = (await getTestimonies()).filter((t) => !t.isSample);
+  const allTestimonies = await getTestimonies();
+  const realTestimonies = allTestimonies.filter((t) => !t.isSample);
+  const testimonies = realTestimonies.length > 0 ? realTestimonies : allTestimonies;
   return (
     <>
       <PageHeader

@@ -135,24 +135,7 @@ export default async function TeachingPage({ params }: Params) {
             <div className="mt-8">
               <TeachingVideo youtubeId={teaching.youtubeId} title={teaching.title} />
             </div>
-          ) : (
-            <div className="mt-8 border-t border-ink/20 pt-5">
-              <p className="label text-quiet">Recording</p>
-              <p className="mt-2 max-w-[56ch] text-sm leading-relaxed text-quiet">
-                The video for this teaching has not been attached to the site yet.
-                The written outline below is complete; the recording lives on the
-                YouTube channel.
-              </p>
-              <a
-                href={site.social.youtube}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="link-quiet mt-3 inline-block text-sm font-semibold"
-              >
-                Watch on YouTube
-              </a>
-            </div>
-          )}
+          ) : null}
 
           {teaching.audioUrl && (
             <div className="mt-6 border-y border-ink/20 py-5">

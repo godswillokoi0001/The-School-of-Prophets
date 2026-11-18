@@ -149,8 +149,13 @@ export async function getTeachings(): Promise<SeedTeaching[]> {
     const series = await svc.from("series").select("id,slug").eq("status", "published");
     const map = new Map((series.data ?? []).map((s) => [s.id, s.slug]));
 
-    const dbItems: SeedTeaching[] = (data ?? []).map((t: DbTeaching) => {
-      const youtubeId = extractYouTubeId(t.youtube_url);
+    const dbItems: SeedTeaching[] = (data ?? [])
+      .filter((t: DbTeaching) => {
+        // Any teaching that does not have youtube link should not be included when published
+        return Boolean(extractYouTubeId(t.youtube_url));
+      })
+      .map((t: DbTeaching) => {
+        const youtubeId = extractYouTubeId(t.youtube_url);
       const scriptureStr = Array.isArray(t.scripture)
         ? t.scripture.join(", ")
         : String(t.scripture || "");
@@ -273,25 +278,28 @@ export async function getEvents(): Promise<SeedEvent[]> {
 
 export async function getTestimonies(): Promise<SeedTestimony[]> {
   return cached("testimonies", async () => {
-    const { data } = await db()!
+    const svc = db();
+    if (!svc) return seedTestimonies;
+    const { data } = await svc
       .from("submissions")
       .select("id,payload,created_at")
       .eq("type", "testimony")
       .eq("status", "approved")
       .is("deleted_at", null)
       .order("created_at", { ascending: false });
+
     if (!data || data.length === 0) return seedTestimonies;
     return data.map((s) => {
-      const p = s.payload as Record<string, string>;
+      const p = (s.payload as Record<string, unknown>) ?? {};
       return {
         id: s.id,
-        name: p.name ?? "Anonymous",
-        location: p.location || undefined,
+        name: String(p.name || p.fullName || "Member of the Fellowship"),
+        location: p.location ? String(p.location) : undefined,
         date: s.created_at.slice(0, 10),
-        body: p.testimony ?? "",
+        body: String(p.body || p.testimony || p.message || ""),
         isSample: false,
       };
-    });
+    }).filter((t) => Boolean(t.body.trim()));
   }, seedTestimonies);
 }
 

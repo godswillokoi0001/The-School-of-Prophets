@@ -11,7 +11,8 @@ export function NewsletterSubscribe({
   description?: string;
 }) {
   const [email, setEmail] = useState("");
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [honeypot, setHoneypot] = useState("");
   const [busy, setBusy] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -19,6 +20,14 @@ export function NewsletterSubscribe({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!firstName.trim()) {
+      setError("Please provide your first name.");
+      return;
+    }
+    if (!lastName.trim()) {
+      setError("Please provide your last name.");
+      return;
+    }
     if (!email.trim()) {
       setError("Add an email address so we know where to send it.");
       return;
@@ -33,7 +42,9 @@ export function NewsletterSubscribe({
         body: JSON.stringify({
           type: "newsletter",
           email: email.trim(),
-          name: name.trim() || undefined,
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+          name: `${firstName.trim()} ${lastName.trim()}`.trim(),
           website: honeypot,
         }),
       });
@@ -42,7 +53,8 @@ export function NewsletterSubscribe({
       if (res.ok && data.ok) {
         setSuccess(true);
         setEmail("");
-        setName("");
+        setFirstName("");
+        setLastName("");
       } else {
         setError(
           data.error ||
@@ -75,7 +87,41 @@ export function NewsletterSubscribe({
         autoComplete="off"
         aria-hidden="true"
       />
-      <div className="flex flex-col gap-2 sm:flex-row">
+      <div className="grid gap-2 sm:grid-cols-2">
+        <label>
+          <span className="sr-only">First name</span>
+          <input
+            type="text"
+            required
+            autoComplete="given-name"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            placeholder="First name *"
+            className={`min-h-11 w-full border bg-transparent px-3 text-sm focus:border-gold ${
+              onDark
+                ? "border-parchment/25 text-parchment placeholder:text-parchment/35"
+                : "border-ink/25 text-ink placeholder:text-quiet/60"
+            }`}
+          />
+        </label>
+        <label>
+          <span className="sr-only">Last name</span>
+          <input
+            type="text"
+            required
+            autoComplete="family-name"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            placeholder="Last name *"
+            className={`min-h-11 w-full border bg-transparent px-3 text-sm focus:border-gold ${
+              onDark
+                ? "border-parchment/25 text-parchment placeholder:text-parchment/35"
+                : "border-ink/25 text-ink placeholder:text-quiet/60"
+            }`}
+          />
+        </label>
+      </div>
+      <div className="mt-2 flex flex-col gap-2 sm:flex-row">
         <label className="flex-1">
           <span className="sr-only">Email address</span>
           <input
@@ -85,7 +131,7 @@ export function NewsletterSubscribe({
             inputMode="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
+            placeholder="Email address *"
             aria-invalid={Boolean(error)}
             aria-describedby={error ? "newsletter-error" : undefined}
             className={`min-h-11 w-full border bg-transparent px-3 text-sm focus:border-gold ${

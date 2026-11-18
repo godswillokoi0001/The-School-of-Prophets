@@ -286,25 +286,44 @@ export default async function HomePage() {
                 <p className="mt-2 text-xs text-quiet">{formatDate(featured.date)}</p>
               </div>
 
-              <div className="md:col-span-9">
-                <h3 className="max-w-[26ch] font-display text-3xl leading-[1.05] sm:text-4xl lg:text-5xl">
-                  <Link href={`/teachings/${featured.slug}`} className="link-quiet">
-                    {featured.title}
-                  </Link>
-                </h3>
-                <p className="measure mt-5 text-quiet">{featured.summary}</p>
-                <div className="mt-6 flex flex-wrap items-center gap-6">
-                  <Link
-                    href={`/teachings/${featured.slug}`}
-                    className="link-quiet inline-flex items-center gap-2 text-sm font-semibold text-ink"
-                  >
-                    Read the outline
-                    <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
-                  </Link>
-                  <span className="text-xs uppercase tracking-[0.12em] text-ember">
-                    {featured.scripture}
-                  </span>
+              <div className="md:col-span-9 grid gap-8 lg:grid-cols-12 lg:items-center">
+                <div className={featured.image ? "lg:col-span-7" : "lg:col-span-12"}>
+                  <h3 className="max-w-[26ch] font-display text-3xl leading-[1.05] sm:text-4xl lg:text-5xl">
+                    <Link href={`/teachings/${featured.slug}`} className="link-quiet">
+                      {featured.title}
+                    </Link>
+                  </h3>
+                  <p className="measure mt-5 text-quiet">{featured.summary}</p>
+                  <div className="mt-6 flex flex-wrap items-center gap-6">
+                    <Link
+                      href={`/teachings/${featured.slug}`}
+                      className="link-quiet inline-flex items-center gap-2 text-sm font-semibold text-ink"
+                    >
+                      Read the outline
+                      <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
+                    </Link>
+                    <span className="text-xs uppercase tracking-[0.12em] text-ember">
+                      {featured.scripture}
+                    </span>
+                  </div>
                 </div>
+
+                {featured.image && (
+                  <div className="lg:col-span-5">
+                    <Link
+                      href={`/teachings/${featured.slug}`}
+                      className="group relative block aspect-[16/10] overflow-hidden rounded border border-ink/15 bg-ink shadow-sm"
+                    >
+                      <Image
+                        src={featured.image}
+                        alt={featured.imageAlt || featured.title}
+                        fill
+                        sizes="(max-width: 768px) 100vw, 35vw"
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    </Link>
+                  </div>
+                )}
               </div>
             </article>
 

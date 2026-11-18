@@ -115,6 +115,23 @@ export function TeachingEditor({
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (!form.title.trim()) {
+      setErrorModal("Please enter a title for this teaching.");
+      return;
+    }
+    if (!form.slug.trim()) {
+      setErrorModal("Please enter a web address (slug) for this teaching.");
+      return;
+    }
+    if (form.status === "published") {
+      const ytId = extractYouTubeId(form.youtube_url);
+      if (!ytId) {
+        setErrorModal(
+          "A valid YouTube video link is required to publish a teaching. Please add the YouTube video URL, or set the status to Draft.",
+        );
+        return;
+      }
+    }
     setBusy(true);
     const res = await saveTeaching(form);
     setBusy(false);
@@ -297,9 +314,15 @@ export function TeachingEditor({
           <section className="admin-surface p-4">
             <div className="grid gap-3 md:grid-cols-2">
               <div>
-                <label className="admin-label">Title</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="admin-label !mb-0">Title *</label>
+                  <span className="text-[10px] opacity-60">
+                    {Math.max(0, 140 - form.title.length)} characters left
+                  </span>
+                </div>
                 <input
                   className="admin-input"
+                  maxLength={140}
                   value={form.title}
                   placeholder="e.g. The Power of Kingdom Intercession"
                   onChange={(e) => set("title", e.target.value)}
@@ -376,7 +399,12 @@ export function TeachingEditor({
                 <input className="admin-input" value={form.speaker} onChange={(e) => set("speaker", e.target.value)} />
               </div>
               <div className="md:col-span-2">
-                <label className="admin-label">Summary (shown on cards and search results)</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="admin-label !mb-0">Summary (shown on cards and search results)</label>
+                  <span className="text-[10px] opacity-60">
+                    {Math.max(0, 320 - form.summary.length)} characters left
+                  </span>
+                </div>
                 <textarea className="admin-textarea !min-h-20" value={form.summary} onChange={(e) => set("summary", e.target.value)} maxLength={320} />
               </div>
             </div>
@@ -615,16 +643,27 @@ export function TeachingEditor({
               </div>
             )}
             <div>
-              <label className="admin-label">SEO title (optional)</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="admin-label !mb-0">SEO title (optional)</label>
+                <span className="text-[10px] opacity-60">
+                  {Math.max(0, 60 - (form.seo_title?.length ?? 0))} chars left
+                </span>
+              </div>
               <input
                 className="admin-input"
+                maxLength={60}
                 value={form.seo_title ?? ""}
                 onChange={(e) => set("seo_title", e.target.value || null)}
                 placeholder={form.title}
               />
             </div>
             <div className="md:col-span-3">
-              <label className="admin-label">SEO description (optional)</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="admin-label !mb-0">SEO description (optional)</label>
+                <span className="text-[10px] opacity-60">
+                  {Math.max(0, 160 - (form.seo_description?.length ?? 0))} chars left
+                </span>
+              </div>
               <input
                 className="admin-input"
                 value={form.seo_description ?? ""}

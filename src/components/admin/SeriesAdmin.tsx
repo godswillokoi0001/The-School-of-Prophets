@@ -185,16 +185,26 @@ export function SeriesEditor({ initial }: { initial: SeriesInput }) {
       {message && <p className="admin-surface mb-3 p-2 text-xs">{message}</p>}
       <div className="admin-surface grid gap-3 p-4 md:grid-cols-2">
         <div>
-          <label className="admin-label">Title</label>
-          <input className="admin-input" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
+          <div className="flex items-center justify-between mb-1">
+            <label className="admin-label !mb-0">Title *</label>
+            <span className="text-[10px] opacity-60">
+              {Math.max(0, 100 - (form.title?.length ?? 0))} chars left
+            </span>
+          </div>
+          <input className="admin-input" maxLength={100} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
         </div>
         <div>
           <label className="admin-label">Slug</label>
           <input className="admin-input" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} pattern="[a-z0-9-]+" required />
         </div>
         <div className="md:col-span-2">
-          <label className="admin-label">Description</label>
-          <textarea className="admin-textarea !min-h-20" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+          <div className="flex items-center justify-between mb-1">
+            <label className="admin-label !mb-0">Description</label>
+            <span className="text-[10px] opacity-60">
+              {Math.max(0, 280 - (form.description?.length ?? 0))} chars left
+            </span>
+          </div>
+          <textarea className="admin-textarea !min-h-20" maxLength={280} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
         </div>
         <div>
           <label className="admin-label">Cover image</label>

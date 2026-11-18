@@ -59,37 +59,45 @@ export const site = {
 
 export type SocialKey = keyof typeof site.social;
 
-export const socialLinks = [
+export interface SocialLink {
+  key: "whatsapp" | "telegram" | "facebookGroup" | "facebookPage" | "youtube";
+  label: string;
+  href: string;
+  fallbackHref: string;
+  note: string;
+}
+
+export const socialLinks: SocialLink[] = [
   {
-    key: "whatsapp" as const,
+    key: "whatsapp",
     label: "WhatsApp",
     href: site.social.whatsappInvite,
     fallbackHref: "/contact",
     note: "The main gathering room: session links, notices and teaching alerts.",
   },
   {
-    key: "telegram" as const,
+    key: "telegram",
     label: "Telegram",
     href: site.social.telegramInvite,
     fallbackHref: "/contact",
     note: "A second room for members who prefer Telegram.",
   },
   {
-    key: "facebookGroup" as const,
+    key: "facebookGroup",
     label: "Facebook group",
     href: site.social.facebookGroup,
     fallbackHref: site.social.facebookGroup,
     note: "Discussion between gatherings.",
   },
   {
-    key: "facebookPage" as const,
+    key: "facebookPage",
     label: "Facebook page",
     href: site.social.facebookPage,
     fallbackHref: site.social.facebookPage,
     note: "Announcements and teaching clips.",
   },
   {
-    key: "youtube" as const,
+    key: "youtube",
     label: "YouTube",
     href: site.social.youtube,
     fallbackHref: site.social.youtube,

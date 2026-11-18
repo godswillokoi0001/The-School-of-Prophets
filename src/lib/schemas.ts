@@ -50,6 +50,8 @@ export const enrolmentSchema = z.object({
 
 export const newsletterSchema = z.object({
   email,
+  firstName: z.string().trim().min(1, "First name is required.").max(60),
+  lastName: z.string().trim().min(1, "Last name is required.").max(60),
   name: optionalName,
 });
 

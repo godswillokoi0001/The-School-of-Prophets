@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidateTag } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { getAdminClient } from "@/lib/supabase/server";
 import { audit, requireStaff } from "@/lib/admin";
 import { sendReplyEmail, sendTemplated } from "@/lib/notify";
@@ -138,11 +138,18 @@ export async function approveTestimony(id: string, editedBody: string | null) {
   if (!svc) return { ok: false };
   const { data } = await svc.from("submissions").select("payload").eq("id", id).single();
   const payload = (data?.payload ?? {}) as Record<string, unknown>;
-  const next = editedBody ? { ...payload, testimony: editedBody } : payload;
+  const next = editedBody ? { ...payload, testimony: editedBody, body: editedBody } : payload;
   await svc.from("submissions").update({ payload: next, status: "approved" }).eq("id", id);
   await recordChange(id, staff.id, "status", null, "approved");
   await audit(staff, "publish", "testimonies", id);
   revalidateTag("testimonies");
+  try {
+    revalidatePath("/testimonies");
+    revalidatePath("/");
+    revalidatePath("/admin/inbox");
+  } catch {
+    // ignore
+  }
   return { ok: true };
 }
 
@@ -154,6 +161,12 @@ export async function featureTestimony(id: string, featured: boolean) {
   const payload = (data?.payload ?? {}) as Record<string, unknown>;
   await svc.from("submissions").update({ payload: { ...payload, featured } }).eq("id", id);
   revalidateTag("testimonies");
+  try {
+    revalidatePath("/testimonies");
+    revalidatePath("/");
+  } catch {
+    // ignore
+  }
   return { ok: true };
 }
 

@@ -5,6 +5,7 @@ import "./globals.css";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { AnnouncementBar } from "@/components/AnnouncementBar";
+import { NewsletterModal } from "@/components/NewsletterModal";
 import { PublicOnly } from "@/components/PublicOnly";
 import { site } from "@/config/site";
 
@@ -98,6 +99,7 @@ export default function RootLayout({
           </a>
           <AnnouncementBar />
           <Header />
+          <NewsletterModal />
         </PublicOnly>
         <main id="main">{children}</main>
         <PublicOnly>

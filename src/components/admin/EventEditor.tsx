@@ -127,8 +127,13 @@ export function EventEditor({
 
       <div className="admin-surface grid gap-3 p-4 md:grid-cols-2">
         <div>
-          <label className="admin-label">Title</label>
-          <input className="admin-input" value={form.title} onChange={(e) => set("title", e.target.value)} required />
+          <div className="flex items-center justify-between mb-1">
+            <label className="admin-label !mb-0">Title *</label>
+            <span className="text-[10px] opacity-60">
+              {Math.max(0, 100 - (form.title?.length ?? 0))} chars left
+            </span>
+          </div>
+          <input className="admin-input" maxLength={100} value={form.title} onChange={(e) => set("title", e.target.value)} required />
         </div>
         <div>
           <label className="admin-label">Slug</label>

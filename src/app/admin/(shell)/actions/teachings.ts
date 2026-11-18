@@ -1,8 +1,9 @@
 "use server";
 
-import { revalidateTag } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { getAdminClient } from "@/lib/supabase/server";
 import { audit, requireStaff } from "@/lib/admin";
+import { extractYouTubeId } from "@/lib/youtube";
 
 export type TeachingInput = {
   id?: string;
@@ -34,12 +35,30 @@ const allTags = ["teachings", "series", "setting:homepage"];
 
 function revalidateSite() {
   allTags.forEach((t) => revalidateTag(t));
+  try {
+    revalidatePath("/teachings");
+    revalidatePath("/teachings/[slug]", "page");
+    revalidatePath("/");
+    revalidatePath("/admin/teachings");
+  } catch {
+    // ignore
+  }
 }
 
 export async function saveTeaching(input: TeachingInput) {
   const staff = await requireStaff("admin");
   const svc = await getAdminClient();
   if (!svc) return { ok: false, error: "No database connection" };
+
+  if (input.status === "published") {
+    const ytId = extractYouTubeId(input.youtube_url);
+    if (!ytId) {
+      return {
+        ok: false,
+        error: "A valid YouTube video link is required to publish a teaching. Please add the YouTube video link, or save as a draft.",
+      };
+    }
+  }
 
   const { data: existing } = input.id
     ? await svc.from("teachings").select("slug,title").eq("id", input.id).single()
