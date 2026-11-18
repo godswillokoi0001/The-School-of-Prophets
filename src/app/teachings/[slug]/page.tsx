@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ExternalLink, Headphones } from "lucide-react";
 import { TeachingVideo } from "@/components/TeachingVideo";
+import { Cover } from "@/components/Cover";
 import { getSeries, getTeaching, getTeachings } from "@/lib/data";
 import { getServiceClient, supabaseConfigured } from "@/lib/supabase/server";
 import { sanitizeServerHtml } from "@/lib/sanitize-html";
@@ -113,6 +114,17 @@ export default async function TeachingPage({ params }: Params) {
             <p className="mt-2 font-display text-2xl leading-snug">{teaching.scripture}</p>
           </div>
         </div>
+
+        {teaching.image && (
+          <div className="relative aspect-[16/9] w-full overflow-hidden bg-ink md:aspect-[24/9]">
+            <Cover
+              src={teaching.image}
+              alt={teaching.imageAlt}
+              sizes="100vw"
+              priority
+            />
+          </div>
+        )}
       </header>
 
       <div className="wrap grid gap-12 py-12 md:grid-cols-12 md:py-16">

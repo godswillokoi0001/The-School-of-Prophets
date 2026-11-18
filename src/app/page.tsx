@@ -72,21 +72,27 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* Hero: a cover plate, then the type */}
-      <section className="relative overflow-hidden bg-ink text-parchment">
-        <div className="relative aspect-[16/10] w-full border-b border-parchment/10 sm:aspect-[16/7] lg:aspect-[21/6]">
-          <Image
-            src="/images/desert-walk.webp"
-            alt=""
-            aria-hidden="true"
-            fill
-            priority
-            sizes="100vw"
-            className="object-cover object-[55%_42%]"
-          />
-        </div>
+      {/* Hero: the watchman's hill, held behind the type */}
+      <section className="relative isolate overflow-hidden bg-ink text-parchment">
+        <Image
+          src="/images/desert-walk.webp"
+          alt=""
+          aria-hidden="true"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-[72%_32%]"
+        />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-gradient-to-r from-ink via-ink/88 to-ink/10"
+        />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-gradient-to-t from-ink via-ink/20 to-ink/45"
+        />
 
-        <div className="wrap relative grid gap-14 pb-14 pt-12 md:pb-20 md:pt-16 lg:grid-cols-12 lg:gap-12">
+        <div className="wrap relative grid gap-12 pb-14 pt-16 md:pb-20 md:pt-24 lg:grid-cols-12 lg:items-center lg:gap-10">
           <div className="lg:col-span-7">
             <p className="label text-gold-soft/85">
               Interdenominational · Founded {site.founded}
@@ -122,7 +128,7 @@ export default async function HomePage() {
             </div>
           </div>
 
-          <div className="lg:col-span-5 lg:pl-8">
+          <div className="lg:col-span-4 lg:col-start-9">
             <NextGathering sessions={schedule} joinHref={contact.whatsapp || undefined} />
             <p className="mt-4 text-xs leading-relaxed text-parchment/60">
               Every session is online. Times are kept in WAT and shown in your own
