@@ -379,7 +379,10 @@ export function BetaFeedbackForm() {
   const progressIndex = Math.min(step, 3);
 
   return (
-    <div id="review" className="border-t border-ink/20 pt-8">
+    <div
+      id="review"
+      className="border-t border-ink/20 pt-8 [&_.input]:min-h-12 [&_.select]:min-h-12 [&_.textarea]:min-h-12"
+    >
       <ol className="grid grid-cols-4 gap-2 md:gap-4" aria-label="Progress">
         {STEPS.map((entry, index) => {
           const done = step > index || showReview;
@@ -757,7 +760,7 @@ export function BetaFeedbackForm() {
                   <button
                     type="button"
                     onClick={() => set("issues", [...values.issues, emptyIssue()])}
-                    className="btn btn-outline"
+                    className="btn btn-outline min-h-12"
                   >
                     Add another issue
                   </button>
@@ -906,11 +909,11 @@ export function BetaFeedbackForm() {
       {step < 4 ? (
         <div className="mt-8 flex flex-wrap items-center gap-3 border-t border-ink/15 pt-6">
           {step > 0 && (
-            <button type="button" onClick={goBack} className="btn btn-outline">
+            <button type="button" onClick={goBack} className="btn btn-outline min-h-12">
               Back
             </button>
           )}
-          <button type="button" onClick={goNext} className="btn btn-gold">
+          <button type="button" onClick={goNext} className="btn btn-gold min-h-12">
             Continue
           </button>
           <p className="text-xs text-quiet">
@@ -931,7 +934,7 @@ export function BetaFeedbackForm() {
               type="button"
               onClick={submit}
               disabled={status === "sending"}
-              className="btn btn-gold min-w-40"
+              className="btn btn-gold min-h-12 min-w-40"
             >
               {status === "sending" ? (
                 <>
@@ -944,7 +947,7 @@ export function BetaFeedbackForm() {
                 "Send my review"
               )}
             </button>
-            <button type="button" onClick={goBack} className="btn btn-outline" disabled={status === "sending"}>
+            <button type="button" onClick={goBack} className="btn btn-outline min-h-12" disabled={status === "sending"}>
               Back
             </button>
           </div>
@@ -1071,18 +1074,18 @@ function BetaThankYou({
           honest the room, the better this gets.
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
-          <button type="button" onClick={onCopy} className="btn btn-outline">
+          <button type="button" onClick={onCopy} className="btn btn-outline min-h-12">
             {copied ? "Link copied" : "Copy the link"}
           </button>
           <a
             href={`https://wa.me/?text=${encodeURIComponent(shareText)}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="btn btn-outline"
+            className="btn btn-outline min-h-12"
           >
             Send on WhatsApp
           </a>
-          <Link href="/" className="btn btn-gold">
+          <Link href="/" className="btn btn-gold min-h-12">
             Back to the site
           </Link>
         </div>
