@@ -62,9 +62,13 @@ export default async function HomePage() {
     getScheduleExceptions(),
   ]);
   const show = { ...defaultSections, ...(homeSetting as HomeSections) };
-  const featured = teachings.find((t) => t.featured) ?? teachings[0];
+  // A stub saved in the CMS ("Title...") is not a teaching; never print it.
+  const published = teachings.filter(
+    (t) => !/^(title|untitled|sample)\.{0,3}$/i.test(t.title.trim()),
+  );
+  const featured = published.find((t) => t.featured) ?? published[0];
   const seriesTitle = seriesList.find((s) => s.slug === featured?.series)?.title;
-  const recent = teachings.filter((t) => t.slug !== featured?.slug).slice(0, 3);
+  const recent = published.filter((t) => t.slug !== featured?.slug).slice(0, 3);
 
   return (
     <>
@@ -362,7 +366,7 @@ export default async function HomePage() {
           <p className="label text-ember">In his own words</p>
           <Reveal>
             <blockquote className="mt-6">
-              <p className="pullquote max-w-[26ch] font-display text-3xl leading-[1.15] sm:text-4xl lg:text-[2.9rem]">
+              <p className="pullquote max-w-[23ch] font-display text-3xl leading-[1.15] sm:text-4xl lg:text-[2.5rem]">
                 “One of the reasons God sent prophets was simply because He loves His
                 people.”
               </p>

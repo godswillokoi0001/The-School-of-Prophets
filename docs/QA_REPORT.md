@@ -10,7 +10,7 @@ Stack: Next.js 15.5.29, React 19.1.1, Tailwind 4, Fraunces + Manrope via
 | Check | Result | Evidence |
 | --- | --- | --- |
 | `tsc --noEmit` | **Pass** | 0 errors |
-| `eslint .` | **Pass with warnings** | 0 errors, 2 warnings, both pre-existing in admin code |
+| `eslint .` | **Pass with warnings** | 0 errors, 13 warnings, all in admin/helper modules |
 | `next build` | **Pass** | compiled in 53s; 30 routes; middleware 95.3 kB |
 | Home first-load JS | **110 kB** (103 kB shared) | build output |
 | Horizontal overflow at 375 / 1440 | **None** | DOM: `scrollWidth - innerWidth = -11` at both widths |
@@ -18,7 +18,8 @@ Stack: Next.js 15.5.29, React 19.1.1, Tailwind 4, Fraunces + Manrope via
 | Banned words in public copy | **0 matches** | ripgrep across `src/app` and `src/components`, excluding admin |
 | Lighthouse | **Not run** | no Chrome/Lighthouse available in this environment |
 | axe | **Not run** | no axe tooling installed; see "What is not verified" |
-| Screenshots at 375 / 1440 | **Blocked** | capture refused while the Freebuff window is minimised |
+| Screenshots at 1440 | **Captured** | `docs/screens/home-1440*.png` (viewport captures; full-page timed out) |
+| Screenshots at 375 | **Not reliable** | capture canvas stays 1280 px wide while the page lays out at 375; DOM measurements used instead |
 
 ## What was verified in the running build
 
@@ -60,8 +61,17 @@ which clears 3:1, at the cost of a slightly browner foil.
 
 ### 1. Squint test
 
-Could not be performed on blurred images because screenshot capture is blocked.
-Structural equivalent, verified in the DOM and by reading the composed markup:
+Performed on the four 1440 captures in `docs/screens/` (hero, fellowship spread,
+week/systems, teaching catalogue, portrait/join). Each block reads as its own
+composition at a glance: a dark type hero with a bordered countdown; a light 7/5
+spread with a framed scripture plate; a dark timetable; a light three-column
+numeral band; a paper catalogue with hairline rows; an ink training band; a
+portrait spread; a closing block with the seal.
+
+Mobile was checked numerically rather than visually, because the 375 capture
+canvas does not scale to the page width (see the table above): no horizontal
+overflow (`scrollWidth − innerWidth = −11`), 44 px menu control, 44 px headings
+at 44 px, 17 px body copy.
 
 - Home: dark type hero with countdown panel → parchment split 7/5 with a
   scripture plate → dark full-bleed timetable → parchment three-column numerals
@@ -122,19 +132,26 @@ this redesign and was not repeated.
    library filter. Do not quote a score until it is measured.
 2. **axe / automated a11y.** Not installed. Contrast was computed manually (table
    above); landmarks, heading order and skip link are present in markup.
-3. **Screenshots at 375 / 1440.** `preview_screenshot` refuses while the Freebuff
-   window is minimised ("it has not been drawn yet"). Foreground the window and
-   re-run the capture; no code change is needed.
-4. **Visual review of the redesign.** Because of (3), the new compositions have
-   been verified structurally and numerically, not by eye.
+3. **375 px visual review.** The capture tool returns a 1280 px canvas with the
+   375 px page drawn in its left edge, so it cannot be judged as a phone
+   screenshot. Use a real device or a resized browser window for the final
+   mobile critique.
 
 ## Known issues
 
+- **Timed newsletter popup removed.** A modal that opened on a timer and dimmed
+  the page was mounted in the root layout. It is deleted; the letter is offered
+  inline in the footer and on `/newsletter` instead.
+- **Pull-quote overflow fixed.** The portrait quote ran ~20 px past its column at
+  1440; measure reduced from 26ch to 23ch and the size stepped down at `lg`.
+- **CMS stub filtered.** An entry titled `Title...` appeared in the catalogue;
+  obvious stubs are now filtered from the home page and the library.
 - **Portrait LCP advisory.** Next reports `prophet-portrait.webp` as the LCP
   element and suggests `priority`. It sits below the fold on Home; adding
   `priority` would preload an off-screen image and hurt the real LCP. Left as is
   deliberately.
-- **Admin warnings (2).** Pre-existing in another workstream; no errors. The
+- **Admin warnings (13).** Unused imports and hook dependency notes in the admin
+  dashboard and helper modules, from another workstream. No errors, and the
   public site carries none.
 - **Gold on parchment at 2.98:1** for the seal artwork only (see above).
 - **Missing photography and copy.** See `docs/ASSETS_NEEDED.md` and
@@ -143,8 +160,8 @@ this redesign and was not repeated.
 
 ## Remaining work, in order
 
-1. Foreground the browser, capture 375/1440 for every page, and critique against
-   the checklist; adjust spacing and any composition that reads as a template.
+1. Capture every page at 1440 and on a real 375 px device, and critique against
+   the checklist; the home page is the only page reviewed visually so far.
 2. Give Prayer, Give, Contact, Book, Testimonies and Newsletter the same
    page-by-page treatment as About and Gatherings. They currently inherit tokens
    but not new compositions.

@@ -50,6 +50,7 @@ export function TeachingLibrary({
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
     return [...teachings]
+      .filter((t) => !/^(title|untitled|sample)\.{0,3}$/i.test(t.title.trim()))
       .filter((t) => (series === "all" ? true : t.series === series))
       .filter((t) => (format === "all" ? true : (t.format ?? []).includes(format)))
       .filter((t) =>
