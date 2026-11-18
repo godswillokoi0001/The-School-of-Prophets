@@ -81,7 +81,7 @@ export default async function HomePage() {
           fill
           priority
           sizes="100vw"
-          className="object-cover object-[72%_32%]"
+          className="object-cover object-[60%_40%]"
         />
         <div
           aria-hidden="true"
