@@ -2,8 +2,18 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Copy, LoaderCircle, Send, RotateCcw, Eye, CheckCircle2 } from "lucide-react";
-import { sendBroadcast, snippetFor } from "@/app/admin/(shell)/actions/site-admin";
+import {
+  Copy,
+  LoaderCircle,
+  Send,
+  RotateCcw,
+  Eye,
+  CheckCircle2,
+} from "lucide-react";
+import {
+  sendBroadcast,
+  snippetFor,
+} from "@/app/admin/(shell)/actions/site-admin";
 import { AdminModal } from "@/components/admin/AdminModal";
 import { AdminPagination } from "@/components/admin/AdminPagination";
 import { RichTextEditor, RichTextView } from "@/components/admin/RichText";
@@ -194,7 +204,8 @@ export function BroadcastComposer({
           <div className="flex items-center justify-between mb-1">
             <label className="admin-label !mb-0">Message & Announcement</label>
             <span className="text-[10px] opacity-60">
-              Personalize with &#123;&#123;name&#125;&#125; or &#123;&#123;first_name&#125;&#125;
+              Personalize with &#123;&#123;name&#125;&#125; or
+              &#123;&#123;first_name&#125;&#125;
             </span>
           </div>
           <div className="mb-3">

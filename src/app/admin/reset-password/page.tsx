@@ -14,6 +14,19 @@ export default function ResetPasswordPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
+  useEffect(() => {
+    const sb = createSupabaseBrowser();
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get("code");
+      if (code) {
+        sb.auth.exchangeCodeForSession(code).catch((err) => {
+          console.warn("[reset-password] code exchange notice:", err);
+        });
+      }
+    }
+  }, []);
+
   async function handleReset(e: React.FormEvent) {
     e.preventDefault();
     if (password.length < 8) {

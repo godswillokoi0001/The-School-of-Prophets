@@ -3,7 +3,16 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Bell, Check, Clock, ExternalLink, Inbox, MessageSquare, Volume2, VolumeX } from "lucide-react";
+import {
+  Bell,
+  Check,
+  Clock,
+  ExternalLink,
+  Inbox,
+  MessageSquare,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
 import { createSupabaseBrowser } from "@/lib/supabase/browser";
 
 export type NotificationItem = {
@@ -24,7 +33,6 @@ const typeLabels: Record<string, string> = {
   registration: "Event Registration",
   booking: "Call Booking",
   newsletter: "Newsletter Subscription",
-  beta_feedback: "Beta Review",
 };
 
 function formatTimeAgo(isoString: string) {
@@ -37,7 +45,10 @@ function formatTimeAgo(isoString: string) {
     if (hours < 24) return `${hours}h ago`;
     const days = Math.floor(hours / 24);
     if (days < 7) return `${days}d ago`;
-    return new Date(isoString).toLocaleDateString("en-GB", { month: "short", day: "numeric" });
+    return new Date(isoString).toLocaleDateString("en-GB", {
+      month: "short",
+      day: "numeric",
+    });
   } catch {
     return "";
   }
@@ -79,24 +90,17 @@ export function NotificationBell({
           }
 
           const payloadObj = (row.payload as Record<string, unknown>) ?? {};
-          const name = String(payloadObj.name ?? payloadObj.fullName ?? "Someone");
+          const name = String(
+            payloadObj.name ?? payloadObj.fullName ?? "Someone",
+          );
           const label = typeLabels[type] ?? type;
-          const rating = Number(payloadObj.overall_rating ?? 0);
-          const priority =
-            type === "beta_feedback" &&
-            ((rating > 0 && rating <= 2) ||
-              (Array.isArray(payloadObj.issues) &&
-                (payloadObj.issues as { severity?: string }[]).some(
-                  (issue) => issue?.severity === "Something broke",
-                )));
 
           const newItem: NotificationItem = {
             id: String(row.id),
             type,
-            title: `${priority ? "Priority · " : ""}New ${label} from ${name}${rating > 0 ? ` · ${rating}/5` : ""}`,
+            title: `New ${label} from ${name}`,
             subtitle: String(
-              payloadObj.take ??
-                payloadObj.message ??
+              payloadObj.message ??
                 payloadObj.prayerRequest ??
                 payloadObj.notes ??
                 payloadObj.email ??
@@ -122,7 +126,10 @@ export function NotificationBell({
             }
           }
 
-          if (typeof Notification !== "undefined" && Notification.permission === "granted") {
+          if (
+            typeof Notification !== "undefined" &&
+            Notification.permission === "granted"
+          ) {
             new Notification("The School of Prophets", { body: newItem.title });
           }
         },
@@ -176,7 +183,9 @@ export function NotificationBell({
           {/* Header */}
           <div className="flex items-center justify-between border-b border-parchment/10 bg-black/40 px-4 py-3">
             <div className="flex items-center gap-2">
-              <span className="font-display text-sm font-semibold text-parchment">Notifications</span>
+              <span className="font-display text-sm font-semibold text-parchment">
+                Notifications
+              </span>
               {items.filter((i) => i.status === "new").length > 0 && (
                 <span className="admin-badge admin-badge-gold text-[0.65rem] !py-0.5">
                   {items.filter((i) => i.status === "new").length} New
@@ -188,7 +197,9 @@ export function NotificationBell({
                 <button
                   type="button"
                   onClick={() => {
-                    setItems((prev) => prev.map((i) => ({ ...i, status: "read" })));
+                    setItems((prev) =>
+                      prev.map((i) => ({ ...i, status: "read" })),
+                    );
                     setUnread(0);
                   }}
                   className="text-[0.68rem] text-gold hover:underline cursor-pointer"
@@ -200,9 +211,17 @@ export function NotificationBell({
                 type="button"
                 onClick={toggleSound}
                 className="text-xs text-parchment/50 hover:text-parchment p-1 rounded"
-                title={sound ? "Mute notification chime" : "Enable notification chime"}
+                title={
+                  sound
+                    ? "Mute notification chime"
+                    : "Enable notification chime"
+                }
               >
-                {sound ? <Volume2 size={14} className="text-gold" /> : <VolumeX size={14} />}
+                {sound ? (
+                  <Volume2 size={14} className="text-gold" />
+                ) : (
+                  <VolumeX size={14} />
+                )}
               </button>
             </div>
           </div>
@@ -211,9 +230,15 @@ export function NotificationBell({
           <div className="max-h-[360px] overflow-y-auto divide-y divide-parchment/5">
             {items.length === 0 ? (
               <div className="p-6 text-center text-xs opacity-60">
-                <Inbox size={28} className="mx-auto mb-2 opacity-40 text-gold" />
+                <Inbox
+                  size={28}
+                  className="mx-auto mb-2 opacity-40 text-gold"
+                />
                 <p>No recent submissions yet.</p>
-                <p className="mt-1 text-[0.7rem]">When visitors fill forms on the site, they will appear right here.</p>
+                <p className="mt-1 text-[0.7rem]">
+                  When visitors fill forms on the site, they will appear right
+                  here.
+                </p>
               </div>
             ) : (
               items.map((item) => {
@@ -226,7 +251,9 @@ export function NotificationBell({
                     onClick={() => {
                       setOpen(false);
                       setItems((prev) =>
-                        prev.map((i) => (i.id === item.id ? { ...i, status: "read" } : i))
+                        prev.map((i) =>
+                          i.id === item.id ? { ...i, status: "read" } : i,
+                        ),
                       );
                       setUnread((u) => Math.max(0, u - 1));
                     }}
@@ -237,7 +264,9 @@ export function NotificationBell({
                         <span className="admin-badge !py-0.5 text-[0.6rem] uppercase tracking-wider">
                           {label}
                         </span>
-                        {isNew && <span className="h-1.5 w-1.5 rounded-full bg-gold" />}
+                        {isNew && (
+                          <span className="h-1.5 w-1.5 rounded-full bg-gold" />
+                        )}
                       </div>
                       <span className="text-[0.65rem] opacity-50 shrink-0">
                         {formatTimeAgo(item.created_at)}

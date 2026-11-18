@@ -4,20 +4,36 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Copy, Edit3, ExternalLink, LoaderCircle, Trash2 } from "lucide-react";
-import { bulkTeachings, duplicateTeaching } from "@/app/admin/(shell)/actions/teachings";
+import {
+  bulkTeachings,
+  duplicateTeaching,
+} from "@/app/admin/(shell)/actions/teachings";
 import { AdminModal } from "@/components/admin/AdminModal";
 import { AdminPagination } from "@/components/admin/AdminPagination";
 
 export type TeachingRow = {
-  id: string; title: string; slug: string; status: string;
-  series_title: string | null; date_taught: string | null; featured: boolean;
+  id: string;
+  title: string;
+  slug: string;
+  status: string;
+  series_title: string | null;
+  date_taught: string | null;
+  featured: boolean;
 };
 
 const statusBadge: Record<string, string> = {
-  published: "admin-badge-ok", scheduled: "admin-badge-warn", draft: "admin-badge-warn",
+  published: "admin-badge-ok",
+  scheduled: "admin-badge-warn",
+  draft: "admin-badge-warn",
 };
 
-export function TeachingList({ rows, seriesOptions }: { rows: TeachingRow[]; seriesOptions: { id: string; title: string }[] }) {
+export function TeachingList({
+  rows,
+  seriesOptions,
+}: {
+  rows: TeachingRow[];
+  seriesOptions: { id: string; title: string }[];
+}) {
   const router = useRouter();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [page, setPage] = useState(1);
@@ -91,21 +107,69 @@ export function TeachingList({ rows, seriesOptions }: { rows: TeachingRow[]; ser
 
       {selected.size > 0 && (
         <div className="admin-surface mb-3 flex flex-wrap items-center gap-2 p-3 text-xs">
-          <span className="font-semibold text-gold">{selected.size} selected</span>
-          <button className="admin-btn admin-btn-ghost !py-1" disabled={pending} onClick={() => run("publish")}>Publish</button>
-          <button className="admin-btn admin-btn-ghost !py-1" disabled={pending} onClick={() => run("unpublish")}>Unpublish</button>
-          <select className="admin-select !w-auto !py-1" value={bulkSeries} onChange={(e) => { setBulkSeries(e.target.value); if (e.target.value) run("series", e.target.value); }} aria-label="Move to series">
+          <span className="font-semibold text-gold">
+            {selected.size} selected
+          </span>
+          <button
+            className="admin-btn admin-btn-ghost !py-1"
+            disabled={pending}
+            onClick={() => run("publish")}
+          >
+            Publish
+          </button>
+          <button
+            className="admin-btn admin-btn-ghost !py-1"
+            disabled={pending}
+            onClick={() => run("unpublish")}
+          >
+            Unpublish
+          </button>
+          <select
+            className="admin-select !w-auto !py-1"
+            value={bulkSeries}
+            onChange={(e) => {
+              setBulkSeries(e.target.value);
+              if (e.target.value) run("series", e.target.value);
+            }}
+            aria-label="Move to series"
+          >
             <option value="">Move to series…</option>
             {seriesOptions.map((s) => (
-              <option key={s.id} value={s.id}>{s.title}</option>
+              <option key={s.id} value={s.id}>
+                {s.title}
+              </option>
             ))}
           </select>
-          <input className="admin-input !w-32 !py-1" placeholder="Add tag…" value={bulkTag} onChange={(e) => setBulkTag(e.target.value)} aria-label="Tag to add" />
-          <button className="admin-btn admin-btn-ghost !py-1" disabled={!bulkTag || pending} onClick={() => run("tag", bulkTag)}>Tag</button>
-          <button className="admin-btn admin-btn-danger !py-1" disabled={pending} onClick={() => run("delete", undefined, `Are you sure you want to permanently delete ${selected.size} teaching(s)? This action cannot be undone.`)}>
+          <input
+            className="admin-input !w-32 !py-1"
+            placeholder="Add tag…"
+            value={bulkTag}
+            onChange={(e) => setBulkTag(e.target.value)}
+            aria-label="Tag to add"
+          />
+          <button
+            className="admin-btn admin-btn-ghost !py-1"
+            disabled={!bulkTag || pending}
+            onClick={() => run("tag", bulkTag)}
+          >
+            Tag
+          </button>
+          <button
+            className="admin-btn admin-btn-danger !py-1"
+            disabled={pending}
+            onClick={() =>
+              run(
+                "delete",
+                undefined,
+                `Are you sure you want to permanently delete ${selected.size} teaching(s)? This action cannot be undone.`,
+              )
+            }
+          >
             <Trash2 size={12} /> Delete
           </button>
-          {busy && <LoaderCircle size={12} className="animate-spin text-gold" />}
+          {busy && (
+            <LoaderCircle size={12} className="animate-spin text-gold" />
+          )}
         </div>
       )}
 
@@ -125,7 +189,9 @@ export function TeachingList({ rows, seriesOptions }: { rows: TeachingRow[]; ser
             {rows.slice((page - 1) * pageSize, page * pageSize).map((t) => (
               <tr
                 key={t.id}
-                onClick={() => router.push(`/admin/teachings/${t.slug || t.id}`)}
+                onClick={() =>
+                  router.push(`/admin/teachings/${t.slug || t.id}`)
+                }
                 className="admin-row hover:bg-gold/10 cursor-pointer transition-colors group"
               >
                 <td onClick={(e) => e.stopPropagation()}>
@@ -141,11 +207,17 @@ export function TeachingList({ rows, seriesOptions }: { rows: TeachingRow[]; ser
                   <span className="font-medium text-parchment group-hover:text-gold transition-colors">
                     {t.title}
                   </span>
-                  {t.featured && <span className="ml-2 admin-badge admin-badge-new">Featured</span>}
+                  {t.featured && (
+                    <span className="ml-2 admin-badge admin-badge-new">
+                      Featured
+                    </span>
+                  )}
                 </td>
                 <td className="opacity-70 text-xs">{t.series_title ?? "—"}</td>
                 <td>
-                  <span className={`admin-badge text-xs uppercase ${statusBadge[t.status] ?? ""}`}>
+                  <span
+                    className={`admin-badge text-xs uppercase ${statusBadge[t.status] ?? ""}`}
+                  >
                     {t.status}
                   </span>
                 </td>
@@ -156,7 +228,9 @@ export function TeachingList({ rows, seriesOptions }: { rows: TeachingRow[]; ser
                       type="button"
                       className="admin-btn admin-btn-ghost !py-1 !px-2 text-xs"
                       title="Edit teaching"
-                      onClick={() => router.push(`/admin/teachings/${t.slug || t.id}`)}
+                      onClick={() =>
+                        router.push(`/admin/teachings/${t.slug || t.id}`)
+                      }
                     >
                       <Edit3 size={12} className="mr-1" /> Edit
                     </button>
@@ -188,7 +262,8 @@ export function TeachingList({ rows, seriesOptions }: { rows: TeachingRow[]; ser
                             setBusy(true);
                             const res = await duplicateTeaching(t.id);
                             setBusy(false);
-                            if (res.ok && res.id) router.push(`/admin/teachings/${res.id}`);
+                            if (res.ok && res.id)
+                              router.push(`/admin/teachings/${res.id}`);
                           },
                         });
                       }}
@@ -203,7 +278,8 @@ export function TeachingList({ rows, seriesOptions }: { rows: TeachingRow[]; ser
         </table>
         {rows.length === 0 && (
           <p className="p-6 text-center text-sm opacity-60">
-            No teachings found. Use “New teaching” to write and publish your first one.
+            No teachings found. Use “New teaching” to write and publish your
+            first one.
           </p>
         )}
         <AdminPagination
