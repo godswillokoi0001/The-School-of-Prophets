@@ -72,9 +72,21 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* Hero: type first, one action */}
+      {/* Hero: a cover plate, then the type */}
       <section className="relative overflow-hidden bg-ink text-parchment">
-        <div className="wrap relative grid gap-14 pb-14 pt-14 md:pb-20 md:pt-20 lg:grid-cols-12 lg:gap-12">
+        <div className="relative aspect-[16/10] w-full border-b border-parchment/10 sm:aspect-[16/7] lg:aspect-[21/6]">
+          <Image
+            src="/images/desert-walk.webp"
+            alt=""
+            aria-hidden="true"
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover object-[55%_42%]"
+          />
+        </div>
+
+        <div className="wrap relative grid gap-14 pb-14 pt-12 md:pb-20 md:pt-16 lg:grid-cols-12 lg:gap-12">
           <div className="lg:col-span-7">
             <p className="label text-gold-soft/85">
               Interdenominational · Founded {site.founded}

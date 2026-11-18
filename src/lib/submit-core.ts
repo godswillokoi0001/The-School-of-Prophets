@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { createClient } from "@supabase/supabase-js";
-import { getServiceClient, supabaseConfigured } from "@/lib/supabase/server";
+import { getServiceClient } from "@/lib/supabase/server";
 import { fieldErrors, honeypotSchema, contactSchema, prayerSchema, testimonySchema, enrolmentSchema, newsletterSchema, registrationSchema } from "@/lib/schemas";
 import { clientKey, rateLimit } from "@/lib/forms";
 import { notifySubmission, sendConfirmation } from "@/lib/notify";

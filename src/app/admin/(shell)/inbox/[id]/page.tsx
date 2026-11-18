@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { requireStaff } from "@/lib/admin";
 import { getAdminClient } from "@/lib/supabase/server";
 import { SubmissionDetail, type SubmissionRow } from "@/components/admin/InboxUI";
@@ -21,6 +22,18 @@ export default async function SubmissionPage({
     .eq("id", id)
     .single();
   if (!data) notFound();
+
+  // Automatically mark as read once checked by staff
+  if (data.status === "new") {
+    await svc.from("submissions").update({ status: "read" }).eq("id", id);
+    data.status = "read";
+    try {
+      revalidatePath("/admin");
+      revalidatePath("/admin/inbox");
+    } catch {
+      // ignore in edge cases
+    }
+  }
 
   const p = (data.payload ?? {}) as Record<string, unknown>;
   const row: SubmissionRow = {

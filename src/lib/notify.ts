@@ -69,7 +69,6 @@ export async function sendEmail(
   }
 
   const from = process.env.FORMS_FROM ?? "The School of Prophets <onboarding@resend.dev>";
-  const verifiedDevEmail = "censusokoi515@gmail.com";
 
   try {
     const res = await fetch("https://api.resend.com/emails", {
@@ -88,39 +87,8 @@ export async function sendEmail(
     if (!res.ok) {
       const text = await res.text();
       console.warn(`[notify:sendEmail] Resend API response (${res.status}) for ${to}:`, text);
-
-      // Smart sandbox fallback: When testing with onboarding@resend.dev, Resend restricts delivery
-      // to the verified owner account (censusokoi515@gmail.com). Deliver the full email there so it is never lost!
-      if (res.status === 403 && text.includes("testing emails to your own email address") && to.toLowerCase() !== verifiedDevEmail.toLowerCase()) {
-        console.info(`[notify:sendEmail] Routing sandbox email to verified owner ${verifiedDevEmail} (intended for ${to})`);
-        const banner = `<div style="background:#fef3c7;border:1px solid #f59e0b;padding:12px;margin-bottom:16px;border-radius:4px;font-size:12px;color:#92400e;"><strong>Resend Sandbox Delivery:</strong> This email was dispatched to <code>${to}</code>. Because the sending domain is currently in Resend sandbox mode, Resend routed this copy to your verified account (${verifiedDevEmail}). Once a custom domain is verified in your Resend dashboard, emails will be delivered directly to external recipients.</div>`;
-        const sandboxHtml = html ? `${banner}${html}` : undefined;
-        const sandboxText = `[RESEND SANDBOX DELIVERY — INTENDED FOR: ${to}]\n\n${body}`;
-        const sandboxSubject = `[Delivery -> ${to}] ${subject}`;
-
-        const fallbackRes = await fetch("https://api.resend.com/emails", {
-          method: "POST",
-          headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-          body: JSON.stringify({
-            from,
-            to: [verifiedDevEmail],
-            subject: sandboxSubject,
-            text: sandboxText,
-            ...(sandboxHtml ? { html: sandboxHtml } : {}),
-            ...(replyTo ? { reply_to: replyTo } : {}),
-          }),
-        });
-
-        if (fallbackRes.ok) {
-          const fallbackData = await fallbackRes.json().catch(() => ({}));
-          console.info(`[notify:sendEmail] Delivered sandbox copy to ${verifiedDevEmail} (id: ${(fallbackData as Record<string, unknown>).id})`);
-          await log("email", to, subject, body, "sent", `delivered via sandbox to ${verifiedDevEmail}`);
-          return "sent";
-        }
-      }
-
       await log("email", to, subject, body, "failed", `${res.status} ${text}`);
-      return "failed";
+      return `failed: ${text}`;
     }
 
     const data = await res.json().catch(() => ({}));
@@ -267,9 +235,8 @@ export async function notifySubmission(s: SubmissionRow) {
 
   const targets = [...new Set([...staffEmails, ...(s.type === "enrolment" ? [] : envTargets)])];
 
-  for (const to of targets) {
-    await sendEmail(to, subject, textBody, undefined, htmlBody);
-  }
+  // Parallel non-blocking email dispatch to all authorized admins
+  await Promise.allSettled(targets.map((to) => sendEmail(to, subject, textBody, undefined, htmlBody)));
 
   await pushToAdmins(label, name ? `${label} from ${name}` : label, s.id);
   await sendTelegram(textBody);

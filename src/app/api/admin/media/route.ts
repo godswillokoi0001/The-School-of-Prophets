@@ -116,26 +116,61 @@ export async function PATCH(request: Request) {
 
 export async function DELETE(request: Request) {
   const staff = await getStaff();
-  if (!staff || staff.role !== "owner") return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  if (!staff || (staff.role !== "owner" && staff.role !== "admin")) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
   const svc = (await getAdminClient()) || (await createSupabaseServer()) || getServiceClient();
   if (!svc) return NextResponse.json({ error: "no database" }, { status: 400 });
+
   const { path } = await request.json();
-  const usage = await Promise.all([
-    svc.from("teachings").select("id", { head: false }).eq("cover_url", path),
-    svc.from("events").select("id", { head: false }).eq("cover_url", path),
-    svc.from("series").select("id", { head: false }).eq("cover_url", path),
-  ]);
-  const inUse = usage.some((r) => (r.data ?? []).length > 0);
-  if (inUse)
-    return NextResponse.json(
-      { error: "This image is still used by a teaching, series or event. Replace it there first." },
-      { status: 409 },
-    );
+  if (!path) return NextResponse.json({ error: "Missing file path" }, { status: 400 });
+
   const storageKey = path.includes("/media/") ? path.split("/media/").pop() : path;
+
+  // 1. Cascade update everywhere this image is used (teachings, events, series)
+  await Promise.allSettled([
+    svc.from("teachings").update({ cover_url: null }).eq("cover_url", path),
+    svc.from("events").update({ cover_url: null }).eq("cover_url", path),
+    svc.from("series").update({ cover_url: null }).eq("cover_url", path),
+    svc.from("teachings").update({ share_image_url: null }).eq("share_image_url", path),
+    storageKey && storageKey !== path
+      ? svc.from("teachings").update({ cover_url: null }).eq("cover_url", storageKey)
+      : Promise.resolve(),
+    storageKey && storageKey !== path
+      ? svc.from("events").update({ cover_url: null }).eq("cover_url", storageKey)
+      : Promise.resolve(),
+    storageKey && storageKey !== path
+      ? svc.from("series").update({ cover_url: null }).eq("cover_url", storageKey)
+      : Promise.resolve(),
+  ]);
+
+  // 2. Remove from Supabase Storage
   if (storageKey) {
-    await svc.storage.from("media").remove([storageKey]);
+    try {
+      await svc.storage.from("media").remove([storageKey]);
+    } catch {
+      // storage removal is secondary
+    }
   }
-  await svc.from("media").delete().or(`path.eq.${path},path.eq.${storageKey}`);
-  await audit(staff, "delete", "media", path);
+
+  // 3. Remove from local uploads if saved locally
+  if (path.startsWith("/uploads/")) {
+    try {
+      const fs = await import("fs/promises");
+      const p = await import("path");
+      const localFilePath = p.join(process.cwd(), "public", path);
+      await fs.unlink(localFilePath);
+    } catch {
+      // ignore
+    }
+  }
+
+  // 4. Delete record from media table
+  await svc.from("media").delete().eq("path", path);
+  if (storageKey && storageKey !== path) {
+    await svc.from("media").delete().eq("path", storageKey);
+  }
+
+  audit(staff, "delete", "media", path).catch(() => {});
   return NextResponse.json({ ok: true });
 }

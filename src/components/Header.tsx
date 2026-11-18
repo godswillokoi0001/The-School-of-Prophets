@@ -138,9 +138,14 @@ export function Header() {
             })}
           </nav>
 
-          <Link href="/gatherings" className="btn btn-gold ml-auto hidden xl:ml-4 xl:inline-flex">
-            Join a gathering
-          </Link>
+          <div className="hidden items-center gap-2 xl:flex">
+            <Link href="/give" className="btn btn-gold">
+              Donate
+            </Link>
+            <Link href="/gatherings" className="btn btn-outline">
+              Join a gathering
+            </Link>
+          </div>
 
           <button
             type="button"
@@ -213,9 +218,14 @@ export function Header() {
               })}
             </nav>
 
-            <Link href="/gatherings" className="btn btn-gold mt-8 w-full">
-              Join a gathering
-            </Link>
+            <div className="mt-8 grid gap-2">
+              <Link href="/give" className="btn btn-gold w-full">
+                Donate
+              </Link>
+              <Link href="/gatherings" className="btn btn-outline w-full">
+                Join a gathering
+              </Link>
+            </div>
             <p className="label mt-8 text-parchment/35">{site.crest}</p>
           </div>
         </div>

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Copy, Edit3, ExternalLink, LoaderCircle, Trash2 } from "lucide-react";
 import { bulkTeachings, duplicateTeaching } from "@/app/admin/(shell)/actions/teachings";
 import { AdminModal } from "@/components/admin/AdminModal";
+import { AdminPagination } from "@/components/admin/AdminPagination";
 
 export type TeachingRow = {
   id: string; title: string; slug: string; status: string;
@@ -19,6 +20,8 @@ const statusBadge: Record<string, string> = {
 export function TeachingList({ rows, seriesOptions }: { rows: TeachingRow[]; seriesOptions: { id: string; title: string }[] }) {
   const router = useRouter();
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [page, setPage] = useState(1);
+  const pageSize = 12;
   const [pending, start] = useTransition();
   const [busy, setBusy] = useState(false);
   const [bulkTag, setBulkTag] = useState("");
@@ -119,7 +122,7 @@ export function TeachingList({ rows, seriesOptions }: { rows: TeachingRow[]; ser
             </tr>
           </thead>
           <tbody>
-            {rows.map((t) => (
+            {rows.slice((page - 1) * pageSize, page * pageSize).map((t) => (
               <tr
                 key={t.id}
                 onClick={() => router.push(`/admin/teachings/${t.slug || t.id}`)}
@@ -203,6 +206,12 @@ export function TeachingList({ rows, seriesOptions }: { rows: TeachingRow[]; ser
             No teachings found. Use “New teaching” to write and publish your first one.
           </p>
         )}
+        <AdminPagination
+          totalItems={rows.length}
+          pageSize={pageSize}
+          currentPage={page}
+          onPageChange={setPage}
+        />
       </div>
     </div>
   );

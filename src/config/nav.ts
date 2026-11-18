@@ -214,6 +214,12 @@ export const navGroups: NavGroup[] = [
         icon: HandHeart,
       },
       {
+        label: "Newsletter",
+        href: "/newsletter",
+        description: "Weekly apostolic epistles and prophetic letters.",
+        icon: ScrollText,
+      },
+      {
         label: "Donate",
         href: "/give",
         description: "Sow into teaching, training and outreach.",

@@ -3,7 +3,10 @@
  * Designed for high deliverability across all email clients (Gmail, Apple Mail, Outlook).
  */
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://theschoolofprophets.org";
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL && !process.env.NEXT_PUBLIC_SITE_URL.includes("localhost")
+    ? process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, "")
+    : "https://theschoolofprophets.org";
 
 export type BaseEmailOptions = {
   preheader?: string;
@@ -38,7 +41,7 @@ export function buildHtmlEmail(options: BaseEmailOptions): string {
     footerNote = "The School of Prophets · Interdenominational Fellowship · Africa/Lagos (WAT)",
   } = options;
 
-  const crestUrl = `${SITE_URL}/images/tsop-crest.webp`;
+  const crestUrl = `${SITE_URL}/images/tsop-crest.png`;
 
   const paragraphsHtml = paragraphs
     .map(

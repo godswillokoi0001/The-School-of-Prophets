@@ -2,6 +2,9 @@ export type Series = {
   slug: string;
   title: string;
   blurb: string;
+  /** Cover set in the CMS. Falls back to the first teaching's cover. */
+  image?: string;
+  imageAlt?: string;
 };
 
 export const seriesList: Series[] = [

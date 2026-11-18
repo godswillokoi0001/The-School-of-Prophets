@@ -43,8 +43,8 @@ export default async function SeriesPage({ params }: Params) {
         label="Series"
         title={series.title}
         lead={series.blurb}
-        image={items[0]?.image}
-        imageAlt={items[0]?.imageAlt}
+        image={series.image ?? items[0]?.image}
+        imageAlt={series.imageAlt ?? items[0]?.imageAlt}
         aside={
           <div className="border-t border-ink/20 pt-4">
             <p className="label text-quiet">In this series</p>

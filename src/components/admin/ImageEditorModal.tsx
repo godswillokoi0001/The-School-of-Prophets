@@ -18,7 +18,6 @@ export function ImageEditorModal({
   onApplyAndUpload,
   aspectPreset = "16:9",
 }: ImageEditorModalProps) {
-  const [imgUrl, setImgUrl] = useState<string>("");
   const [rotation, setRotation] = useState<number>(0);
   const [flipped, setFlipped] = useState<boolean>(false);
   const [zoom, setZoom] = useState<number>(1);
@@ -32,7 +31,6 @@ export function ImageEditorModal({
   useEffect(() => {
     if (!file) return;
     const url = URL.createObjectURL(file);
-    setImgUrl(url);
     setAltText(file.name.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " "));
     setRotation(0);
     setFlipped(false);

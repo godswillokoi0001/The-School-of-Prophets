@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Copy, LoaderCircle, Send, RotateCcw, Eye, Clock, CheckCircle2 } from "lucide-react";
 import { sendBroadcast, snippetFor } from "@/app/admin/(shell)/actions/site-admin";
 import { AdminModal } from "@/components/admin/AdminModal";
+import { AdminPagination } from "@/components/admin/AdminPagination";
 
 type RefOption = { kind: "teaching" | "event"; id: string; label: string };
 
@@ -26,7 +28,10 @@ export function BroadcastComposer({
   options: RefOption[];
   pastBroadcasts?: BroadcastRecord[];
 }) {
+  const router = useRouter();
   const composerRef = useRef<HTMLFormElement>(null);
+  const [broadcastList, setBroadcastList] = useState<BroadcastRecord[]>(pastBroadcasts);
+  const [page, setPage] = useState(1);
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
   const [segment, setSegment] = useState("all");
@@ -35,6 +40,10 @@ export function BroadcastComposer({
   const [message, setMessage] = useState("");
   const [snippet, setSnippet] = useState("");
   const [ref, setRef] = useState(options[0]?.id ?? "");
+
+  useEffect(() => {
+    setBroadcastList(pastBroadcasts);
+  }, [pastBroadcasts]);
 
   // Modal State
   const [modalOpen, setModalOpen] = useState(false);
@@ -76,10 +85,23 @@ export function BroadcastComposer({
         confirmLabel: "Schedule Broadcast",
         onConfirm: async () => {
           setBusy(true);
-          const res = await sendBroadcast(subject, body, segment, scheduled);
+          const res = (await sendBroadcast(subject, body, segment, scheduled)) as {
+            ok: boolean;
+            message?: string;
+            error?: string;
+            broadcast?: BroadcastRecord;
+          };
           setBusy(false);
           setMessage(res.ok ? res.message ?? "Scheduled successfully." : res.error ?? "Failed");
-          if (res.ok) window.location.reload();
+          if (res.ok) {
+            if (res.broadcast) {
+              setBroadcastList((prev) => [res.broadcast!, ...prev]);
+            }
+            setSubject("");
+            setBody("");
+            setScheduled("");
+            router.refresh();
+          }
         },
       });
     } else {
@@ -90,10 +112,23 @@ export function BroadcastComposer({
         confirmLabel: "Send Now",
         onConfirm: async () => {
           setBusy(true);
-          const res = await sendBroadcast(subject, body, segment);
+          const res = (await sendBroadcast(subject, body, segment)) as {
+            ok: boolean;
+            message?: string;
+            error?: string;
+            broadcast?: BroadcastRecord;
+          };
           setBusy(false);
           setMessage(res.ok ? res.message ?? "Dispatched successfully." : res.error ?? "Failed");
-          if (res.ok) window.location.reload();
+          if (res.ok) {
+            if (res.broadcast) {
+              setBroadcastList((prev) => [res.broadcast!, ...prev]);
+            }
+            setSubject("");
+            setBody("");
+            setScheduled("");
+            router.refresh();
+          }
         },
       });
     }
@@ -232,92 +267,100 @@ export function BroadcastComposer({
           </div>
         </div>
 
-        {pastBroadcasts.length === 0 ? (
+        {broadcastList.length === 0 ? (
           <p className="p-6 text-center text-xs opacity-60">
             No previous broadcasts recorded. Sent newsletters will appear here.
           </p>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="admin-table min-w-[600px]">
-              <thead>
-                <tr>
-                  <th>Subject</th>
-                  <th>Audience</th>
-                  <th>Status</th>
-                  <th>Date (WAT)</th>
-                  <th>Delivery</th>
-                  <th className="text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {pastBroadcasts.map((b) => {
-                  const sentCount = (b.stats as { sent?: number })?.sent;
-                  const recCount = (b.stats as { recipients?: number })?.recipients;
-                  return (
-                    <tr key={b.id} className="admin-row hover:bg-parchment/5">
-                      <td className="max-w-[220px]">
-                        <span className="font-medium text-parchment line-clamp-1">{b.subject}</span>
-                        <span className="text-[0.7rem] opacity-60 line-clamp-1">{b.body}</span>
-                      </td>
-                      <td className="text-xs opacity-75 capitalize">{b.segment}</td>
-                      <td>
-                        <span
-                          className={`admin-badge ${
-                            b.status === "sent"
-                              ? "admin-badge-ok"
-                              : b.status === "scheduled"
-                              ? "admin-badge-warn"
-                              : ""
-                          }`}
-                        >
-                          {b.status}
-                        </span>
-                      </td>
-                      <td className="text-xs whitespace-nowrap opacity-70">
-                        {new Date(b.sent_at || b.scheduled_at || b.created_at).toLocaleString("en-GB", {
-                          timeZone: "Africa/Lagos",
-                          day: "numeric",
-                          month: "short",
-                          year: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </td>
-                      <td className="text-xs opacity-75">
-                        {sentCount !== undefined && recCount !== undefined ? (
-                          <span className="inline-flex items-center gap-1 text-emerald-400">
-                            <CheckCircle2 size={12} /> {sentCount} / {recCount}
+          <>
+            <div className="overflow-x-auto">
+              <table className="admin-table min-w-[600px]">
+                <thead>
+                  <tr>
+                    <th>Subject</th>
+                    <th>Audience</th>
+                    <th>Status</th>
+                    <th>Date (WAT)</th>
+                    <th>Delivery</th>
+                    <th className="text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {broadcastList.slice((page - 1) * 10, page * 10).map((b) => {
+                    const sentCount = (b.stats as { sent?: number })?.sent;
+                    const recCount = (b.stats as { recipients?: number })?.recipients;
+                    return (
+                      <tr key={b.id} className="admin-row hover:bg-parchment/5">
+                        <td className="max-w-[220px]">
+                          <span className="font-medium text-parchment line-clamp-1">{b.subject}</span>
+                          <span className="text-[0.7rem] opacity-60 line-clamp-1">{b.body}</span>
+                        </td>
+                        <td className="text-xs opacity-75 capitalize">{b.segment}</td>
+                        <td>
+                          <span
+                            className={`admin-badge ${
+                              b.status === "sent"
+                                ? "admin-badge-ok"
+                                : b.status === "scheduled"
+                                ? "admin-badge-warn"
+                                : ""
+                            }`}
+                          >
+                            {b.status}
                           </span>
-                        ) : (
-                          "—"
-                        )}
-                      </td>
-                      <td className="text-right">
-                        <div className="flex items-center justify-end gap-1.5">
-                          <button
-                            type="button"
-                            className="admin-btn admin-btn-ghost !py-1 text-xs"
-                            title="Load and modify this newsletter"
-                            onClick={() => loadIntoComposer(b)}
-                          >
-                            <RotateCcw size={12} className="mr-1 inline" /> Load & Modify
-                          </button>
-                          <button
-                            type="button"
-                            className="admin-btn admin-btn-ghost !py-1 text-xs opacity-70 hover:opacity-100"
-                            title="View content"
-                            onClick={() => setPreviewContent(b)}
-                          >
-                            <Eye size={12} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                        </td>
+                        <td className="text-xs whitespace-nowrap opacity-70">
+                          {new Date(b.sent_at || b.scheduled_at || b.created_at).toLocaleString("en-GB", {
+                            timeZone: "Africa/Lagos",
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </td>
+                        <td className="text-xs opacity-75">
+                          {sentCount !== undefined && recCount !== undefined ? (
+                            <span className="inline-flex items-center gap-1 text-emerald-400">
+                              <CheckCircle2 size={12} /> {sentCount} / {recCount}
+                            </span>
+                          ) : (
+                            "—"
+                          )}
+                        </td>
+                        <td className="text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              type="button"
+                              className="admin-btn admin-btn-ghost !py-1 text-xs"
+                              title="Load and modify this newsletter"
+                              onClick={() => loadIntoComposer(b)}
+                            >
+                              <RotateCcw size={12} className="mr-1 inline" /> Load & Modify
+                            </button>
+                            <button
+                              type="button"
+                              className="admin-btn admin-btn-ghost !py-1 text-xs opacity-70 hover:opacity-100"
+                              title="View content"
+                              onClick={() => setPreviewContent(b)}
+                            >
+                              <Eye size={12} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <AdminPagination
+              totalItems={broadcastList.length}
+              pageSize={10}
+              currentPage={page}
+              onPageChange={setPage}
+            />
+          </>
         )}
       </section>
 

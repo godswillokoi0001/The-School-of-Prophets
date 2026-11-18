@@ -1,7 +1,7 @@
 "use server";
 
 import { parseInviteToken } from "@/lib/invites";
-import { getAdminClient, getServiceClient } from "@/lib/supabase/server";
+import { getServiceClient } from "@/lib/supabase/server";
 import { createClient } from "@supabase/supabase-js";
 
 export async function verifyTokenAction(token: string) {

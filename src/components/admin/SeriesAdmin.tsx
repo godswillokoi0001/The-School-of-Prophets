@@ -7,6 +7,7 @@ import { ImagePickerDialog, UploadButton } from "@/components/admin/RichText";
 import { saveSeries, reorderSeries, deleteSeries, type SeriesInput } from "@/app/admin/(shell)/actions/teachings";
 import { AdminBack } from "@/components/admin/AdminBack";
 import { AdminModal } from "@/components/admin/AdminModal";
+import { AdminPagination } from "@/components/admin/AdminPagination";
 
 export type SeriesRow = {
   id: string; title: string; slug: string; description: string;
@@ -16,17 +17,22 @@ export type SeriesRow = {
 export function SeriesList({ initial }: { initial: SeriesRow[] }) {
   const router = useRouter();
   const [rows, setRows] = useState(initial);
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
   const [busy, setBusy] = useState(false);
   const [pickId, setPickId] = useState<string | null>(null);
   const [media, setMedia] = useState<{ path: string; alt: string }[]>([]);
   const [coverDraft, setCoverDraft] = useState<{ id: string; url: string } | null>(null);
 
+  const pagedRows = rows.slice((page - 1) * pageSize, page * pageSize);
+
   function move(index: number, dir: -1 | 1) {
+    const actualIndex = (page - 1) * pageSize + index;
     setRows((prev) => {
       const next = [...prev];
-      const target = index + dir;
+      const target = actualIndex + dir;
       if (target < 0 || target >= next.length) return prev;
-      [next[index], next[target]] = [next[target], next[index]];
+      [next[actualIndex], next[target]] = [next[target], next[actualIndex]];
       return next;
     });
   }
@@ -57,7 +63,7 @@ export function SeriesList({ initial }: { initial: SeriesRow[] }) {
   return (
     <div>
       <div className="admin-surface p-2">
-        {rows.map((s, i) => (
+        {pagedRows.map((s, i) => (
           <div
             key={s.id}
             onClick={() => router.push(`/admin/series/${s.slug}`)}
@@ -104,6 +110,14 @@ export function SeriesList({ initial }: { initial: SeriesRow[] }) {
           <p className="p-6 text-center text-sm opacity-60">No series yet.</p>
         )}
       </div>
+      {rows.length > pageSize && (
+        <AdminPagination
+          currentPage={page}
+          onPageChange={setPage}
+          totalItems={rows.length}
+          pageSize={pageSize}
+        />
+      )}
       <div className="mt-3 flex gap-2">
         <button className="admin-btn admin-btn-gold" onClick={persistOrder} disabled={busy}>
           {busy ? <LoaderCircle size={13} className="animate-spin" /> : null} Save order

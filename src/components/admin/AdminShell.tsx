@@ -6,7 +6,7 @@ import { useState, useEffect, useRef } from "react";
 import {
   LayoutDashboard, Inbox, BookOpen, LibraryBig, CalendarDays, Clock,
   CalendarClock, Settings, Image as ImageIcon, Users, Mail, Search, Menu, X,
-  LogOut, Radio, ShieldCheck,
+  LogOut, Radio, ShieldCheck, PanelLeftClose, PanelLeftOpen,
 } from "lucide-react";
 import { Crest } from "@/components/Crest";
 import { AdminSearch } from "@/components/admin/AdminSearch";
@@ -38,9 +38,31 @@ export function AdminShell({
   notifications?: NotificationItem[];
 }) {
   const [open, setOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const pathname = usePathname();
   const lastKey = useRef<string>("");
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("tsop_admin_sidebar_collapsed");
+      if (saved === "1") setCollapsed(true);
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  function toggleCollapse() {
+    setCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem("tsop_admin_sidebar_collapsed", next ? "1" : "0");
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  }
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -95,7 +117,7 @@ export function AdminShell({
         { href: "/admin/settings", label: "Site settings", icon: Settings, min: "admin", group: "Site" },
         { href: "/admin/enrolment", label: "Enrolment", icon: ShieldCheck, min: "admin", group: "Site" },
         { href: "/admin/announcements", label: "Announcements", icon: Radio, min: "admin", group: "Site" },
-        { href: "/admin/subscribers", label: "Newsletter", icon: Mail, min: "admin", group: "Site" },
+        { href: "/admin/broadcasts", label: "Newsletters", icon: Mail, min: "admin", group: "Site" },
         { href: "/admin/users", label: "Team & roles", icon: Users, min: "owner", group: "Site" },
       ],
     },
@@ -105,66 +127,117 @@ export function AdminShell({
     .map((g) => ({ ...g, items: g.items.filter((i) => !i.min || rank[role] >= rank[i.min]) }))
     .filter((g) => g.items.length > 0);
 
-  const sidebar = (
-    <div className="flex h-full flex-col">
-      <div className="flex items-center gap-3 px-4 py-4">
-        <Crest width={32} height={36} className="text-gold" />
-        <div>
-          <p className="font-display text-sm leading-tight">The School of Prophets</p>
-          <p className="text-[0.65rem] tracking-widest uppercase opacity-50">Admin dashboard</p>
+  const renderNav = (isMobile = false) => {
+    const isMini = !isMobile && collapsed;
+    return (
+      <div className="flex h-full flex-col">
+        <div className={`flex items-center px-4 py-3.5 border-b border-parchment/10 ${isMini ? "justify-center" : "gap-3"}`}>
+          <Link href="/admin" className="flex items-center gap-3 shrink-0" title="The School of Prophets">
+            <Crest width={30} height={34} className="text-gold shrink-0" />
+            {!isMini && (
+              <div>
+                <p className="font-display text-sm leading-tight text-parchment">The School of Prophets</p>
+                <p className="text-[0.62rem] tracking-widest uppercase opacity-50">Admin dashboard</p>
+              </div>
+            )}
+          </Link>
+
+          {isMobile ? (
+            <button
+              className="ml-auto p-2 text-parchment/70 hover:text-parchment"
+              onClick={() => setOpen(false)}
+              aria-label="Close menu"
+            >
+              <X size={18} />
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={toggleCollapse}
+              className={`p-1.5 rounded text-parchment/50 hover:text-parchment hover:bg-parchment/10 transition-colors ${
+                isMini ? "hidden" : "ml-auto"
+              }`}
+              title="Collapse sidebar"
+              aria-label="Collapse sidebar"
+            >
+              <PanelLeftClose size={15} />
+            </button>
+          )}
         </div>
-        <button
-          className="ml-auto md:hidden p-2"
-          onClick={() => setOpen(false)}
-          aria-label="Close menu"
-        >
-          <X size={18} />
-        </button>
+
+        <nav className="flex-1 overflow-y-auto px-2 py-3" aria-label="Admin navigation">
+          {visible.map((g) => (
+            <div key={g.name} className="mb-3">
+              {!isMini && (
+                <p className="px-3 py-1 text-[0.6rem] font-bold tracking-[0.18em] uppercase opacity-40">
+                  {g.name}
+                </p>
+              )}
+              <div className="space-y-0.5">
+                {g.items.map((item) => {
+                  const active =
+                    item.href === "/admin"
+                      ? pathname === "/admin"
+                      : pathname.startsWith(item.href);
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      data-active={active}
+                      title={isMini ? item.label : undefined}
+                      className={`nav-item relative ${isMini ? "justify-center !px-0" : ""}`}
+                      onClick={() => setOpen(false)}
+                    >
+                      <item.icon size={16} />
+                      {!isMini && <span className="flex-1">{item.label}</span>}
+                      {item.badge && item.badge > 0 ? (
+                        isMini ? (
+                          <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-gold" />
+                        ) : (
+                          <span className="admin-badge admin-badge-new">{item.badge}</span>
+                        )
+                      ) : null}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </nav>
+
+        <div className={`border-t border-parchment/10 p-3 ${isMini ? "text-center" : "px-4 py-3"}`}>
+          {!isMini ? (
+            <>
+              <p className="truncate text-xs font-semibold text-parchment">{fullName || email}</p>
+              <p className="text-[0.65rem] uppercase tracking-widest text-gold">{role}</p>
+            </>
+          ) : (
+            <div
+              className="mx-auto h-7 w-7 rounded-full bg-gold/15 text-gold flex items-center justify-center text-xs font-bold"
+              title={`${fullName || email} (${role})`}
+            >
+              {(fullName || email || "A")[0].toUpperCase()}
+            </div>
+          )}
+        </div>
       </div>
-      <nav className="flex-1 overflow-y-auto px-2 pb-4" aria-label="Admin navigation">
-        {visible.map((g) => (
-          <div key={g.name} className="mb-3">
-            <p className="px-3 py-1 text-[0.6rem] font-bold tracking-[0.18em] uppercase opacity-40">
-              {g.name}
-            </p>
-            {g.items.map((item) => {
-              const active =
-                item.href === "/admin"
-                  ? pathname === "/admin"
-                  : pathname.startsWith(item.href);
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  data-active={active}
-                  className="nav-item"
-                  onClick={() => setOpen(false)}
-                >
-                  <item.icon size={16} />
-                  <span className="flex-1">{item.label}</span>
-                  {item.badge && item.badge > 0 ? (
-                    <span className="admin-badge admin-badge-new">{item.badge}</span>
-                  ) : null}
-                </Link>
-              );
-            })}
-          </div>
-        ))}
-      </nav>
-      <div className="border-t border-parchment/10 px-4 py-3">
-        <p className="truncate text-xs font-semibold">{fullName || email}</p>
-        <p className="text-[0.65rem] uppercase tracking-widest opacity-50">{role}</p>
-      </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="admin-body min-h-screen flex">
       <PushSetup />
-      <aside className="hidden md:flex w-56 shrink-0 flex-col border-r border-parchment/10">
-        {sidebar}
+
+      {/* Desktop Fixed/Sticky Sidebar */}
+      <aside
+        className={`hidden md:flex sticky top-0 h-screen overflow-hidden flex-col border-r border-parchment/10 bg-ink-2 z-20 shrink-0 transition-all duration-200 ${
+          collapsed ? "w-16" : "w-60"
+        }`}
+      >
+        {renderNav(false)}
       </aside>
 
+      {/* Mobile Drawer */}
       {open && (
         <div className="fixed inset-0 z-40 md:hidden">
           <div
@@ -173,7 +246,7 @@ export function AdminShell({
             aria-hidden="true"
           />
           <aside className="absolute left-0 top-0 h-full w-64 bg-ink-2 border-r border-parchment/10">
-            {sidebar}
+            {renderNav(true)}
           </aside>
         </div>
       )}
@@ -181,12 +254,25 @@ export function AdminShell({
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-30 flex h-12 items-center gap-2 border-b border-parchment/10 bg-ink/90 backdrop-blur px-3">
           <button
-            className="md:hidden p-2"
+            className="md:hidden p-2 text-parchment/70 hover:text-parchment"
             onClick={() => setOpen(true)}
             aria-label="Open menu"
           >
             <Menu size={18} />
           </button>
+
+          {collapsed && (
+            <button
+              type="button"
+              onClick={toggleCollapse}
+              className="hidden md:flex p-1.5 rounded text-parchment/60 hover:text-parchment hover:bg-parchment/10 transition-colors"
+              title="Expand sidebar"
+              aria-label="Expand sidebar"
+            >
+              <PanelLeftOpen size={16} />
+            </button>
+          )}
+
           <button
             onClick={() => setSearchOpen(true)}
             className="flex items-center gap-2 admin-input !w-auto !py-1 text-xs opacity-80 hover:opacity-100"

@@ -6,7 +6,7 @@ import { requireStaff } from "@/lib/admin";
 import { getAdminClient, supabaseConfigured } from "@/lib/supabase/server";
 import { getSchedule, getEnrolmentSettings } from "@/lib/data";
 import { nextOccurrence } from "@/lib/schedule-time";
-import { toggleEnrolment } from "@/app/admin/(shell)/actions/enrolment";
+import { EnrolmentSwitch } from "@/components/admin/EnrolmentSwitch";
 import { WeekChart } from "@/components/admin/WeekChart";
 
 export const dynamic = "force-dynamic";
@@ -116,15 +116,8 @@ export default async function AdminHome() {
         </div>
         <div className="admin-surface p-4 flex flex-col justify-between">
           <p className="admin-label">Enrolment</p>
-          <div className="flex items-center justify-between gap-2">
-            <span className={`admin-badge ${enrolment.status === "open" ? "admin-badge-ok" : "admin-badge-warn"}`}>
-              {enrolment.status === "open" ? "Open" : "Closed"}
-            </span>
-            <form action={toggleEnrolment}>
-              <button className="admin-btn admin-btn-ghost !px-2 !py-1 text-[0.6rem]">
-                {enrolment.status === "open" ? "Close" : "Open"}
-              </button>
-            </form>
+          <div className="my-1">
+            <EnrolmentSwitch initialStatus={enrolment.status} compact />
           </div>
           <p className="text-[0.65rem] opacity-60">{enrolment.cohortName}</p>
         </div>

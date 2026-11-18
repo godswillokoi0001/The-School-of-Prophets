@@ -61,6 +61,16 @@ export const revalidateTag = (tag: string) => {
 
 /* ---------------- schedule ---------------- */
 
+export type PublicScheduleException = {
+  id: string;
+  sessionId: string;
+  occurrenceDate: string;
+  action: "cancel" | "reschedule";
+  newStartTime: string | null;
+  note: string;
+  sessionTitle?: string;
+};
+
 export async function getSchedule(): Promise<SeedSession[]> {
   return cached("schedule", async () => {
     const { data } = await db()!
@@ -80,24 +90,48 @@ export async function getSchedule(): Promise<SeedSession[]> {
   }, seedSessions);
 }
 
+export async function getScheduleExceptions(): Promise<PublicScheduleException[]> {
+  return cached("schedule:exceptions", async () => {
+    const svc = db();
+    if (!svc) return [];
+    const today = new Date().toISOString().slice(0, 10);
+    const { data: exData } = await svc
+      .from("schedule_exceptions")
+      .select("*, schedule_sessions(title)")
+      .gte("occurrence_date", today)
+      .order("occurrence_date", { ascending: true });
+
+    if (!exData) return [];
+    return exData.map((e) => ({
+      id: e.id,
+      sessionId: e.session_id,
+      occurrenceDate: e.occurrence_date,
+      action: e.action as "cancel" | "reschedule",
+      newStartTime: e.new_start_time,
+      note: e.note || "",
+      sessionTitle: (e.schedule_sessions as { title?: string } | null)?.title || "",
+    }));
+  }, []);
+}
+
 /* ---------------- series / teachings ---------------- */
 
 export async function getSeries(): Promise<SeedSeries[]> {
   return cached("series", async () => {
     const { data } = await db()!.from("series").select("*").eq("status", "published").order("sort_order");
     if (!data || data.length === 0) return seriesList;
-    return data.map((s: DbSeries) => ({ slug: s.slug, title: s.title, blurb: s.description }));
+    return data.map((s: DbSeries) => ({
+      slug: s.slug,
+      title: s.title,
+      blurb: s.description,
+      image: s.cover_url ?? undefined,
+      imageAlt: s.cover_alt || undefined,
+    }));
   }, seriesList);
 }
 
-export function extractYouTubeId(url: string | null | undefined): string | null {
-  if (!url) return null;
-  const trimmed = url.trim();
-  const m = trimmed.match(/(?:youtu\.be\/|v\/|u\/\w\/|embed\/|shorts\/|live\/|watch\?v=|\&v=)([\w-]{11})/);
-  if (m) return m[1];
-  if (/^[\w-]{11}$/.test(trimmed)) return trimmed;
-  return null;
-}
+export { extractYouTubeId } from "./youtube";
+import { extractYouTubeId } from "./youtube";
 
 export async function getTeachings(): Promise<SeedTeaching[]> {
   return cached("teachings", async () => {
@@ -163,11 +197,10 @@ export async function getTeaching(slug: string): Promise<SeedTeaching | undefine
   const svc = db();
   if (svc) {
     try {
-      const { data: t } = await svc
-        .from("teachings")
-        .select("*")
-        .or(`slug.eq.${slug},id.eq.${slug}`)
-        .maybeSingle();
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
+      const { data: t } = await (isUuid
+        ? svc.from("teachings").select("*").eq("id", slug).maybeSingle()
+        : svc.from("teachings").select("*").eq("slug", slug).maybeSingle());
 
       if (t) {
         const youtubeId = extractYouTubeId(t.youtube_url);

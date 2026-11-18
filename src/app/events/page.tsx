@@ -3,6 +3,7 @@ import Link from "next/link";
 import { CalendarDays, MapPin, Clock } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { EventCalendarLink } from "@/components/EventCalendarLink";
+import { Cover } from "@/components/Cover";
 import { getEvents } from "@/lib/data";
 import { formatDate } from "@/lib/time";
 
@@ -55,9 +56,20 @@ export default async function EventsPage() {
             {upcoming.map((event) => (
               <li
                 key={event.slug}
-                className="grid gap-6 border-t border-ink/15 py-8 md:grid-cols-[9rem_1fr]"
+                className="grid gap-5 border-t border-ink/15 py-8 md:grid-cols-[7rem_12rem_1fr] md:items-start md:gap-8"
               >
                 <p className="label text-ember">{formatDate(event.date)}</p>
+
+                {event.image && (
+                  <div className="relative aspect-[16/10] overflow-hidden bg-ink">
+                    <Cover
+                      src={event.image}
+                      alt={event.imageAlt}
+                      sizes="(max-width: 768px) 100vw, 192px"
+                      className="object-cover"
+                    />
+                  </div>
+                )}
 
                 <div>
                   <div>
@@ -114,8 +126,19 @@ export default async function EventsPage() {
           <ul className="mt-6">
             {past.map((event) => (
               <li key={event.slug} className="border-t border-ink/15 py-8">
-                <div className="grid gap-6 md:grid-cols-[9rem_1fr]">
+                <div className="grid gap-5 md:grid-cols-[7rem_12rem_1fr] md:items-start md:gap-8">
                   <p className="label text-quiet">{formatDate(event.date)}</p>
+
+                  {event.image && (
+                    <div className="relative aspect-[16/10] overflow-hidden bg-ink">
+                      <Cover
+                        src={event.image}
+                        alt={event.imageAlt}
+                        sizes="(max-width: 768px) 100vw, 192px"
+                        className="object-cover"
+                      />
+                    </div>
+                  )}
 
                   <div>
                     <div>

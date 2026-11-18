@@ -1,9 +1,10 @@
 "use server";
 
-import { revalidateTag } from "next/cache";
+import { revalidateTag, revalidatePath } from "next/cache";
 import { getAdminClient } from "@/lib/supabase/server";
 import { audit, requireStaff, getStaff } from "@/lib/admin";
 import { generateInviteToken } from "@/lib/invites";
+import { getPublicSiteUrl } from "@/lib/site-url";
 import { renderInviteEmail, buildHtmlEmail } from "@/lib/email-templates";
 import { sendEmail } from "@/lib/notify";
 
@@ -80,7 +81,7 @@ export async function inviteUser(email: string, role: string, fullName: string) 
   if (!svc) return { ok: false, error: "No database" };
 
   const cleanEmail = email.toLowerCase().trim();
-  const site = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const site = getPublicSiteUrl();
   const token = generateInviteToken(cleanEmail, role, fullName);
   const inviteLink = `${site}/admin/accept-invite?token=${token}`;
 
@@ -276,6 +277,7 @@ export async function sendBroadcast(subject: string, body: string, segment: stri
 
   const key = process.env.RESEND_API_KEY;
   const from = process.env.FORMS_FROM ?? "The School of Prophets <onboarding@resend.dev>";
+  const siteUrl = getPublicSiteUrl();
   const html = buildHtmlEmail({
     badge: "Ministry Broadcast",
     title: subject,
@@ -283,36 +285,58 @@ export async function sendBroadcast(subject: string, body: string, segment: stri
     footerNote: "You are receiving this because you subscribed to The School of Prophets updates.",
   });
   let sent = 0;
-  if (key) {
-    for (const email of emails) {
-      try {
-        const res = await fetch("https://api.resend.com/emails", {
-          method: "POST",
-          headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-          body: JSON.stringify({
-            from,
-            to: [email],
-            subject,
-            text: body.replace(/\{\{name\}\}/g, ""),
-            html,
-            headers: { "List-Unsubscribe": `<${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/api/unsubscribe>` },
-          }),
-        });
-        if (res.ok) sent += 1;
-      } catch {
-        // keep going; failures are recorded below
+  if (key && emails.length > 0) {
+    const BATCH_SIZE = 5;
+    for (let i = 0; i < emails.length; i += BATCH_SIZE) {
+      const batch = emails.slice(i, i + BATCH_SIZE);
+      const results = await Promise.allSettled(
+        batch.map((email) =>
+          fetch("https://api.resend.com/emails", {
+            method: "POST",
+            headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+            body: JSON.stringify({
+              from,
+              to: [email],
+              subject,
+              text: body.replace(/\{\{name\}\}/g, ""),
+              html,
+              headers: { "List-Unsubscribe": `<${siteUrl}/api/unsubscribe>` },
+            }),
+          }).then((r) => r.ok)
+        )
+      );
+      for (const res of results) {
+        if (res.status === "fulfilled" && res.value) sent += 1;
       }
     }
   }
-  await svc.from("broadcasts").update({ status: "sent", sent_at: new Date().toISOString(), stats: { recipients: emails.length, sent } }).eq("id", inserted.id);
-  await audit(staff, "send-broadcast", "broadcasts", inserted.id, { subject, recipients: emails.length, sent });
-  return { ok: true, message: `Sent to ${sent} of ${emails.length} recipients.` };
+  const now = new Date().toISOString();
+  await svc
+    .from("broadcasts")
+    .update({ status: "sent", sent_at: now, stats: { recipients: emails.length, sent } })
+    .eq("id", inserted.id);
+
+  audit(staff, "send-broadcast", "broadcasts", inserted.id, { subject, recipients: emails.length, sent }).catch(() => {});
+  revalidatePath("/admin/broadcasts");
+  revalidatePath("/newsletter");
+
+  const { data: updatedRecord } = await svc
+    .from("broadcasts")
+    .select("*")
+    .eq("id", inserted.id)
+    .maybeSingle();
+
+  return {
+    ok: true,
+    message: `Sent to ${sent} of ${emails.length} recipients.`,
+    broadcast: updatedRecord,
+  };
 }
 
 export async function snippetFor(kind: string, ref: string) {
   await requireStaff("admin");
   const svc = await getAdminClient();
-  const site = process.env.NEXT_PUBLIC_SITE_URL ?? "";
+  const site = getPublicSiteUrl();
   if (!svc) return { ok: false, text: "" };
   if (kind === "teaching") {
     const { data } = await svc.from("teachings").select("title,summary,slug").eq("id", ref).maybeSingle();

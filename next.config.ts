@@ -11,6 +11,21 @@ const nextConfig: NextConfig = {
         destination: "/give",
         permanent: false,
       },
+      {
+        source: "/newspaper",
+        destination: "/newsletter",
+        permanent: true,
+      },
+      {
+        source: "/newspapers",
+        destination: "/newsletter",
+        permanent: true,
+      },
+      {
+        source: "/broadcasts",
+        destination: "/newsletter",
+        permanent: true,
+      },
     ];
   },
   async headers() {

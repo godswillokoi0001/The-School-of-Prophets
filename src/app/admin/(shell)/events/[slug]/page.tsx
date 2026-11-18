@@ -14,7 +14,10 @@ export default async function EditEventPage({
   const { slug } = await params;
   const svc = await getAdminClient();
   if (!svc) notFound();
-  const { data } = await svc.from("events").select("*").eq("slug", slug).single();
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
+  const { data } = await (isUuid
+    ? svc.from("events").select("*").eq("id", slug).maybeSingle()
+    : svc.from("events").select("*").eq("slug", slug).maybeSingle());
   if (!data) notFound();
   const { data: exceptions } = await svc
     .from("event_exceptions")

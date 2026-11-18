@@ -16,11 +16,10 @@ export default async function EditTeachingPage({
   const svc = await getAdminClient();
   if (!svc) notFound();
 
-  const { data: teaching } = await svc
-    .from("teachings")
-    .select("*, teaching_links(label,url,sort_order)")
-    .or(`slug.eq.${slug},id.eq.${slug}`)
-    .single();
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
+  const { data: teaching } = await (isUuid
+    ? svc.from("teachings").select("*, teaching_links(label,url,sort_order)").eq("id", slug).maybeSingle()
+    : svc.from("teachings").select("*, teaching_links(label,url,sort_order)").eq("slug", slug).maybeSingle());
   if (!teaching) notFound();
 
   const [seriesOptions, media] = await Promise.all([

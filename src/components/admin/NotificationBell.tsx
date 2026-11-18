@@ -168,6 +168,18 @@ export function NotificationBell({
               )}
             </div>
             <div className="flex items-center gap-2">
+              {items.some((i) => i.status === "new") && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setItems((prev) => prev.map((i) => ({ ...i, status: "read" })));
+                    setUnread(0);
+                  }}
+                  className="text-[0.68rem] text-gold hover:underline cursor-pointer"
+                >
+                  Mark all read
+                </button>
+              )}
               <button
                 type="button"
                 onClick={toggleSound}
@@ -195,7 +207,13 @@ export function NotificationBell({
                   <Link
                     key={item.id}
                     href={`/admin/inbox/${item.id}`}
-                    onClick={() => setOpen(false)}
+                    onClick={() => {
+                      setOpen(false);
+                      setItems((prev) =>
+                        prev.map((i) => (i.id === item.id ? { ...i, status: "read" } : i))
+                      );
+                      setUnread((u) => Math.max(0, u - 1));
+                    }}
                     className="block p-3.5 hover:bg-gold/10 transition-colors text-left group"
                   >
                     <div className="flex items-start justify-between gap-2">

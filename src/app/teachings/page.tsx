@@ -4,6 +4,7 @@ import { ArrowRight } from "lucide-react";
 import { TeachingLibrary } from "@/components/TeachingLibrary";
 import { TeachingCard } from "@/components/TeachingCard";
 import { YouTubeIcon } from "@/components/BrandIcons";
+import { Cover } from "@/components/Cover";
 import { getSeries, getTeachings } from "@/lib/data";
 import { site } from "@/config/site";
 import { formatDate } from "@/lib/time";
@@ -104,12 +105,26 @@ export default async function TeachingsPage() {
           <ul>
             {seriesList.map((series) => {
               const count = teachings.filter((t) => t.series === series.slug).length;
+              const cover =
+                series.image ?? teachings.find((t) => t.series === series.slug)?.image;
+              const coverAlt =
+                series.imageAlt ?? teachings.find((t) => t.series === series.slug)?.imageAlt;
               return (
                 <li key={series.slug} className="border-b border-ink/12">
                   <Link
                     href={`/teachings/series/${series.slug}`}
-                    className="group grid gap-2 py-5 sm:grid-cols-[1fr_auto] sm:items-baseline sm:gap-6"
+                    className="group grid gap-3 py-5 sm:grid-cols-[8rem_1fr_auto] sm:items-center sm:gap-6"
                   >
+                    {cover && (
+                      <span className="relative block aspect-[16/10] overflow-hidden bg-ink">
+                        <Cover
+                          src={cover}
+                          alt={coverAlt}
+                          sizes="(max-width: 640px) 100vw, 128px"
+                          className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+                        />
+                      </span>
+                    )}
                     <span>
                       <span className="font-display text-2xl group-hover:text-ember">
                         {series.title}

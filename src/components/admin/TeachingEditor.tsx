@@ -2,16 +2,15 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import {
-  Copy, Edit3, ExternalLink, Eye, EyeOff, Headphones,
-  LoaderCircle, Music, Play, Save, Search, Trash2, Upload, Video,
+  Copy, ExternalLink, Eye, EyeOff, Headphones,
+  LoaderCircle, Save, Trash2, Upload, Video,
 } from "lucide-react";
 import { RichTextEditor, RichTextView, ImagePickerDialog, UploadButton } from "@/components/admin/RichText";
 import { saveTeaching, duplicateTeaching, type TeachingInput } from "@/app/admin/(shell)/actions/teachings";
 import { AdminBack } from "@/components/admin/AdminBack";
 import { AdminModal } from "@/components/admin/AdminModal";
-import { extractYouTubeId } from "@/lib/data";
+import { extractYouTubeId } from "@/lib/youtube";
 
 type SeriesOption = { id: string; title: string; status: string };
 

@@ -14,6 +14,7 @@ import {
 import type { Role } from "@/lib/admin";
 import { AdminBack } from "@/components/admin/AdminBack";
 import { AdminModal } from "@/components/admin/AdminModal";
+import { AdminPagination } from "@/components/admin/AdminPagination";
 
 export type SubmissionRow = {
   id: string; type: string; status: string; private: boolean;
@@ -37,6 +38,8 @@ const statusStyles: Record<string, string> = {
 
 export function InboxList({ rows, role }: { rows: SubmissionRow[]; role: Role }) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [page, setPage] = useState(1);
+  const pageSize = 15;
   const [pending, start] = useTransition();
   const [busy, setBusy] = useState(false);
 
@@ -152,7 +155,7 @@ export function InboxList({ rows, role }: { rows: SubmissionRow[]; role: Role })
             </tr>
           </thead>
           <tbody>
-            {rows.map((r) => (
+            {rows.slice((page - 1) * pageSize, page * pageSize).map((r) => (
               <tr key={r.id} className="admin-row hover:bg-parchment/5">
                 <td>
                   <input
@@ -189,6 +192,12 @@ export function InboxList({ rows, role }: { rows: SubmissionRow[]; role: Role })
             immediately.
           </p>
         )}
+        <AdminPagination
+          totalItems={rows.length}
+          pageSize={pageSize}
+          currentPage={page}
+          onPageChange={setPage}
+        />
         {busy && <p className="flex items-center gap-2 p-3 text-xs"><LoaderCircle size={12} className="animate-spin" /> Working…</p>}
       </div>
 

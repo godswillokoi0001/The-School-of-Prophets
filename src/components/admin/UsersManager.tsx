@@ -4,6 +4,7 @@ import { useState } from "react";
 import { LoaderCircle, MailPlus, Trash2, UserCheck, UserX } from "lucide-react";
 import { deleteUser, inviteUser, setUserRole, setUserStatus } from "@/app/admin/(shell)/actions/site-admin";
 import { AdminModal } from "@/components/admin/AdminModal";
+import { AdminPagination } from "@/components/admin/AdminPagination";
 
 type Member = {
   id: string;
@@ -29,6 +30,9 @@ export function UsersManager({ members, selfId }: { members: Member[]; selfId: s
   const [message, setMessage] = useState("");
   const [lastInviteLink, setLastInviteLink] = useState("");
   const [copied, setCopied] = useState(false);
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
+  const pagedMembers = members.slice((page - 1) * pageSize, page * pageSize);
 
   // Modal State
   const [modalOpen, setModalOpen] = useState(false);
@@ -164,7 +168,7 @@ export function UsersManager({ members, selfId }: { members: Member[]; selfId: s
             </tr>
           </thead>
           <tbody>
-            {members.map((m) => (
+            {pagedMembers.map((m) => (
               <tr key={m.id} className="admin-row">
                 <td>
                   {m.full_name || "—"}
@@ -290,6 +294,14 @@ export function UsersManager({ members, selfId }: { members: Member[]; selfId: s
           </tbody>
         </table>
       </div>
+      {members.length > pageSize && (
+        <AdminPagination
+          currentPage={page}
+          onPageChange={setPage}
+          totalItems={members.length}
+          pageSize={pageSize}
+        />
+      )}
       <p className="mt-3 text-xs opacity-60">
         Owners can also change their own password with “Forgot password” on the
         sign-in page. Two-factor authentication (TOTP) can be enabled per user in

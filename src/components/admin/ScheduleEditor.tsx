@@ -1,37 +1,70 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { ArrowDown, ArrowUp, CalendarX, LoaderCircle, PlusCircle, Trash2 } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  CalendarDays,
+  CalendarX,
+  CheckCircle2,
+  Clock,
+  LoaderCircle,
+  PlusCircle,
+  Save,
+  Trash2,
+} from "lucide-react";
 import { saveSessions, deleteSession, addException, deleteException } from "@/app/admin/(shell)/actions/schedule";
 import { AdminModal } from "@/components/admin/AdminModal";
 
 export type SessionRow = {
-  id: string; day: number; title: string; type: string;
-  start_time: string; end_time: string | null;
-  description: string; join_url: string; active: boolean; sort_order: number;
+  id: string;
+  day: number;
+  title: string;
+  type: string;
+  start_time: string;
+  end_time: string | null;
+  description: string;
+  join_url: string;
+  active: boolean;
+  sort_order: number;
 };
 
 export type ExceptionRow = {
-  id: string; session_id: string; occurrence_date: string;
-  action: string; new_start_time: string | null; note: string;
+  id: string;
+  session_id: string;
+  occurrence_date: string;
+  action: string;
+  new_start_time: string | null;
+  note: string;
 };
 
-const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const DAYS = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
+
 const TYPES = ["Teaching", "Bible Study", "Prayer", "Convergence", "Worship", "Other"];
 
 export function ScheduleEditor({
-  initial, exceptions,
+  initial,
+  exceptions: initialExceptions,
 }: {
   initial: SessionRow[];
   exceptions: ExceptionRow[];
 }) {
   const [rows, setRows] = useState<SessionRow[]>(initial);
+  const [exceptions, setExceptions] = useState<ExceptionRow[]>(initialExceptions);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [exBusy, setExBusy] = useState(false);
   const [pending, startTransition] = useTransition();
 
-  // In-app modal state (replacing window.confirm/alert)
+  // In-app modal state
   const [modalConfig, setModalConfig] = useState<{
     isOpen: boolean;
     title: string;
@@ -50,12 +83,12 @@ export function ScheduleEditor({
     setRows((prev) => prev.map((r, i) => (i === index ? { ...r, ...patch } : r)));
   }
 
-  function add() {
+  function addSession(defaultDay = 1) {
     setRows((prev) => [
       ...prev,
       {
         id: "",
-        day: 1,
+        day: defaultDay,
         title: "New Gathering Session",
         type: "Teaching",
         start_time: "20:00",
@@ -82,7 +115,8 @@ export function ScheduleEditor({
     setModalConfig({
       isOpen: true,
       title: "Publish Schedule Changes",
-      description: "Are you ready to publish these weekly sessions? Visitors will see the changes on the Weekly Gatherings page and calendar immediately.",
+      description:
+        "Are you ready to publish these weekly sessions? Changes will be immediately reflected on the Weekly Gatherings page, Homepage, and calendar feeds.",
       variant: "info",
       confirmLabel: "Publish Now",
       onConfirm: async () => {
@@ -92,7 +126,7 @@ export function ScheduleEditor({
         setBusy(false);
         if (res.ok) {
           setMessage("Saved and published live to the website.");
-          setRows((prev) => prev.map((r, i) => ({ ...r, sort_order: i + 1 })));
+          setTimeout(() => setMessage(""), 4000);
         } else {
           setModalConfig({
             isOpen: true,
@@ -124,11 +158,13 @@ export function ScheduleEditor({
         }
         setRows((prev) => prev.filter((_, i) => i !== index));
         setMessage(`Deleted "${row.title}".`);
+        setTimeout(() => setMessage(""), 3000);
       },
     });
   }
 
-  const [exSession, setExSession] = useState(initial[0]?.id ?? "");
+  // Exception form state
+  const [exSession, setExSession] = useState(rows[0]?.id ?? "");
   const [exDate, setExDate] = useState("");
   const [exAction, setExAction] = useState<"cancel" | "reschedule">("cancel");
   const [exTime, setExTime] = useState("20:00");
@@ -136,13 +172,25 @@ export function ScheduleEditor({
 
   async function submitException(e: React.FormEvent) {
     e.preventDefault();
+    if (!exSession || !exDate) return;
     setExBusy(true);
     const res = await addException(exSession, exDate, exAction, exTime, exNote);
     setExBusy(false);
     if (res.ok) {
-      setMessage("Exception saved and live.");
+      setExceptions((prev) => [
+        {
+          id: crypto.randomUUID(),
+          session_id: exSession,
+          occurrence_date: exDate,
+          action: exAction,
+          new_start_time: exAction === "reschedule" ? exTime : null,
+          note: exNote,
+        },
+        ...prev,
+      ]);
       setExNote("");
-      startTransition(() => window.location.reload());
+      setMessage("Exception notice published live to the website.");
+      setTimeout(() => setMessage(""), 4000);
     } else {
       setModalConfig({
         isOpen: true,
@@ -156,7 +204,7 @@ export function ScheduleEditor({
   }
 
   return (
-    <div>
+    <div className="space-y-8">
       <AdminModal
         isOpen={modalConfig.isOpen}
         title={modalConfig.title}
@@ -167,243 +215,326 @@ export function ScheduleEditor({
         onCancel={() => setModalConfig((m) => ({ ...m, isOpen: false }))}
       />
 
-      <div className="admin-surface p-3">
+      {/* Top Action Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-gold/30 bg-ink-2 p-4">
+        <div>
+          <h2 className="font-display text-lg text-parchment">Weekly Gatherings Timetable</h2>
+          <p className="text-xs opacity-60">
+            {rows.length} recurring session{rows.length === 1 ? "" : "s"} scheduled in WAT.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          {message && (
+            <span className="flex items-center gap-1.5 text-xs text-gold font-medium">
+              <CheckCircle2 size={14} /> {message}
+            </span>
+          )}
+          <button
+            type="button"
+            className="admin-btn admin-btn-ghost text-xs"
+            onClick={() => addSession(1)}
+          >
+            <PlusCircle size={13} /> Add Session
+          </button>
+          <button
+            type="button"
+            className="admin-btn admin-btn-gold text-xs"
+            onClick={requestSave}
+            disabled={busy || pending}
+          >
+            {busy ? <LoaderCircle size={13} className="animate-spin" /> : <Save size={13} />}
+            Publish Schedule
+          </button>
+        </div>
+      </div>
+
+      {/* Sessions Grid: Well-Arranged Clean Cards */}
+      <div className="space-y-4">
         {rows.map((r, i) => (
-          <div key={r.id || `session-row-${i}`} className="admin-row py-3 border-b border-parchment/10 last:border-b-0">
-            <div className="grid grid-cols-2 gap-2 md:grid-cols-12">
-              <div className="md:col-span-2">
-                <label className="admin-label">Day of Week</label>
-                <select
-                  className="admin-select"
-                  value={r.day}
-                  onChange={(e) => updateIndex(i, { day: Number(e.target.value) })}
-                  aria-label="Day of week"
-                >
-                  {DAYS.map((d, di) => (
-                    <option key={d} value={di}>{d}</option>
-                  ))}
-                </select>
+          <div
+            key={r.id || `session-${i}`}
+            className={`rounded-lg border p-4 transition-colors ${
+              r.active
+                ? "border-parchment/15 bg-ink/70 hover:border-gold/40"
+                : "border-dashed border-parchment/10 bg-ink/30 opacity-70"
+            }`}
+          >
+            {/* Header of session card */}
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-parchment/10 pb-3">
+              <div className="flex items-center gap-2">
+                <span className="rounded bg-gold/15 px-2.5 py-1 text-xs font-bold text-gold uppercase tracking-wider">
+                  {DAYS[r.day] ?? "Any Day"}
+                </span>
+                <span className="rounded bg-parchment/10 px-2 py-0.5 text-[0.68rem] text-parchment/70 uppercase">
+                  {r.type}
+                </span>
+                <span className="text-xs text-parchment/60 font-mono">
+                  {r.start_time} {r.end_time ? `– ${r.end_time}` : ""} WAT
+                </span>
               </div>
 
-              <div className="md:col-span-3">
-                <label className="admin-label">Session Title</label>
-                <input
-                  className="admin-input"
-                  value={r.title}
-                  placeholder="e.g. Convergence Night"
-                  onChange={(e) => updateIndex(i, { title: e.target.value })}
-                  aria-label="Session title"
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="admin-label">Type</label>
-                <select
-                  className="admin-select"
-                  value={r.type}
-                  onChange={(e) => updateIndex(i, { type: e.target.value })}
-                  aria-label="Session type"
-                >
-                  {TYPES.map((t) => (
-                    <option key={t} value={t}>{t}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="md:col-span-1">
-                <label className="admin-label">Start (WAT)</label>
-                <input
-                  className="admin-input"
-                  type="time"
-                  value={r.start_time}
-                  onChange={(e) => updateIndex(i, { start_time: e.target.value })}
-                  aria-label="Start time (WAT)"
-                />
-              </div>
-
-              <div className="md:col-span-1">
-                <label className="admin-label">End (WAT)</label>
-                <input
-                  className="admin-input"
-                  type="time"
-                  value={r.end_time ?? ""}
-                  onChange={(e) => updateIndex(i, { end_time: e.target.value || null })}
-                  aria-label="End time (WAT)"
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="admin-label">Join Link</label>
-                <input
-                  className="admin-input"
-                  value={r.join_url}
-                  placeholder="https://meet.google.com/…"
-                  onChange={(e) => updateIndex(i, { join_url: e.target.value })}
-                  aria-label="Join link"
-                />
-              </div>
-
-              <div className="md:col-span-1 flex items-end gap-1">
-                <button
-                  type="button"
-                  className="p-2 opacity-60 hover:opacity-100 disabled:opacity-20"
-                  disabled={i === 0}
-                  onClick={() => move(i, -1)}
-                  aria-label={`Move ${r.title} up`}
-                >
-                  <ArrowUp size={14} />
-                </button>
-                <button
-                  type="button"
-                  className="p-2 opacity-60 hover:opacity-100 disabled:opacity-20"
-                  disabled={i === rows.length - 1}
-                  onClick={() => move(i, 1)}
-                  aria-label={`Move ${r.title} down`}
-                >
-                  <ArrowDown size={14} />
-                </button>
-              </div>
-            </div>
-
-            <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-12">
-              <div className="md:col-span-8">
-                <label className="admin-label">Description shown to visitors</label>
-                <input
-                  className="admin-input"
-                  value={r.description}
-                  placeholder="Brief note on what takes place in this gathering..."
-                  onChange={(e) => updateIndex(i, { description: e.target.value })}
-                  aria-label="Description"
-                />
-              </div>
-              <div className="md:col-span-2 flex items-end gap-2 text-xs">
-                <label className="flex items-center gap-1.5 cursor-pointer py-1">
+              <div className="flex items-center gap-2">
+                <label className="flex items-center gap-1.5 text-xs text-parchment/80 cursor-pointer">
                   <input
                     type="checkbox"
                     className="accent-gold h-4 w-4 rounded"
                     checked={r.active}
                     onChange={(e) => updateIndex(i, { active: e.target.checked })}
                   />
-                  <span>Active publicly</span>
+                  <span>Active</span>
                 </label>
+                <div className="flex items-center gap-1 border-l border-parchment/10 pl-2">
+                  <button
+                    type="button"
+                    disabled={i === 0}
+                    onClick={() => move(i, -1)}
+                    className="p-1 opacity-50 hover:opacity-100 disabled:opacity-20"
+                    title="Move up"
+                  >
+                    <ArrowUp size={13} />
+                  </button>
+                  <button
+                    type="button"
+                    disabled={i === rows.length - 1}
+                    onClick={() => move(i, 1)}
+                    className="p-1 opacity-50 hover:opacity-100 disabled:opacity-20"
+                    title="Move down"
+                  >
+                    <ArrowDown size={13} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => requestRemove(i)}
+                    className="p-1 text-red-400 opacity-60 hover:opacity-100 ml-1"
+                    title="Delete session"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                </div>
               </div>
-              <div className="md:col-span-2 flex items-end justify-end">
-                <button
-                  type="button"
-                  className="admin-btn admin-btn-danger !py-1 text-xs"
-                  onClick={() => requestRemove(i)}
+            </div>
+
+            {/* Inputs Grid */}
+            <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-12">
+              <div className="md:col-span-4">
+                <label className="admin-label">Session Title</label>
+                <input
+                  className="admin-input"
+                  value={r.title}
+                  placeholder="e.g. Convergence Night"
+                  onChange={(e) => updateIndex(i, { title: e.target.value })}
+                />
+              </div>
+
+              <div className="md:col-span-3">
+                <label className="admin-label">Day of Week</label>
+                <select
+                  className="admin-select"
+                  value={r.day}
+                  onChange={(e) => updateIndex(i, { day: Number(e.target.value) })}
                 >
-                  <Trash2 size={12} /> Delete
-                </button>
+                  {DAYS.map((d, di) => (
+                    <option key={d} value={di}>
+                      {d}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="admin-label">Gathering Type</label>
+                <select
+                  className="admin-select"
+                  value={r.type}
+                  onChange={(e) => updateIndex(i, { type: e.target.value })}
+                >
+                  {TYPES.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="md:col-span-3">
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="admin-label">Start (WAT)</label>
+                    <input
+                      className="admin-input"
+                      type="time"
+                      value={r.start_time}
+                      onChange={(e) => updateIndex(i, { start_time: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="admin-label">End (WAT)</label>
+                    <input
+                      className="admin-input"
+                      type="time"
+                      value={r.end_time ?? ""}
+                      onChange={(e) => updateIndex(i, { end_time: e.target.value || null })}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="md:col-span-7">
+                <label className="admin-label">Description / Focus (shown on site)</label>
+                <input
+                  className="admin-input"
+                  value={r.description}
+                  placeholder="e.g. We wait on the Lord, open the scriptures, and pray in the Spirit."
+                  onChange={(e) => updateIndex(i, { description: e.target.value })}
+                />
+              </div>
+
+              <div className="md:col-span-5">
+                <label className="admin-label">Live Gathering Link (Google Meet / Zoom)</label>
+                <input
+                  className="admin-input"
+                  value={r.join_url}
+                  placeholder="https://meet.google.com/..."
+                  onChange={(e) => updateIndex(i, { join_url: e.target.value })}
+                />
               </div>
             </div>
           </div>
         ))}
-
-        <div className="mt-4 flex flex-wrap items-center gap-2 pt-2 border-t border-parchment/10">
-          <button type="button" className="admin-btn admin-btn-ghost" onClick={add}>
-            <PlusCircle size={13} /> Add Session
-          </button>
-          <button
-            type="button"
-            className="admin-btn admin-btn-gold"
-            onClick={requestSave}
-            disabled={busy || pending}
-          >
-            {busy ? <LoaderCircle size={13} className="animate-spin" /> : null}
-            Save & Publish Schedule
-          </button>
-          {message && <span className="text-xs font-semibold text-gold ml-2">{message}</span>}
-        </div>
       </div>
 
-      <section className="admin-surface mt-6 p-4">
-        <h2 className="mb-1 font-display text-lg">One-Off Schedule Exceptions</h2>
-        <p className="mb-3 text-xs opacity-60">
-          Cancel or move a single date without modifying the weekly recurring pattern. Visitors
-          will see the special notice (e.g. “No Monday teaching this week due to Convergence”).
-        </p>
-        <form className="flex flex-wrap items-end gap-2" onSubmit={submitException}>
-          <div className="min-w-44 flex-1">
-            <label className="admin-label">Session</label>
+      {/* SCHEDULE EXCEPTIONS & NOTICES SECTION */}
+      <section className="rounded-lg border border-gold/30 bg-ink-2 p-5">
+        <div className="mb-4 border-b border-parchment/10 pb-3">
+          <div className="flex items-center gap-2 text-gold">
+            <CalendarX size={18} />
+            <h2 className="font-display text-lg text-parchment">
+              Schedule Exceptions & Holiday Cancellations
+            </h2>
+          </div>
+          <p className="mt-1 text-xs opacity-60">
+            Cancel or reschedule a specific date without modifying your recurring weekly rhythm.
+            When added, a prominent notice immediately appears on the website Homepage and Gatherings Timetable.
+          </p>
+        </div>
+
+        <form onSubmit={submitException} className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-12 items-end">
+          <div className="md:col-span-4">
+            <label className="admin-label">Affected Session</label>
             <select
               className="admin-select"
               value={exSession}
               onChange={(e) => setExSession(e.target.value)}
+              required
             >
-              {initial.map((s) => (
-                <option key={s.id} value={s.id}>{DAYS[s.day]} {s.title}</option>
+              <option value="">Select a gathering…</option>
+              {rows.map((s) => (
+                <option key={s.id || s.title} value={s.id}>
+                  {DAYS[s.day]} · {s.title}
+                </option>
               ))}
             </select>
           </div>
-          <div>
-            <label className="admin-label">Date</label>
+
+          <div className="md:col-span-2">
+            <label className="admin-label">Specific Date</label>
             <input
-              className="admin-input"
               type="date"
-              required
+              className="admin-input"
               value={exDate}
               onChange={(e) => setExDate(e.target.value)}
+              required
             />
           </div>
-          <div>
+
+          <div className="md:col-span-2">
             <label className="admin-label">Action</label>
             <select
               className="admin-select"
               value={exAction}
               onChange={(e) => setExAction(e.target.value as "cancel" | "reschedule")}
             >
-              <option value="cancel">Cancel this date</option>
-              <option value="reschedule">Reschedule this date</option>
+              <option value="cancel">Cancel this session</option>
+              <option value="reschedule">Reschedule time</option>
             </select>
           </div>
+
           {exAction === "reschedule" && (
-            <div>
+            <div className="md:col-span-2">
               <label className="admin-label">New Time (WAT)</label>
               <input
-                className="admin-input"
                 type="time"
+                className="admin-input"
                 value={exTime}
                 onChange={(e) => setExTime(e.target.value)}
               />
             </div>
           )}
-          <div className="min-w-48 flex-1">
-            <label className="admin-label">Note to visitors</label>
-            <input
-              className="admin-input"
-              value={exNote}
-              onChange={(e) => setExNote(e.target.value)}
-              placeholder="e.g. Postponed to 9 PM WAT"
-            />
+
+          <div className={exAction === "reschedule" ? "md:col-span-12" : "md:col-span-4"}>
+            <label className="admin-label">Reason / Public Note</label>
+            <div className="flex items-center gap-2">
+              <input
+                className="admin-input flex-1"
+                placeholder="e.g. Cancelled for All-Night Vigil"
+                value={exNote}
+                onChange={(e) => setExNote(e.target.value)}
+              />
+              <button
+                type="submit"
+                disabled={exBusy || !exSession || !exDate}
+                className="admin-btn admin-btn-gold whitespace-nowrap text-xs"
+              >
+                {exBusy ? <LoaderCircle size={13} className="animate-spin" /> : <CalendarX size={13} />}
+                Add Notice
+              </button>
+            </div>
           </div>
-          <button type="submit" className="admin-btn admin-btn-gold" disabled={exBusy}>
-            <CalendarX size={13} /> Apply Exception
-          </button>
         </form>
+
+        {/* Active Exceptions List */}
         {exceptions.length > 0 && (
-          <ul className="mt-4 text-sm divide-y divide-parchment/10">
-            {exceptions.map((x) => (
-              <li key={x.id} className="admin-row flex items-center justify-between py-2.5">
-                <span>
-                  <span className="admin-badge admin-badge-warn mr-2">{x.action}</span>
-                  <strong>{x.occurrence_date}</strong> · {initial.find((s) => s.id === x.session_id)?.title ?? "Session"}{" "}
-                  {x.action === "reschedule" && x.new_start_time ? `→ ${x.new_start_time} WAT` : ""}
-                  {x.note && <span className="opacity-70 ml-1">· “{x.note}”</span>}
-                </span>
-                <button
-                  type="button"
-                  className="admin-btn admin-btn-ghost !py-1 text-xs"
-                  onClick={async () => {
-                    await deleteException(x.id);
-                    startTransition(() => window.location.reload());
-                  }}
-                >
-                  Remove
-                </button>
-              </li>
-            ))}
-          </ul>
+          <div className="mt-5 border-t border-parchment/10 pt-4">
+            <h3 className="font-display text-sm text-parchment mb-2">Active Schedule Exceptions:</h3>
+            <div className="space-y-2">
+              {exceptions.map((x) => {
+                const session = rows.find((s) => s.id === x.session_id);
+                return (
+                  <div
+                    key={x.id}
+                    className="flex flex-wrap items-center justify-between gap-3 rounded bg-ink/60 border border-parchment/10 p-3 text-xs"
+                  >
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span
+                        className={`admin-badge uppercase font-bold text-[0.65rem] ${
+                          x.action === "cancel" ? "admin-badge-bad" : "admin-badge-warn"
+                        }`}
+                      >
+                        {x.action === "cancel" ? "Cancelled" : `Rescheduled to ${x.new_start_time} WAT`}
+                      </span>
+                      <span className="font-semibold text-parchment">{x.occurrence_date}</span>
+                      <span className="opacity-75">
+                        · {session?.title || "Weekly Session"}
+                      </span>
+                      {x.note && (
+                        <span className="text-parchment/60 italic">— &ldquo;{x.note}&rdquo;</span>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      className="admin-btn admin-btn-ghost !py-1 text-xs text-red-400 hover:text-red-300"
+                      onClick={async () => {
+                        await deleteException(x.id);
+                        setExceptions((prev) => prev.filter((item) => item.id !== x.id));
+                      }}
+                    >
+                      <Trash2 size={12} className="inline mr-1" /> Remove
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         )}
       </section>
     </div>

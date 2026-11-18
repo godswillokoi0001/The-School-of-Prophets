@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { PlusCircle, ExternalLink, Edit } from "lucide-react";
+import { AdminPagination } from "@/components/admin/AdminPagination";
 
 export type EventRow = {
   id: string;
@@ -16,6 +18,8 @@ export type EventRow = {
 
 export function EventList({ rows }: { rows: EventRow[] }) {
   const router = useRouter();
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
   const past = new Date().toISOString();
 
   return (
@@ -45,7 +49,7 @@ export function EventList({ rows }: { rows: EventRow[] }) {
             </tr>
           </thead>
           <tbody>
-            {rows.map((e) => (
+            {rows.slice((page - 1) * pageSize, page * pageSize).map((e) => (
               <tr
                 key={e.id}
                 onClick={() => router.push(`/admin/events/${e.slug}`)}
@@ -113,6 +117,12 @@ export function EventList({ rows }: { rows: EventRow[] }) {
             No events in database. Click &ldquo;New event&rdquo; to create one.
           </p>
         )}
+        <AdminPagination
+          totalItems={rows.length}
+          pageSize={pageSize}
+          currentPage={page}
+          onPageChange={setPage}
+        />
       </div>
     </div>
   );

@@ -1,7 +1,8 @@
 import { requireStaff } from "@/lib/admin";
 import { getAdminClient } from "@/lib/supabase/server";
 import Link from "next/link";
-import { Mail } from "lucide-react";
+import { Mail, Users } from "lucide-react";
+import { SubscribersTable } from "@/components/admin/SubscribersTable";
 
 export const dynamic = "force-dynamic";
 
@@ -15,38 +16,23 @@ export default async function SubscribersPage() {
   }
   return (
     <div className="mx-auto max-w-4xl">
-      <div className="mb-3 flex items-end justify-between gap-3">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-border pb-4">
         <div>
-          <h1 className="font-display text-2xl">Subscribers</h1>
+          <h1 className="font-display text-2xl">Subscriber List</h1>
           <p className="text-xs opacity-60">
-            People who signed up from the site form. Consent date is recorded;
-            anyone who unsubscribed is excluded from sends.
+            People who signed up from the site form. Anyone who unsubscribed is excluded from sends.
           </p>
         </div>
-        <Link href="/admin/broadcasts" className="admin-btn admin-btn-gold">
-          <Mail size={13} /> Compose broadcast
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link href="/admin/broadcasts" className="admin-btn admin-btn-ghost">
+            <Mail size={13} /> Newsletters & Broadcasts
+          </Link>
+          <Link href="/admin/subscribers" className="admin-btn admin-btn-gold">
+            <Users size={13} /> Subscribers ({rows.length})
+          </Link>
+        </div>
       </div>
-      <div className="admin-surface overflow-x-auto">
-        <table className="admin-table min-w-[480px]">
-          <thead><tr><th>Email</th><th>Name</th><th>Consent</th><th>Status</th></tr></thead>
-          <tbody>
-            {rows.map((r) => (
-              <tr key={r.id} className="admin-row">
-                <td>{r.email}</td>
-                <td className="opacity-70">{r.name || "—"}</td>
-                <td className="text-xs opacity-70">{r.consent_at.slice(0, 10)}</td>
-                <td>
-                  <span className={`admin-badge ${r.unsubscribed_at ? "admin-badge-warn" : "admin-badge-ok"}`}>
-                    {r.unsubscribed_at ? "Unsubscribed" : "Active"}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {rows.length === 0 && <p className="p-6 text-center text-sm opacity-60">No subscribers yet.</p>}
-      </div>
+      <SubscribersTable rows={rows} />
     </div>
   );
 }

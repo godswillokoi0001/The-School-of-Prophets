@@ -1,0 +1,22 @@
+
+> school-of-prophets@1.1.1 dev
+> next dev --port 3210
+
+   ▲ Next.js 15.5.29
+   - Local:        http://localhost:3210
+   - Network:      http://192.168.18.4:3210
+   - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 5.7s
+ ○ Compiling / ...
+ ✓ Compiled /testimonies in 18.7s (972 modules)
+ GET /testimonies 200 in 12381ms
+ GET / 200 in 23598ms
+ GET / 200 in 867ms
+ GET / 200 in 1760ms
+ ✓ Compiled in 1268ms (326 modules)
+ ✓ Compiled in 1597ms (326 modules)
+ GET / 200 in 897ms
+ GET / 200 in 266ms
+[?25h

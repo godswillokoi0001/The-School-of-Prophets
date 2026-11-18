@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidateTag } from "next/cache";
+import { revalidateTag, revalidatePath } from "next/cache";
 import { getAdminClient } from "@/lib/supabase/server";
 import { audit, requireStaff } from "@/lib/admin";
 
@@ -16,6 +16,18 @@ type SessionInput = {
   active: boolean;
   sort_order: number;
 };
+
+function revalidateSchedule() {
+  try {
+    revalidateTag("schedule");
+    revalidateTag("schedule:exceptions");
+    revalidatePath("/gatherings");
+    revalidatePath("/");
+    revalidatePath("/admin/schedule");
+  } catch {
+    // ignore
+  }
+}
 
 export async function saveSessions(rows: SessionInput[]) {
   const staff = await requireStaff("admin");
@@ -40,8 +52,8 @@ export async function saveSessions(rows: SessionInput[]) {
     .from("schedule_sessions")
     .upsert(payload, { onConflict: "id" });
   if (error) return { ok: false, error: error.message };
-  await audit(staff, "update", "schedule_sessions", undefined, { count: rows.length });
-  revalidateTag("schedule");
+  audit(staff, "update", "schedule_sessions", undefined, { count: rows.length }).catch(() => {});
+  revalidateSchedule();
   return { ok: true };
 }
 
@@ -51,8 +63,8 @@ export async function deleteSession(id: string) {
   if (!svc) return { ok: false };
   const { error } = await svc.from("schedule_sessions").delete().eq("id", id);
   if (error) return { ok: false, error: error.message };
-  await audit(staff, "delete", "schedule_sessions", id);
-  revalidateTag("schedule");
+  audit(staff, "delete", "schedule_sessions", id).catch(() => {});
+  revalidateSchedule();
   return { ok: true };
 }
 
@@ -67,6 +79,7 @@ export async function addException(
   const svc = await getAdminClient();
   if (!svc) return { ok: false, error: "No database connection" };
   const { error } = await svc.from("schedule_exceptions").insert({
+    id: crypto.randomUUID(),
     session_id: sessionId,
     occurrence_date: occurrenceDate,
     action,
@@ -74,8 +87,8 @@ export async function addException(
     note,
   });
   if (error) return { ok: false, error: error.message };
-  await audit(staff, action, "schedule_exceptions", sessionId, { date: occurrenceDate, note });
-  revalidateTag("schedule");
+  audit(staff, action, "schedule_exceptions", sessionId, { date: occurrenceDate, note }).catch(() => {});
+  revalidateSchedule();
   return { ok: true };
 }
 
@@ -84,7 +97,7 @@ export async function deleteException(id: string) {
   const svc = await getAdminClient();
   if (!svc) return { ok: false };
   await svc.from("schedule_exceptions").delete().eq("id", id);
-  await audit(staff, "delete", "schedule_exceptions", id);
-  revalidateTag("schedule");
+  audit(staff, "delete", "schedule_exceptions", id).catch(() => {});
+  revalidateSchedule();
   return { ok: true };
 }

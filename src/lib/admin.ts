@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
-import { createSupabaseServer, getServiceClient, getAdminClient } from "@/lib/supabase/server";
+import { cache } from "react";
+import { createSupabaseServer, getAdminClient } from "@/lib/supabase/server";
 
 export type Role = "owner" | "admin" | "moderator" | "viewer";
 
@@ -10,7 +11,7 @@ export type Staff = {
   role: Role;
 };
 
-export async function getStaff(): Promise<Staff | null> {
+export const getStaff = cache(async (): Promise<Staff | null> => {
   const sb = await createSupabaseServer();
   if (!sb) return null;
   const { data: userData } = await sb.auth.getUser();
@@ -28,7 +29,7 @@ export async function getStaff(): Promise<Staff | null> {
     fullName: profile.full_name,
     role: profile.role as Role,
   };
-}
+});
 
 const rank: Record<Role, number> = { viewer: 1, moderator: 2, admin: 3, owner: 4 };
 

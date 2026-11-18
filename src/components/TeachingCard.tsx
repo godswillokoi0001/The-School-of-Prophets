@@ -2,10 +2,11 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import type { Teaching } from "@/content/teachings";
 import { formatDate } from "@/lib/time";
+import { Cover } from "@/components/Cover";
 
 /**
- * A catalogue entry, set like a publisher's list: date, series, title, one
- * sentence. No image, no card, no shadow.
+ * A catalogue entry, set like a publisher's list: cover, date, series, title,
+ * one sentence. Hairline rules, no card chrome.
  */
 export function TeachingCard({
   teaching,
@@ -18,20 +19,43 @@ export function TeachingCard({
 }) {
   if (!teaching) return null;
 
+  const hasImage = Boolean(teaching.image);
+  const metaSpan = hasImage ? "md:col-span-2" : "md:col-span-3";
+  const bodySpan = hasImage
+    ? featured
+      ? "md:col-span-5"
+      : "md:col-span-6"
+    : "md:col-span-8";
+
   return (
     <article
-      className={`group grid gap-3 border-t border-ink/15 py-6 md:grid-cols-12 md:gap-6 ${
+      className={`group grid gap-4 border-t border-ink/15 py-6 md:grid-cols-12 md:gap-6 ${
         featured ? "md:py-8" : ""
       }`}
     >
-      <div className="md:col-span-3">
+      {hasImage && (
+        <div
+          className={`relative overflow-hidden bg-ink ${
+            featured ? "aspect-[16/10] md:col-span-4" : "aspect-[16/10] md:col-span-3"
+          }`}
+        >
+          <Cover
+            src={teaching.image}
+            alt={teaching.imageAlt}
+            sizes={featured ? "(max-width: 768px) 100vw, 33vw" : "(max-width: 768px) 100vw, 25vw"}
+            className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+          />
+        </div>
+      )}
+
+      <div className={metaSpan}>
         <p className="label text-ember">{seriesTitle ?? "Teaching"}</p>
         <p className="mt-1.5 text-xs tabular-nums text-quiet">
           {formatDate(teaching.date)}
         </p>
       </div>
 
-      <div className="md:col-span-8">
+      <div className={bodySpan}>
         <h3
           className={`font-display leading-[1.08] ${
             featured ? "text-3xl sm:text-4xl" : "text-2xl"
