@@ -90,52 +90,125 @@ export async function getSeries(): Promise<SeedSeries[]> {
   }, seriesList);
 }
 
+export function extractYouTubeId(url: string | null | undefined): string | null {
+  if (!url) return null;
+  const trimmed = url.trim();
+  const m = trimmed.match(/(?:youtu\.be\/|v\/|u\/\w\/|embed\/|shorts\/|live\/|watch\?v=|\&v=)([\w-]{11})/);
+  if (m) return m[1];
+  if (/^[\w-]{11}$/.test(trimmed)) return trimmed;
+  return null;
+}
+
 export async function getTeachings(): Promise<SeedTeaching[]> {
   return cached("teachings", async () => {
     const nowIso = new Date().toISOString();
-    const { data } = await db()!
+    const svc = db();
+    if (!svc) return seedTeachings;
+
+    const { data } = await svc
       .from("teachings")
       .select("*")
       .or(`status.eq.published,and(status.eq.scheduled,publish_at.lte.${nowIso})`)
+      .order("featured", { ascending: false })
       .order("date_taught", { ascending: false });
-    if (!data || data.length === 0) return seedTeachings;
-    const series = await db()!.from("series").select("id,slug").eq("status", "published");
+
+    const series = await svc.from("series").select("id,slug").eq("status", "published");
     const map = new Map((series.data ?? []).map((s) => [s.id, s.slug]));
-    return data.map((t: DbTeaching) => {
-      const youtubeId = t.youtube_url ? extractYouTubeId(t.youtube_url) : null;
+
+    const dbItems: SeedTeaching[] = (data ?? []).map((t: DbTeaching) => {
+      const youtubeId = extractYouTubeId(t.youtube_url);
+      const scriptureStr = Array.isArray(t.scripture)
+        ? t.scripture.join(", ")
+        : String(t.scripture || "");
+
       return {
         slug: t.slug,
         title: t.title,
         series: t.series_id ? (map.get(t.series_id) ?? "") : "",
-        topics: t.tags,
+        topics: Array.isArray(t.tags) ? t.tags : [],
         format: [
           youtubeId ? "video" : null,
           t.audio_url ? "audio" : null,
           "notes",
         ].filter(Boolean) as SeedTeaching["format"],
         date: t.date_taught ?? t.publish_at?.slice(0, 10) ?? new Date().toISOString().slice(0, 10),
-        scripture: t.scripture.join(", "),
-        summary: t.summary,
+        scripture: scriptureStr,
+        summary: t.summary || "",
         youtubeId,
-        image: t.cover_url ?? "/images/bible-bedside.webp",
-        imageAlt: t.cover_alt || "Teaching cover image",
+        image: t.cover_url || "/images/bible-bedside.webp",
+        imageAlt: t.cover_alt || t.title || "Teaching cover image",
         audioUrl: t.audio_url ?? undefined,
         notes: [],
-        body: t.body,
+        body: t.body || "",
+        links: Array.isArray(t.links) ? t.links : [],
         isSample: false,
-      } as SeedTeaching;
+        featured: Boolean(t.featured),
+      } as SeedTeaching & { featured?: boolean; links?: { label: string; url: string }[] };
     });
+
+    // Merge with any seed teachings that aren't in the database yet
+    const dbSlugs = new Set(dbItems.map((d) => d.slug));
+    const extraSeeds = seedTeachings.filter((s) => !dbSlugs.has(s.slug));
+
+    return [...dbItems, ...extraSeeds];
   }, seedTeachings);
 }
 
 export async function getTeaching(slug: string): Promise<SeedTeaching | undefined> {
   const all = await getTeachings();
-  return all.find((t) => t.slug === slug);
-}
+  const found = all.find((t) => t.slug === slug);
+  if (found) return found;
 
-export function extractYouTubeId(url: string): string | null {
-  const m = url.match(/(?:youtu\.be\/|v=|embed\/|shorts\/)([\w-]{11})/);
-  return m ? m[1] : url.length === 11 ? url : null;
+  // Direct database query fallback (e.g. for drafts, newly created teachings, or direct UUID lookups)
+  const svc = db();
+  if (svc) {
+    try {
+      const { data: t } = await svc
+        .from("teachings")
+        .select("*")
+        .or(`slug.eq.${slug},id.eq.${slug}`)
+        .maybeSingle();
+
+      if (t) {
+        const youtubeId = extractYouTubeId(t.youtube_url);
+        let seriesSlug = "";
+        if (t.series_id) {
+          const { data: s } = await svc.from("series").select("slug").eq("id", t.series_id).maybeSingle();
+          seriesSlug = s?.slug ?? "";
+        }
+        const scriptureStr = Array.isArray(t.scripture)
+          ? t.scripture.join(", ")
+          : String(t.scripture || "");
+
+        return {
+          slug: t.slug,
+          title: t.title,
+          series: seriesSlug,
+          topics: Array.isArray(t.tags) ? t.tags : [],
+          format: [
+            youtubeId ? "video" : null,
+            t.audio_url ? "audio" : null,
+            "notes",
+          ].filter(Boolean) as SeedTeaching["format"],
+          date: t.date_taught ?? t.publish_at?.slice(0, 10) ?? new Date().toISOString().slice(0, 10),
+          scripture: scriptureStr,
+          summary: t.summary || "",
+          youtubeId,
+          image: t.cover_url || "/images/bible-bedside.webp",
+          imageAlt: t.cover_alt || t.title || "Teaching cover image",
+          audioUrl: t.audio_url ?? undefined,
+          notes: [],
+          body: t.body || "",
+          links: Array.isArray(t.links) ? t.links : [],
+          isSample: false,
+        } as SeedTeaching & { links?: { label: string; url: string }[] };
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  return undefined;
 }
 
 /* ---------------- events ---------------- */
@@ -240,6 +313,16 @@ export async function getGivingSettings() {
       accountNumber: String(s.accountNumber ?? seedGiving.bank.accountNumber),
       sortCode: String(s.sortCode ?? seedGiving.bank.sortCode ?? ""),
       currency: String(s.currency ?? seedGiving.bank.currency ?? "NGN"),
+    },
+    foreignBank: {
+      bankName: String(s.foreignBankName ?? ""),
+      accountName: String(s.foreignAccountName ?? ""),
+      accountNumber: String(s.foreignAccountNumber ?? ""),
+      currency: String(s.foreignCurrency ?? "USD"),
+      swiftCode: String(s.foreignSwiftCode ?? ""),
+      routingNumber: String(s.foreignRoutingNumber ?? ""),
+      bankAddress: String(s.foreignBankAddress ?? ""),
+      notes: String(s.foreignNotes ?? ""),
     },
     paystack: {
       link: String(s.paystackLink ?? seedGiving.paystack.link),

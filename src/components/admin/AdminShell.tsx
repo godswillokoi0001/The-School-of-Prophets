@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { Crest } from "@/components/Crest";
 import { AdminSearch } from "@/components/admin/AdminSearch";
-import { NotificationBell } from "@/components/admin/NotificationBell";
+import { NotificationBell, type NotificationItem } from "@/components/admin/NotificationBell";
 import { PushSetup } from "@/components/admin/PushSetup";
 import type { Role } from "@/lib/admin";
 
@@ -27,6 +27,7 @@ export function AdminShell({
   email,
   fullName,
   unread,
+  notifications = [],
 }: {
   children: React.ReactNode;
   role: Role;
@@ -34,6 +35,7 @@ export function AdminShell({
   fullName: string;
   unread: number;
   pendingTestimonies?: number;
+  notifications?: NotificationItem[];
 }) {
   const [open, setOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -195,7 +197,7 @@ export function AdminShell({
             <kbd className="hidden sm:inline text-[0.6rem] opacity-60">Ctrl K</kbd>
           </button>
           <div className="ml-auto flex items-center gap-1">
-            <NotificationBell initialUnread={unread} />
+            <NotificationBell initialUnread={unread} initialNotifications={notifications} userRole={role} />
             <form action="/admin/logout" method="post">
               <button
                 type="submit"

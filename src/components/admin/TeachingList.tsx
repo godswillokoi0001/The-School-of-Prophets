@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Copy, LoaderCircle, Trash2 } from "lucide-react";
+import { Copy, Edit3, ExternalLink, LoaderCircle, Trash2 } from "lucide-react";
 import { bulkTeachings, duplicateTeaching } from "@/app/admin/(shell)/actions/teachings";
+import { AdminModal } from "@/components/admin/AdminModal";
 
 export type TeachingRow = {
   id: string; title: string; slug: string; status: string;
@@ -11,15 +13,30 @@ export type TeachingRow = {
 };
 
 const statusBadge: Record<string, string> = {
-  published: "admin-badge-ok", scheduled: "admin-badge-warn", draft: "",
+  published: "admin-badge-ok", scheduled: "admin-badge-warn", draft: "admin-badge-warn",
 };
 
 export function TeachingList({ rows, seriesOptions }: { rows: TeachingRow[]; seriesOptions: { id: string; title: string }[] }) {
+  const router = useRouter();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [pending, start] = useTransition();
   const [busy, setBusy] = useState(false);
   const [bulkTag, setBulkTag] = useState("");
   const [bulkSeries, setBulkSeries] = useState("");
+
+  const [modalConfig, setModalConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    description: string;
+    variant: "danger" | "warning" | "info" | "success";
+    confirmLabel?: string;
+    onConfirm?: () => void;
+  }>({
+    isOpen: false,
+    title: "",
+    description: "",
+    variant: "info",
+  });
 
   function toggle(id: string) {
     setSelected((prev) => {
@@ -31,7 +48,24 @@ export function TeachingList({ rows, seriesOptions }: { rows: TeachingRow[]; ser
   }
 
   function run(action: string, value?: string, confirmMsg?: string) {
-    if (confirmMsg && !confirm(confirmMsg)) return;
+    if (confirmMsg) {
+      setModalConfig({
+        isOpen: true,
+        title: "Confirm Bulk Action",
+        description: confirmMsg,
+        variant: action === "delete" ? "danger" : "info",
+        confirmLabel: action === "delete" ? "Delete All" : "Confirm",
+        onConfirm: () => {
+          setModalConfig((m) => ({ ...m, isOpen: false }));
+          executeBulk(action, value);
+        },
+      });
+      return;
+    }
+    executeBulk(action, value);
+  }
+
+  function executeBulk(action: string, value?: string) {
     start(async () => {
       setBusy(true);
       await bulkTeachings([...selected], action, value);
@@ -42,9 +76,19 @@ export function TeachingList({ rows, seriesOptions }: { rows: TeachingRow[]; ser
 
   return (
     <div>
+      <AdminModal
+        isOpen={modalConfig.isOpen}
+        title={modalConfig.title}
+        description={modalConfig.description}
+        variant={modalConfig.variant}
+        confirmLabel={modalConfig.confirmLabel}
+        onConfirm={modalConfig.onConfirm}
+        onCancel={() => setModalConfig((m) => ({ ...m, isOpen: false }))}
+      />
+
       {selected.size > 0 && (
         <div className="admin-surface mb-3 flex flex-wrap items-center gap-2 p-3 text-xs">
-          <span>{selected.size} selected</span>
+          <span className="font-semibold text-gold">{selected.size} selected</span>
           <button className="admin-btn admin-btn-ghost !py-1" disabled={pending} onClick={() => run("publish")}>Publish</button>
           <button className="admin-btn admin-btn-ghost !py-1" disabled={pending} onClick={() => run("unpublish")}>Unpublish</button>
           <select className="admin-select !w-auto !py-1" value={bulkSeries} onChange={(e) => { setBulkSeries(e.target.value); if (e.target.value) run("series", e.target.value); }} aria-label="Move to series">
@@ -55,10 +99,10 @@ export function TeachingList({ rows, seriesOptions }: { rows: TeachingRow[]; ser
           </select>
           <input className="admin-input !w-32 !py-1" placeholder="Add tag…" value={bulkTag} onChange={(e) => setBulkTag(e.target.value)} aria-label="Tag to add" />
           <button className="admin-btn admin-btn-ghost !py-1" disabled={!bulkTag || pending} onClick={() => run("tag", bulkTag)}>Tag</button>
-          <button className="admin-btn admin-btn-danger !py-1" disabled={pending} onClick={() => run("delete", undefined, `Delete ${selected.size} teaching(s)? This cannot be undone.`)}>
+          <button className="admin-btn admin-btn-danger !py-1" disabled={pending} onClick={() => run("delete", undefined, `Are you sure you want to permanently delete ${selected.size} teaching(s)? This action cannot be undone.`)}>
             <Trash2 size={12} /> Delete
           </button>
-          {busy && <LoaderCircle size={12} className="animate-spin" />}
+          {busy && <LoaderCircle size={12} className="animate-spin text-gold" />}
         </div>
       )}
 
@@ -71,38 +115,84 @@ export function TeachingList({ rows, seriesOptions }: { rows: TeachingRow[]; ser
               <th>Series</th>
               <th>Status</th>
               <th>Date</th>
-              <th></th>
+              <th className="text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((t) => (
-              <tr key={t.id} className="admin-row hover:bg-parchment/5">
-                <td>
-                  <input type="checkbox" className="accent-gold" checked={selected.has(t.id)} onChange={() => toggle(t.id)} aria-label={`Select ${t.title}`} />
+              <tr
+                key={t.id}
+                onClick={() => router.push(`/admin/teachings/${t.slug || t.id}`)}
+                className="admin-row hover:bg-gold/10 cursor-pointer transition-colors group"
+              >
+                <td onClick={(e) => e.stopPropagation()}>
+                  <input
+                    type="checkbox"
+                    className="accent-gold h-4 w-4 rounded"
+                    checked={selected.has(t.id)}
+                    onChange={() => toggle(t.id)}
+                    aria-label={`Select ${t.title}`}
+                  />
                 </td>
                 <td>
-                  <Link href={`/admin/teachings/${t.slug}`} className="hover:text-gold-soft">
+                  <span className="font-medium text-parchment group-hover:text-gold transition-colors">
                     {t.title}
-                    {t.featured && <span className="ml-1 admin-badge admin-badge-new">Featured</span>}
-                  </Link>
+                  </span>
+                  {t.featured && <span className="ml-2 admin-badge admin-badge-new">Featured</span>}
                 </td>
-                <td className="opacity-70">{t.series_title ?? "—"}</td>
-                <td><span className={`admin-badge ${statusBadge[t.status] ?? ""}`}>{t.status}</span></td>
-                <td className="text-[0.7rem] opacity-70">{t.date_taught ?? "—"}</td>
+                <td className="opacity-70 text-xs">{t.series_title ?? "—"}</td>
                 <td>
-                  <button
-                    className="p-1 opacity-60 hover:opacity-100"
-                    aria-label={`Duplicate ${t.title}`}
-                    onClick={async () => {
-                      if (!confirm(`Duplicate "${t.title}" as a new draft?`)) return;
-                      setBusy(true);
-                      const res = await duplicateTeaching(t.id);
-                      setBusy(false);
-                      if (res.ok && res.id) window.location.assign(`/admin/teachings/${res.id}`);
-                    }}
-                  >
-                    <Copy size={14} />
-                  </button>
+                  <span className={`admin-badge text-xs uppercase ${statusBadge[t.status] ?? ""}`}>
+                    {t.status}
+                  </span>
+                </td>
+                <td className="text-xs opacity-70">{t.date_taught ?? "—"}</td>
+                <td className="text-right" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex items-center justify-end gap-1.5">
+                    <button
+                      type="button"
+                      className="admin-btn admin-btn-ghost !py-1 !px-2 text-xs"
+                      title="Edit teaching"
+                      onClick={() => router.push(`/admin/teachings/${t.slug || t.id}`)}
+                    >
+                      <Edit3 size={12} className="mr-1" /> Edit
+                    </button>
+                    {t.status === "published" && (
+                      <a
+                        href={`/teachings/${t.slug}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="p-1.5 opacity-60 hover:opacity-100 hover:text-gold transition-colors"
+                        title="View live on website"
+                      >
+                        <ExternalLink size={13} />
+                      </a>
+                    )}
+                    <button
+                      type="button"
+                      className="p-1.5 opacity-60 hover:opacity-100 transition-colors"
+                      aria-label={`Duplicate ${t.title}`}
+                      title="Duplicate as new draft"
+                      onClick={() => {
+                        setModalConfig({
+                          isOpen: true,
+                          title: "Duplicate Teaching",
+                          description: `Create a duplicate draft of "${t.title}"?`,
+                          variant: "info",
+                          confirmLabel: "Duplicate",
+                          onConfirm: async () => {
+                            setModalConfig((m) => ({ ...m, isOpen: false }));
+                            setBusy(true);
+                            const res = await duplicateTeaching(t.id);
+                            setBusy(false);
+                            if (res.ok && res.id) router.push(`/admin/teachings/${res.id}`);
+                          },
+                        });
+                      }}
+                    >
+                      <Copy size={13} />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -110,7 +200,7 @@ export function TeachingList({ rows, seriesOptions }: { rows: TeachingRow[]; ser
         </table>
         {rows.length === 0 && (
           <p className="p-6 text-center text-sm opacity-60">
-            No teachings yet. Use “New teaching” to write the first one.
+            No teachings found. Use “New teaching” to write and publish your first one.
           </p>
         )}
       </div>

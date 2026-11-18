@@ -33,7 +33,7 @@ export default async function NewTeachingPage() {
     links: [],
     tags: [],
     featured: false,
-    status: "draft",
+    status: "published",
     publish_at: null,
     seo_title: null,
     seo_description: null,

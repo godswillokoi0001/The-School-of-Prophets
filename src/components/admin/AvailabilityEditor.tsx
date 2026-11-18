@@ -6,6 +6,7 @@ import {
   saveAvailability, deleteRule, addBlockedDate, removeBlockedDate,
   type CallTypeInput,
 } from "@/app/admin/(shell)/actions/availability";
+import { AdminModal } from "@/components/admin/AdminModal";
 
 type Rule = { id: string; weekday: number; start_time: string; end_time: string; slot_minutes: number; active: boolean; call_type_id: string | null };
 type Block = { id: string; date: string; all_day: boolean; reason: string };
@@ -39,6 +40,29 @@ export function AvailabilityEditor({
   const [blockReason, setBlockReason] = useState("");
   const [, startTransition] = useTransition();
 
+  // Modal State
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalTitle, setModalTitle] = useState("");
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalMode, setModalMode] = useState<"danger" | "warning" | "info" | "success">("warning");
+  const [modalConfirmLabel, setModalConfirmLabel] = useState<string | undefined>(undefined);
+  const [pendingAction, setPendingAction] = useState<(() => Promise<void>) | null>(null);
+
+  function openConfirm(opts: {
+    title: string;
+    message: string;
+    mode: "danger" | "warning" | "info" | "success";
+    confirmLabel?: string;
+    onConfirm: () => Promise<void>;
+  }) {
+    setModalTitle(opts.title);
+    setModalMessage(opts.message);
+    setModalMode(opts.mode);
+    setModalConfirmLabel(opts.confirmLabel);
+    setPendingAction(() => opts.onConfirm);
+    setModalOpen(true);
+  }
+
   function addRule() {
     setRules((r) => [
       ...r,
@@ -53,16 +77,23 @@ export function AvailabilityEditor({
     setMessage(res.ok ? "Availability saved." : res.error ?? "Failed");
   }
 
-  async function removeRule(id: string) {
+  function removeRule(id: string) {
     if (!id) {
       setRules((r) => r.filter((x) => x.id !== id));
       return;
     }
-    if (!confirm("Remove this time window? Visitors can no longer book into it.")) return;
-    setBusy(true);
-    await deleteRule(id);
-    setBusy(false);
-    setRules((r) => r.filter((x) => x.id !== id));
+    openConfirm({
+      title: "Remove Time Window",
+      message: "Remove this time window? Visitors can no longer book into it.",
+      mode: "warning",
+      confirmLabel: "Remove Window",
+      onConfirm: async () => {
+        setBusy(true);
+        await deleteRule(id);
+        setBusy(false);
+        setRules((r) => r.filter((x) => x.id !== id));
+      },
+    });
   }
 
   async function addBlock(e: React.FormEvent) {
@@ -228,6 +259,23 @@ export function AvailabilityEditor({
         </button>
         {message && <span className="text-xs opacity-80">{message}</span>}
       </div>
+
+      <AdminModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={modalTitle}
+        message={modalMessage}
+        mode={modalMode}
+        confirmLabel={modalConfirmLabel}
+        onConfirm={
+          pendingAction
+            ? async () => {
+                await pendingAction();
+                setModalOpen(false);
+              }
+            : undefined
+        }
+      />
     </div>
   );
 }

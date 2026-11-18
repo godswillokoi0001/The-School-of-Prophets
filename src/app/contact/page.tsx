@@ -5,7 +5,7 @@ import { ContactForm } from "@/components/forms/ContactForm";
 import { SocialLinks } from "@/components/SocialLinks";
 import { getContactSettings, getFaqs } from "@/lib/data";
 import { site } from "@/config/site";
-import { Plus, Users, MessageSquare } from "lucide-react";
+import { Plus, Users, MessageSquare, Phone } from "lucide-react";
 import { FacebookIcon, YouTubeIcon } from "@/components/BrandIcons";
 
 export const metadata: Metadata = {
@@ -104,6 +104,19 @@ export default async function ContactPage() {
                 </a>
               </li>
             </ul>
+
+            <div className="mt-8 border border-gold/40 bg-gold/10 p-5">
+              <p className="label flex items-center gap-2 text-ember">
+                <Phone aria-hidden="true" className="h-3.5 w-3.5" />
+                Pastoral & Prophetic Counsel
+              </p>
+              <p className="mt-2 text-sm leading-relaxed text-ink/80">
+                Need to speak one-on-one with Prophet Lawrence for spiritual guidance, discernment, or ministry enquiry?
+              </p>
+              <Link href="/book" className="btn btn-gold mt-4 inline-flex">
+                Book a call with Prophet Lawrence
+              </Link>
+            </div>
           </div>
         </div>
 

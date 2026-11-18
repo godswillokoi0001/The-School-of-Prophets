@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHeader } from "@/components/PageHeader";
 import { TeachingLibrary } from "@/components/TeachingLibrary";
+import { NewsletterSubscribe } from "@/components/NewsletterSubscribe";
 import { TeachingCard } from "@/components/TeachingCard";
 import { getSeries, getTeachings } from "@/lib/data";
 import { site } from "@/config/site";
@@ -82,6 +83,14 @@ export default async function TeachingsPage() {
         </div>
         <div className="mt-8">
           <TeachingLibrary seriesList={seriesList} teachings={teachings} />
+        </div>
+
+        <div className="mt-12">
+          <NewsletterSubscribe
+            variant="card"
+            title="Receive New Teachings In Your Inbox"
+            description="Subscribe free to receive weekly study notes, mp3 audio releases, and teaching outlines as soon as they are published."
+          />
         </div>
 
         <div id="series" className="mt-16 border-t border-ink/15 pt-8">

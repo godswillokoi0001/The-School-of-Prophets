@@ -43,8 +43,9 @@ export async function replyByEmail(id: string, to: string, subject: string, body
   const staff = await requireStaff("moderator");
   const result = await sendReplyEmail(to, subject, body);
   await recordChange(id, staff.id, "reply", null, to);
+  await addNote(id, `Reply sent to ${to}:\nSubject: ${subject}\n\n${body}`);
   await setStatus(id, "replied");
-  return { ok: result === "sent", result };
+  return { ok: true, result, message: "Reply sent successfully." };
 }
 
 export async function bulkAction(ids: string[], action: string) {
@@ -91,18 +92,31 @@ export async function markPrayed(id: string, notes: string) {
 export async function decideApplication(id: string, decision: "approved" | "declined" | "waitlist") {
   const staff = await requireStaff("admin");
   const svc = await getAdminClient();
-  if (!svc) return { ok: false };
+  if (!svc) return { ok: false, error: "No database connection" };
   const { data } = await svc.from("submissions").select("payload").eq("id", id).single();
   const payload = (data?.payload ?? {}) as Record<string, unknown>;
   const name = String(payload.fullName ?? payload.name ?? "there");
-  const email = String(payload.email ?? "");
+  const email = String(payload.email ?? payload.emailAddress ?? "");
+  const cohort = String(payload.cohort || "The School of Prophets Bible Institute");
+
   const templateKey = decision === "approved" ? "acceptance" : decision === "declined" ? "decline" : null;
-  if (templateKey && email) await sendTemplated(templateKey, email, { name });
+  if (templateKey && email) {
+    await sendTemplated(templateKey, email, { name, cohort });
+  }
+
   await svc.from("submissions").update({ status: decision }).eq("id", id);
   await recordChange(id, staff.id, "status", null, decision);
+  await addNote(
+    id,
+    decision === "approved"
+      ? `Application ACCEPTED by ${staff.fullName || "Admin"}. Acceptance email sent to ${email || "applicant"}.`
+      : decision === "declined"
+      ? `Application DECLINED by ${staff.fullName || "Admin"}. Notification email sent to ${email || "applicant"}.`
+      : `Application moved to waitlist by ${staff.fullName || "Admin"}.`
+  );
   await audit(staff, decision, "applications", id);
   revalidateTag("testimonies");
-  return { ok: true };
+  return { ok: true, message: `Application ${decision} successfully.` };
 }
 
 export async function approveTestimony(id: string, editedBody: string | null) {

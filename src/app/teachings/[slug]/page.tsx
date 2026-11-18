@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { ExternalLink, Headphones } from "lucide-react";
 import { TeachingVideo } from "@/components/TeachingVideo";
 import { getSeries, getTeaching, getTeachings } from "@/lib/data";
 import { getServiceClient, supabaseConfigured } from "@/lib/supabase/server";
@@ -149,21 +150,54 @@ export default async function TeachingPage({ params }: Params) {
             </div>
           )}
 
+          {teaching.audioUrl && (
+            <div className="mt-6 rounded-lg border border-gold/40 bg-parchment-2/80 p-5">
+              <div className="flex items-center gap-2 mb-2 text-xs font-semibold text-ember uppercase tracking-wider">
+                <Headphones size={15} />
+                <span>Audio Recording</span>
+              </div>
+              <audio controls className="w-full mt-2" src={teaching.audioUrl}>
+                Your browser does not support the audio element.
+              </audio>
+            </div>
+          )}
+
           <div className="mt-12 space-y-5 border-t border-ink/15 pt-8">
-            <p className="label text-ember">Outline</p>
+            <p className="label text-ember">Outline & Study Notes</p>
             {hasBody ? (
               <div
                 className="prose-editor max-w-none"
                 dangerouslySetInnerHTML={{ __html: sanitizeServerHtml(teaching.body!) }}
               />
             ) : (
-              teaching.notes.map((note, i) => (
+              (teaching.notes ?? []).map((note, i) => (
                 <p key={i} className="measure text-[0.975rem] leading-relaxed text-ink/80">
                   {note}
                 </p>
               ))
             )}
           </div>
+
+          {((teaching as { links?: { label: string; url: string }[] }).links ?? []).length > 0 && (
+            <div className="mt-10 border border-ink/15 bg-parchment-2/50 p-6 rounded-lg">
+              <p className="label text-ember">Additional Links & Resources</p>
+              <ul className="mt-3 space-y-2.5">
+                {((teaching as { links?: { label: string; url: string }[] }).links ?? []).map((l, i) => (
+                  <li key={i}>
+                    <a
+                      href={l.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink hover:text-ember underline decoration-ink/30 underline-offset-4"
+                    >
+                      <span>{l.label || l.url}</span>
+                      <ExternalLink size={13} className="text-gold shrink-0" />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           <div className="mt-12 flex flex-wrap gap-3 border-t border-ink/15 pt-8">
             <Link href="/gatherings" className="btn btn-gold">

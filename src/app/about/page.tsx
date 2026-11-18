@@ -340,12 +340,20 @@ export default function AboutPage() {
             ))}
           </ul>
 
-          <div className="mt-7 flex flex-wrap gap-3">
+          <div className="mt-7 flex flex-wrap items-center gap-3">
+            <Link href="/book" className="btn btn-gold">
+              <CalendarDays aria-hidden="true" className="h-4 w-4" />
+              Book a call with Prophet Lawrence
+            </Link>
+            <Link href="/training" className="btn btn-outline">
+              <GraduationCap aria-hidden="true" className="h-4 w-4" />
+              Ask about training
+            </Link>
             <a
               href={site.social.facebookPage}
               target="_blank"
               rel="noopener noreferrer"
-              className="btn btn-outline"
+              className="btn btn-ghost"
             >
               <FacebookIcon aria-hidden="true" className="h-4 w-4" />
               Facebook
@@ -354,15 +362,11 @@ export default function AboutPage() {
               href={site.social.youtube}
               target="_blank"
               rel="noopener noreferrer"
-              className="btn btn-outline"
+              className="btn btn-ghost"
             >
               <YouTubeIcon aria-hidden="true" className="h-4 w-4" />
               YouTube
             </a>
-            <Link href="/training" className="btn btn-gold">
-              <GraduationCap aria-hidden="true" className="h-4 w-4" />
-              Ask about training
-            </Link>
           </div>
 
           <Link

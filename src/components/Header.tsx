@@ -109,8 +109,23 @@ export function Header() {
           })}
         </nav>
 
-        <Link href="/gatherings" className="btn btn-gold ml-auto hidden xl:ml-3 xl:inline-flex">
-          Join a gathering
+        <div className="ml-auto hidden items-center gap-2.5 xl:flex">
+          <Link
+            href="/give"
+            className="flex items-center gap-1.5 border border-gold/80 px-3.5 py-2 text-[0.72rem] font-bold uppercase tracking-[0.14em] text-gold transition-colors hover:bg-gold hover:text-ink shadow-sm"
+          >
+            Donate
+          </Link>
+          <Link href="/gatherings" className="btn btn-gold">
+            Join a gathering
+          </Link>
+        </div>
+
+        <Link
+          href="/give"
+          className="ml-auto border border-gold/70 px-2.5 py-1.5 text-[0.68rem] font-bold uppercase tracking-[0.12em] text-gold hover:bg-gold hover:text-ink xl:hidden"
+        >
+          Donate
         </Link>
 
         <button
@@ -118,7 +133,7 @@ export function Header() {
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
           aria-controls="mobile-nav"
-          className="ml-auto flex items-center gap-2 border border-parchment/25 px-3 py-2 xl:hidden"
+          className="ml-2 flex items-center gap-2 border border-parchment/25 px-3 py-2 xl:hidden"
         >
           {open ? <X aria-hidden="true" className="h-4 w-4" /> : <Menu aria-hidden="true" className="h-4 w-4" />}
           <span className="label">{open ? "Close" : "Menu"}</span>
@@ -187,9 +202,14 @@ export function Header() {
               );
             })}
 
-            <Link href="/gatherings" className="btn btn-gold mt-6 w-full">
-              Join a gathering
-            </Link>
+            <div className="mt-6 grid grid-cols-2 gap-2">
+              <Link href="/give" className="btn btn-outline text-center">
+                Donate
+              </Link>
+              <Link href="/gatherings" className="btn btn-gold text-center">
+                Join a gathering
+              </Link>
+            </div>
             <p className="label mt-6 text-parchment/40">{site.crest}</p>
           </nav>
         </div>

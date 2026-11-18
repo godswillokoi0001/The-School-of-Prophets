@@ -63,6 +63,12 @@ export const navGroups: NavGroup[] = [
         icon: User,
       },
       {
+        label: "Book a call",
+        href: "/book",
+        description: "One-on-one pastoral & prophetic counsel with Prophet Lawrence.",
+        icon: CalendarPlus,
+      },
+      {
         label: "Why the prophetic",
         href: "/about#why",
         description: "Why God sent prophets, and what that means now.",
@@ -208,7 +214,7 @@ export const navGroups: NavGroup[] = [
         icon: HandHeart,
       },
       {
-        label: "Give",
+        label: "Donate",
         href: "/give",
         description: "Sow into teaching, training and outreach.",
         icon: HeartHandshake,

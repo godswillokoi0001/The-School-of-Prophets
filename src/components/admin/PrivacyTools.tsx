@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { LoaderCircle, Search, Trash2, Download } from "lucide-react";
 import { personSearch, erasePerson } from "@/app/admin/(shell)/actions/site-admin";
+import { AdminModal } from "@/components/admin/AdminModal";
 
 type Row = { kind: string; id: string; summary: string; payload: Record<string, unknown> };
 
@@ -11,6 +12,29 @@ export function PrivacyTools() {
   const [rows, setRows] = useState<Row[]>([]);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+
+  // Modal State
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalTitle, setModalTitle] = useState("");
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalMode, setModalMode] = useState<"danger" | "warning" | "info" | "success">("warning");
+  const [modalConfirmLabel, setModalConfirmLabel] = useState<string | undefined>(undefined);
+  const [pendingAction, setPendingAction] = useState<(() => Promise<void>) | null>(null);
+
+  function openConfirm(opts: {
+    title: string;
+    message: string;
+    mode: "danger" | "warning" | "info" | "success";
+    confirmLabel?: string;
+    onConfirm: () => Promise<void>;
+  }) {
+    setModalTitle(opts.title);
+    setModalMessage(opts.message);
+    setModalMode(opts.mode);
+    setModalConfirmLabel(opts.confirmLabel);
+    setPendingAction(() => opts.onConfirm);
+    setModalOpen(true);
+  }
 
   return (
     <div>
@@ -68,13 +92,20 @@ export function PrivacyTools() {
           <button
             className="admin-btn admin-btn-danger mt-3"
             disabled={busy}
-            onClick={async () => {
-              if (!confirm(`Erase all data for "${term}"? This cannot be undone and is logged.`)) return;
-              setBusy(true);
-              const res = await erasePerson(rows.map((r) => r.id));
-              setBusy(false);
-              setMessage(res.ok ? `Erased ${res.count} record(s).` : res.error ?? "Failed");
-              if (res.ok) setRows([]);
+            onClick={() => {
+              openConfirm({
+                title: "Erase Person Data",
+                message: `Erase all data for "${term}"? This cannot be undone and is permanently logged in the audit trail.`,
+                mode: "danger",
+                confirmLabel: "Erase All Data",
+                onConfirm: async () => {
+                  setBusy(true);
+                  const res = await erasePerson(rows.map((r) => r.id));
+                  setBusy(false);
+                  setMessage(res.ok ? `Erased ${res.count} record(s).` : res.error ?? "Failed");
+                  if (res.ok) setRows([]);
+                },
+              });
             }}
           >
             <Trash2 size={13} /> Erase this person
@@ -91,6 +122,23 @@ export function PrivacyTools() {
           Supabase dashboard under Database → Backups).
         </p>
       </div>
+
+      <AdminModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={modalTitle}
+        message={modalMessage}
+        mode={modalMode}
+        confirmLabel={modalConfirmLabel}
+        onConfirm={
+          pendingAction
+            ? async () => {
+                await pendingAction();
+                setModalOpen(false);
+              }
+            : undefined
+        }
+      />
     </div>
   );
 }

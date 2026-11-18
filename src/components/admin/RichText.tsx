@@ -5,6 +5,7 @@ import {
   Bold, Code, Heading2, Heading3, Image as ImageIcon, Italic,
   Link2, List, ListOrdered, Quote, BookMarked, LoaderCircle,
 } from "lucide-react";
+import { ImageEditorModal } from "@/components/admin/ImageEditorModal";
 
 const ALLOWED_TAGS = new Set([
   "p", "h2", "h3", "strong", "em", "ul", "ol", "li", "blockquote",
@@ -212,35 +213,64 @@ export function UploadButton({
   onUploaded,
   setBusy,
   label = "Upload image",
+  aspectPreset = "16:9",
 }: {
-  onUploaded: (path: string) => void;
+  onUploaded: (path: string, alt?: string) => void;
   setBusy: (b: boolean) => void;
   label?: string;
+  aspectPreset?: "16:9" | "1:1" | "4:5" | "free";
 }) {
-  async function upload(file: File) {
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [editorOpen, setEditorOpen] = useState(false);
+
+  async function directUpload(file: File, customAlt?: string) {
     setBusy(true);
     const compressed = await compressImage(file);
     const form = new FormData();
     form.append("file", compressed);
-    form.append("alt", file.name.replace(/\.[^.]+$/, ""));
+    form.append("alt", customAlt || file.name.replace(/\.[^.]+$/, ""));
     const res = await fetch("/api/admin/media", { method: "POST", body: form });
     const data = await res.json();
     setBusy(false);
-    if (data.path) onUploaded(data.path);
+    if (data.path) onUploaded(data.path, customAlt);
   }
+
   return (
-    <label className="admin-btn admin-btn-ghost cursor-pointer">
-      <input
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={(e) => {
-          const f = e.target.files?.[0];
-          if (f) upload(f);
-        }}
-      />
-      {label}
-    </label>
+    <>
+      <label className="admin-btn admin-btn-ghost cursor-pointer inline-flex items-center">
+        <input
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) {
+              setSelectedFile(f);
+              setEditorOpen(true);
+            }
+            e.target.value = "";
+          }}
+        />
+        {label}
+      </label>
+
+      {editorOpen && selectedFile && (
+        <ImageEditorModal
+          file={selectedFile}
+          isOpen={editorOpen}
+          aspectPreset={aspectPreset}
+          onClose={() => {
+            setEditorOpen(false);
+            setSelectedFile(null);
+          }}
+          onApplyAndUpload={async (editedFile, alt) => {
+            await directUpload(editedFile, alt);
+            setEditorOpen(false);
+            setSelectedFile(null);
+          }}
+        />
+      )}
+    </>
   );
 }
 

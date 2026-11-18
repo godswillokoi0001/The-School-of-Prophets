@@ -2,8 +2,11 @@ import { NextResponse } from "next/server";
 import { createSupabaseServer, getServiceClient, getAdminClient, supabaseConfigured } from "@/lib/supabase/server";
 import { audit, getStaff } from "@/lib/admin";
 
-const MAX_BYTES = 8 * 1024 * 1024;
-const ALLOWED = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"];
+const MAX_BYTES = 35 * 1024 * 1024;
+const ALLOWED = [
+  "image/jpeg", "image/png", "image/webp", "image/gif", "image/avif",
+  "audio/mpeg", "audio/mp3", "audio/wav", "audio/m4a", "audio/ogg", "audio/x-m4a", "audio/aac", "audio/webm"
+];
 
 export async function GET() {
   const staff = await getStaff();
@@ -37,9 +40,9 @@ export async function POST(request: Request) {
   const alt = String(form.get("alt") ?? "");
   if (!file) return NextResponse.json({ error: "No file provided" }, { status: 400 });
   if (!ALLOWED.includes(file.type))
-    return NextResponse.json({ error: "Only JPEG, PNG, WebP, GIF or AVIF images are allowed." }, { status: 415 });
+    return NextResponse.json({ error: "Only standard image (JPEG, PNG, WebP, GIF) or audio (MP3, WAV, M4A, OGG) files are allowed." }, { status: 415 });
   if (file.size > MAX_BYTES)
-    return NextResponse.json({ error: "Image is larger than 8 MB." }, { status: 413 });
+    return NextResponse.json({ error: "File exceeds 35 MB limit." }, { status: 413 });
   if (!alt.trim())
     return NextResponse.json({ error: "Describe the image for screen readers (alt text is required)." }, { status: 422 });
 

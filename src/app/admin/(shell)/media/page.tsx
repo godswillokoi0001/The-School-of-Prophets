@@ -3,12 +3,36 @@
 import { useState, useEffect } from "react";
 import { LoaderCircle, Trash2 } from "lucide-react";
 import { UploadButton, compressImage } from "@/components/admin/RichText";
+import { AdminModal } from "@/components/admin/AdminModal";
 
 export default function MediaLibraryPage() {
   const [items, setItems] = useState<{ path: string; alt: string; filename: string }[]>([]);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
+
+  // Modal State
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalTitle, setModalTitle] = useState("");
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalMode, setModalMode] = useState<"danger" | "warning" | "info" | "success">("warning");
+  const [modalConfirmLabel, setModalConfirmLabel] = useState<string | undefined>(undefined);
+  const [pendingAction, setPendingAction] = useState<(() => Promise<void>) | null>(null);
+
+  function openConfirm(opts: {
+    title: string;
+    message: string;
+    mode: "danger" | "warning" | "info" | "success";
+    confirmLabel?: string;
+    onConfirm: () => Promise<void>;
+  }) {
+    setModalTitle(opts.title);
+    setModalMessage(opts.message);
+    setModalMode(opts.mode);
+    setModalConfirmLabel(opts.confirmLabel);
+    setPendingAction(() => opts.onConfirm);
+    setModalOpen(true);
+  }
 
   async function load() {
     setLoading(true);
@@ -32,18 +56,25 @@ export default function MediaLibraryPage() {
     setMessage(res.ok ? "Description saved." : "Failed to save description.");
   }
 
-  async function remove(path: string) {
-    if (!confirm("Delete this image permanently? If it is still used anywhere the server will refuse.")) return;
-    setBusy(true);
-    const res = await fetch("/api/admin/media", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ path }),
+  function remove(path: string) {
+    openConfirm({
+      title: "Delete Media Item",
+      message: "Delete this image permanently? If it is still used anywhere, the server will refuse to prevent broken images.",
+      mode: "danger",
+      confirmLabel: "Delete Media",
+      onConfirm: async () => {
+        setBusy(true);
+        const res = await fetch("/api/admin/media", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ path }),
+        });
+        setBusy(false);
+        const data = await res.json();
+        setMessage(res.ok ? "Image deleted." : data.error ?? "Delete failed.");
+        if (res.ok) load();
+      },
     });
-    setBusy(false);
-    const data = await res.json();
-    setMessage(res.ok ? "Image deleted." : data.error ?? "Delete failed.");
-    if (res.ok) load();
   }
 
   async function uploadFile(file: File) {
@@ -120,6 +151,23 @@ export default function MediaLibraryPage() {
       )}
       {busy && <p className="mt-2 flex items-center gap-2 text-xs"><LoaderCircle size={12} className="animate-spin" /> Working…</p>}
       <UploadButton setBusy={setBusy} onUploaded={() => load()} label="" />
+
+      <AdminModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={modalTitle}
+        message={modalMessage}
+        mode={modalMode}
+        confirmLabel={modalConfirmLabel}
+        onConfirm={
+          pendingAction
+            ? async () => {
+                await pendingAction();
+                setModalOpen(false);
+              }
+            : undefined
+        }
+      />
     </div>
   );
 }

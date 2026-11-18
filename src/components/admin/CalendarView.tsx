@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { Check, ChevronLeft, ChevronRight, LoaderCircle, MessageCircle, Trash2, X } from "lucide-react";
 import { bookingAction } from "@/app/admin/(shell)/actions/bookings";
+import { AdminModal } from "@/components/admin/AdminModal";
 
 type Booking = {
   id: string; name: string; email: string; whatsapp: string;
@@ -64,12 +65,17 @@ export function CalendarView({
     return { bookings: b, events: e };
   }
 
+  const [errorModal, setErrorModal] = useState<string | null>(null);
+
   function act(id: string, action: string, note = "", newStartsAt?: string) {
     start(async () => {
       setBusy(true);
       const res = await bookingAction(id, action, note, newStartsAt);
       setBusy(false);
-      if (!res.ok && res.error) alert(res.error);
+      if (!res.ok && res.error) {
+        setErrorModal(res.error);
+        return;
+      }
       window.location.reload();
     });
   }
@@ -265,6 +271,14 @@ export function CalendarView({
         </div>
       )}
       {busy && <p className="flex gap-2 text-xs"><LoaderCircle size={12} className="animate-spin" /> Saving…</p>}
+
+      <AdminModal
+        open={Boolean(errorModal)}
+        onClose={() => setErrorModal(null)}
+        title="Calendar Action Notice"
+        message={errorModal || ""}
+        mode="danger"
+      />
     </div>
   );
 }

@@ -4,6 +4,15 @@ const nextConfig: NextConfig = {
   images: {
     formats: ["image/avif", "image/webp"],
   },
+  async redirects() {
+    return [
+      {
+        source: "/donate",
+        destination: "/give",
+        permanent: false,
+      },
+    ];
+  },
   async headers() {
     return [
       {

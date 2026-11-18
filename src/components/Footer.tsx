@@ -9,6 +9,7 @@ import {
 import { Crest } from "@/components/Crest";
 import { navGroups } from "@/config/nav";
 import { site, socialLinks } from "@/config/site";
+import { NewsletterSubscribe } from "@/components/NewsletterSubscribe";
 
 const iconFor = {
   whatsapp: WhatsAppIcon,
@@ -21,6 +22,13 @@ const iconFor = {
 export function Footer() {
   return (
     <footer className="bg-ink text-parchment">
+      {/* Strategic Newsletter Banner */}
+      <NewsletterSubscribe
+        variant="banner"
+        title="Stay Taught in the Word & Moving in the Spirit"
+        description="Subscribe to receive weekly study notes, recordings, announcements and prophetic updates directly in your inbox."
+      />
+
       <div className="wrap grid gap-12 py-16 md:grid-cols-12 md:py-20">
         <div className="md:col-span-4">
           <Link href="/" className="flex items-center gap-3">

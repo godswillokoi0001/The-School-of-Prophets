@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowDown, ArrowUp, LoaderCircle, Save, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, Edit3, LoaderCircle, Save, Trash2 } from "lucide-react";
 import { ImagePickerDialog, UploadButton } from "@/components/admin/RichText";
 import { saveSeries, reorderSeries, deleteSeries, type SeriesInput } from "@/app/admin/(shell)/actions/teachings";
 import { AdminBack } from "@/components/admin/AdminBack";
+import { AdminModal } from "@/components/admin/AdminModal";
 
 export type SeriesRow = {
   id: string; title: string; slug: string; description: string;
@@ -13,6 +14,7 @@ export type SeriesRow = {
 };
 
 export function SeriesList({ initial }: { initial: SeriesRow[] }) {
+  const router = useRouter();
   const [rows, setRows] = useState(initial);
   const [busy, setBusy] = useState(false);
   const [pickId, setPickId] = useState<string | null>(null);
@@ -56,32 +58,46 @@ export function SeriesList({ initial }: { initial: SeriesRow[] }) {
     <div>
       <div className="admin-surface p-2">
         {rows.map((s, i) => (
-          <div key={s.id} className="admin-row flex flex-wrap items-center gap-2 py-2" draggable onDragEnd={(e) => { const idx = Number((e.target as HTMLElement).dataset.idx ?? i); const dt = e.dataTransfer; if (dt) { void idx; } }}>
-            <div className="flex flex-col">
+          <div
+            key={s.id}
+            onClick={() => router.push(`/admin/series/${s.slug}`)}
+            className="admin-row flex flex-wrap items-center gap-2 py-3 px-2 cursor-pointer hover:bg-gold/10 transition-colors group rounded"
+          >
+            <div className="flex flex-col" onClick={(e) => e.stopPropagation()}>
               <button className="opacity-50 hover:opacity-100" onClick={() => move(i, -1)} aria-label={`Move ${s.title} up`}><ArrowUp size={12} /></button>
               <button className="opacity-50 hover:opacity-100" onClick={() => move(i, 1)} aria-label={`Move ${s.title} down`}><ArrowDown size={12} /></button>
             </div>
             <div className="min-w-0 flex-1">
-              <a href={`/admin/series/${s.slug}`} className="font-semibold hover:text-gold-soft">
+              <span className="font-semibold text-parchment group-hover:text-gold transition-colors block">
                 {s.title}
-              </a>
+              </span>
               <span className="block truncate text-[0.7rem] opacity-60">{s.description || "No description"}</span>
             </div>
-            <span className="admin-badge">{s.teaching_count} teachings</span>
-            <span className={`admin-badge ${s.status === "published" ? "admin-badge-ok" : s.status === "archived" ? "admin-badge-warn" : ""}`}>
+            <span className="admin-badge text-xs">{s.teaching_count} teachings</span>
+            <span className={`admin-badge text-xs uppercase ${s.status === "published" ? "admin-badge-ok" : s.status === "archived" ? "admin-badge-warn" : ""}`}>
               {s.status}
             </span>
             {s.featured && <span className="admin-badge admin-badge-new">Featured</span>}
-            <button
-              className="admin-btn admin-btn-ghost !py-1"
-              onClick={async () => {
-                await loadMedia();
-                setCoverDraft({ id: s.id, url: "" });
-                setPickId(s.id);
-              }}
-            >
-              Cover
-            </button>
+            <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+              <button
+                type="button"
+                className="admin-btn admin-btn-ghost !py-1 text-xs"
+                onClick={() => router.push(`/admin/series/${s.slug}`)}
+              >
+                <Edit3 size={12} className="mr-1" /> Edit
+              </button>
+              <button
+                type="button"
+                className="admin-btn admin-btn-ghost !py-1 text-xs"
+                onClick={async () => {
+                  await loadMedia();
+                  setCoverDraft({ id: s.id, url: "" });
+                  setPickId(s.id);
+                }}
+              >
+                Cover
+              </button>
+            </div>
           </div>
         ))}
         {rows.length === 0 && (
@@ -114,6 +130,7 @@ export function SeriesEditor({ initial }: { initial: SeriesInput }) {
   const [message, setMessage] = useState("");
   const [pickerOpen, setPickerOpen] = useState(false);
   const [media, setMedia] = useState<{ path: string; alt: string }[]>([]);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -126,8 +143,8 @@ export function SeriesEditor({ initial }: { initial: SeriesInput }) {
     } else setMessage(res.error ?? "Failed");
   }
 
-  async function remove() {
-    if (!confirm("Delete this series? Teachings in it will stay but lose their series.")) return;
+  async function confirmRemove() {
+    setDeleteModalOpen(false);
     if (!form.id) return;
     setBusy(true);
     const res = await deleteSeries(form.id);
@@ -140,6 +157,15 @@ export function SeriesEditor({ initial }: { initial: SeriesInput }) {
 
   return (
     <form onSubmit={submit} className="mx-auto max-w-2xl">
+      <AdminModal
+        isOpen={deleteModalOpen}
+        title="Delete Series"
+        description="Are you sure you want to delete this series? Teachings in it will stay intact in your library, but will lose their series tag."
+        variant="danger"
+        confirmLabel="Delete Series"
+        onConfirm={confirmRemove}
+        onCancel={() => setDeleteModalOpen(false)}
+      />
       <AdminBack href="/admin/series" label="Back to series" />
       <h1 className="mb-3 font-display text-2xl">{form.id ? "Edit series" : "New series"}</h1>
       {message && <p className="admin-surface mb-3 p-2 text-xs">{message}</p>}
@@ -199,7 +225,7 @@ export function SeriesEditor({ initial }: { initial: SeriesInput }) {
           <Save size={13} /> Save
         </button>
         {form.id && (
-          <button type="button" className="admin-btn admin-btn-danger" onClick={remove}>
+          <button type="button" className="admin-btn admin-btn-danger" onClick={() => setDeleteModalOpen(true)}>
             <Trash2 size={13} /> Delete series
           </button>
         )}

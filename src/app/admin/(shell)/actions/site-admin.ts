@@ -84,7 +84,34 @@ export async function inviteUser(email: string, role: string, fullName: string) 
   const token = generateInviteToken(cleanEmail, role, fullName);
   const inviteLink = `${site}/admin/accept-invite?token=${token}`;
 
-  // 1. Try to pre-provision user in Supabase auth if service role key is configured
+  // 1. Pre-provision in profiles table so user is immediately listed
+  try {
+    const { data: existingProfile } = await svc
+      .from("profiles")
+      .select("id, full_name")
+      .eq("email", cleanEmail)
+      .maybeSingle();
+
+    if (existingProfile) {
+      await svc
+        .from("profiles")
+        .update({ role, full_name: fullName || existingProfile.full_name, status: "active" })
+        .eq("id", existingProfile.id);
+    } else {
+      await svc.from("profiles").insert({
+        id: crypto.randomUUID(),
+        email: cleanEmail,
+        full_name: fullName || cleanEmail.split("@")[0],
+        role,
+        status: "active",
+        invited_by: staff.id,
+      });
+    }
+  } catch (profileErr) {
+    console.warn("[inviteUser] Profile pre-provision notice:", profileErr);
+  }
+
+  // 2. Try to pre-provision user in Supabase auth if service role key is configured
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (serviceKey) {
     try {
@@ -108,7 +135,7 @@ export async function inviteUser(email: string, role: string, fullName: string) 
     }
   }
 
-  // 2. Render and send high-fidelity branded HTML email via Resend
+  // 3. Render and send high-fidelity branded HTML email via Resend
   const emailContent = renderInviteEmail({
     fullName,
     email: cleanEmail,
@@ -126,16 +153,15 @@ export async function inviteUser(email: string, role: string, fullName: string) 
   );
 
   await audit(staff, "invite", "profiles", cleanEmail, { role, sendResult });
+  revalidateTag("team");
 
-  if (sendResult === "failed") {
-    return {
-      ok: true,
-      message: "Invitation link generated, but email delivery was rejected by Resend (verify recipient or domain in Resend).",
-      inviteLink,
-    };
-  }
-
-  return { ok: true, message: `Invitation email sent to ${cleanEmail}.`, inviteLink };
+  return {
+    ok: true,
+    message: sendResult === "sent"
+      ? `Invitation email dispatched to ${cleanEmail}!`
+      : "Invitation link generated! You can copy and share the link directly below.",
+    inviteLink,
+  };
 }
 
 export async function setUserRole(id: string, role: string) {

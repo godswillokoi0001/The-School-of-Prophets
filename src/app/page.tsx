@@ -93,6 +93,11 @@ export default async function HomePage() {
   const show = { ...defaultSections, ...(homeSetting as HomeSections) };
   const featured = teachings.find((t) => t.featured) ?? teachings[0];
   const seriesTitle = seriesList.find((s) => s.slug === featured?.series)?.title;
+  const activeSeries = (
+    seriesList.filter((s) => (s as { featured?: boolean }).featured).length > 0
+      ? seriesList.filter((s) => (s as { featured?: boolean }).featured)
+      : seriesList
+  ).slice(0, 3);
 
   return (
     <>
@@ -369,6 +374,82 @@ export default async function HomePage() {
           </div>
           <div className="md:col-span-9">
             <TeachingCard teaching={featured} featured seriesTitle={seriesTitle} />
+          </div>
+        </div>
+      </section>
+      )}
+
+      {/* FEATURED TEACHING SERIES */}
+      {activeSeries.length > 0 && (
+      <section className="bg-ink text-parchment py-16 md:py-20 border-b border-parchment/15">
+        <div className="wrap">
+          <div className="flex flex-wrap items-end justify-between gap-4 mb-10">
+            <div>
+              <p className="label flex items-center gap-2 text-gold">
+                <BookOpen aria-hidden="true" className="h-3.5 w-3.5" />
+                Featured Series
+              </p>
+              <h2 className="mt-2 font-display text-hero">Formed by the Word.</h2>
+            </div>
+            <Link
+              href="/teachings"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-gold hover:text-parchment transition-colors"
+            >
+              <span>Explore all series</span>
+              <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {activeSeries.map((s) => {
+              const seriesImages: Record<string, string> = {
+                "word-of-knowledge": "/images/eagle-gold.webp",
+                "faith-series": "/images/desert-walk.webp",
+                "mystery-of-the-kingdom": "/images/bible-bedside.webp",
+                "gifts-of-the-spirit": "/images/prayer-cathedral.webp",
+              };
+              const img =
+                ((s as Record<string, unknown>).cover_url as string) ||
+                seriesImages[s.slug] ||
+                "/images/bible-bedside.webp";
+              const alt =
+                ((s as Record<string, unknown>).cover_alt as string) || s.title;
+              const seriesCount = teachings.filter((t) => t.series === s.slug).length;
+
+              return (
+                <Link
+                  key={s.slug}
+                  href={`/teachings/series/${s.slug}`}
+                  className="group relative flex flex-col overflow-hidden rounded-lg border border-parchment/15 bg-black/40 hover:border-gold/50 transition-colors"
+                >
+                  <div className="relative aspect-[16/10] w-full bg-ink/90 overflow-hidden">
+                    <Image
+                      src={img}
+                      alt={alt}
+                      fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      className="object-cover opacity-85 transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/20 to-transparent" />
+                    <span className="absolute bottom-3 left-3 admin-badge admin-badge-gold text-[0.65rem] !py-0.5">
+                      {seriesCount} Teachings
+                    </span>
+                  </div>
+                  <div className="p-5 flex flex-col flex-1">
+                    <h3 className="font-display text-xl font-semibold text-parchment group-hover:text-gold transition-colors">
+                      {s.title}
+                    </h3>
+                    <p className="mt-2 text-xs leading-relaxed text-parchment/70 line-clamp-2">
+                      {s.blurb}
+                    </p>
+                    <span className="mt-auto pt-4 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gold group-hover:translate-x-1 transition-transform">
+                      <span>View teachings</span>
+                      <ArrowRight size={13} />
+                    </span>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>

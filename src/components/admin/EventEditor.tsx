@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { LoaderCircle, Save, Trash2, CalendarX } from "lucide-react";
-import { RichTextEditor, ImagePickerDialog } from "@/components/admin/RichText";
+import Image from "next/image";
+import { LoaderCircle, Save, Trash2, CalendarX, Eye, X } from "lucide-react";
+import { RichTextEditor, ImagePickerDialog, UploadButton } from "@/components/admin/RichText";
 import { saveEvent, deleteEvent, addEventException, type EventInput } from "@/app/admin/(shell)/actions/events";
 import { AdminBack } from "@/components/admin/AdminBack";
+import { AdminModal } from "@/components/admin/AdminModal";
 
 export function EventEditor({
   initial,
@@ -24,8 +26,40 @@ export function EventEditor({
   const [exDate, setExDate] = useState("");
   const [exNote, setExNote] = useState("");
 
+  // Modal State
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalTitle, setModalTitle] = useState("");
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalMode, setModalMode] = useState<"danger" | "warning" | "info" | "success">("warning");
+  const [modalConfirmLabel, setModalConfirmLabel] = useState<string | undefined>(undefined);
+  const [pendingAction, setPendingAction] = useState<(() => Promise<void>) | null>(null);
+
   function set<K extends keyof EventInput>(key: K, value: EventInput[K]) {
     setForm((f) => ({ ...f, [key]: value }));
+  }
+
+  function openConfirm(opts: {
+    title: string;
+    message: string;
+    mode: "danger" | "warning" | "info" | "success";
+    confirmLabel?: string;
+    onConfirm: () => Promise<void>;
+  }) {
+    setModalTitle(opts.title);
+    setModalMessage(opts.message);
+    setModalMode(opts.mode);
+    setModalConfirmLabel(opts.confirmLabel);
+    setPendingAction(() => opts.onConfirm);
+    setModalOpen(true);
+  }
+
+  function openAlert(title: string, msg: string, mode: "danger" | "info" | "success" = "danger") {
+    setModalTitle(title);
+    setModalMessage(msg);
+    setModalMode(mode);
+    setModalConfirmLabel(undefined);
+    setPendingAction(null);
+    setModalOpen(true);
   }
 
   async function submit(e: React.FormEvent) {
@@ -37,18 +71,30 @@ export function EventEditor({
       if (!form.id) router.push(`/admin/events/${form.slug}`);
       else router.refresh();
       setMessage("Saved. Visitors see it within seconds once published.");
-    } else setMessage(res.error ?? "Failed to save");
+    } else {
+      openAlert("Failed to Save", res.error ?? "Could not save event.", "danger");
+    }
   }
 
-  async function remove() {
-    if (!form.id || !confirm("Delete this event? Registrations for it are removed too.")) return;
-    setBusy(true);
-    const res = await deleteEvent(form.id);
-    setBusy(false);
-    if (res.ok) {
-      router.push("/admin/events");
-      router.refresh();
-    } else setMessage("Could not delete this event.");
+  function promptRemove() {
+    if (!form.id) return;
+    openConfirm({
+      title: "Delete Event",
+      message: `Permanently delete "${form.title}"? Any existing registrations will also be removed.`,
+      mode: "danger",
+      confirmLabel: "Delete Event",
+      onConfirm: async () => {
+        setBusy(true);
+        const res = await deleteEvent(form.id!);
+        setBusy(false);
+        if (res.ok) {
+          router.push("/admin/events");
+          router.refresh();
+        } else {
+          openAlert("Delete Failed", "Could not delete this event.", "danger");
+        }
+      },
+    });
   }
 
   const localValue = (iso: string | null) => (iso ? iso.slice(0, 16) : "");
@@ -57,12 +103,27 @@ export function EventEditor({
     <form onSubmit={submit} className="mx-auto max-w-3xl">
       <AdminBack href="/admin/events" label="Back to events" />
       <div className="mb-3 flex items-center justify-between">
-        <h1 className="font-display text-2xl">{form.id ? "Edit event" : "New event"}</h1>
-        <button className="admin-btn admin-btn-gold" disabled={busy}>
-          {busy ? <LoaderCircle size={13} className="animate-spin" /> : <Save size={13} />} Save
-        </button>
+        <div>
+          <h1 className="font-display text-2xl">{form.id ? "Edit event" : "New event"}</h1>
+          <p className="text-xs opacity-60">Full access to modify title, dates, recurrence and cover image.</p>
+        </div>
+        <div className="flex items-center gap-2">
+          {form.slug && (
+            <a
+              href={`/events`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="admin-btn admin-btn-ghost text-xs"
+            >
+              <Eye size={13} /> View on site
+            </a>
+          )}
+          <button className="admin-btn admin-btn-gold" disabled={busy}>
+            {busy ? <LoaderCircle size={13} className="animate-spin" /> : <Save size={13} />} Save
+          </button>
+        </div>
       </div>
-      {message && <p className="admin-surface mb-3 p-2 text-xs">{message}</p>}
+      {message && <p className="admin-surface mb-3 p-2 text-xs border border-gold/30 text-gold">{message}</p>}
 
       <div className="admin-surface grid gap-3 p-4 md:grid-cols-2">
         <div>
@@ -110,8 +171,8 @@ export function EventEditor({
           <input className="admin-input" value={form.location} onChange={(e) => set("location", e.target.value)} placeholder="Address, or 'Online'" />
         </div>
         <div className="md:col-span-2">
-          <label className="admin-label">Join link (for online)</label>
-          <input className="admin-input" value={form.join_url} onChange={(e) => set("join_url", e.target.value)} placeholder="https://meet.google.com/…" />
+          <label className="admin-label">Join link (for online sessions)</label>
+          <input className="admin-input" value={form.join_url} onChange={(e) => set("join_url", e.target.value)} placeholder="https://meet.google.com/… or YouTube stream" />
         </div>
         <div>
           <label className="admin-label">Repeats</label>
@@ -145,17 +206,72 @@ export function EventEditor({
           <label className="admin-label">Description</label>
           <RichTextEditor value={form.description} onChange={(html) => set("description", html)} ariaLabel="Event description" />
         </div>
-        <div>
-          <label className="admin-label">Cover image</label>
-          <div className="flex gap-2">
-            <input className="admin-input" value={form.cover_url ?? ""} onChange={(e) => set("cover_url", e.target.value || null)} aria-label="Cover image URL" />
-            <button type="button" className="admin-btn admin-btn-ghost" onClick={() => setPickerOpen(true)}>Choose</button>
+
+        {/* Cover Image with upload, crop, rotate & preview */}
+        <div className="md:col-span-2 rounded border border-ink/20 bg-parchment/5 p-3">
+          <label className="admin-label">Cover Image</label>
+          <div className="mt-1 flex flex-wrap items-center gap-2">
+            <input
+              className="admin-input !w-auto flex-1 min-w-[200px]"
+              value={form.cover_url ?? ""}
+              onChange={(e) => set("cover_url", e.target.value || null)}
+              placeholder="e.g. /images/worship-hands.webp or upload"
+              aria-label="Cover image URL"
+            />
+            <UploadButton
+              label="Upload / Edit"
+              setBusy={setBusy}
+              onUploaded={(path) => set("cover_url", path)}
+            />
+            <button
+              type="button"
+              className="admin-btn admin-btn-ghost text-xs"
+              onClick={() => setPickerOpen(true)}
+            >
+              Choose Existing
+            </button>
+            {form.cover_url && (
+              <button
+                type="button"
+                className="admin-btn admin-btn-danger !p-1.5"
+                title="Remove cover image"
+                onClick={() => set("cover_url", null)}
+              >
+                <X size={14} />
+              </button>
+            )}
+          </div>
+
+          {/* Cover image live preview */}
+          {form.cover_url && (
+            <div className="mt-3 flex items-center gap-3">
+              <div className="relative h-24 w-40 overflow-hidden rounded border border-gold/40 bg-black/30">
+                <Image
+                  src={form.cover_url}
+                  alt={form.cover_alt || form.title}
+                  fill
+                  className="object-cover"
+                  unoptimized={form.cover_url.startsWith("/api/") || form.cover_url.startsWith("blob:")}
+                />
+              </div>
+              <div className="text-xs opacity-75">
+                <p className="font-semibold text-parchment">Cover image preview</p>
+                <p className="text-[0.7rem] opacity-60 break-all">{form.cover_url}</p>
+              </div>
+            </div>
+          )}
+
+          <div className="mt-2">
+            <label className="admin-label">Image Alt Text</label>
+            <input
+              className="admin-input text-xs"
+              value={form.cover_alt}
+              onChange={(e) => set("cover_alt", e.target.value)}
+              placeholder="Descriptive alt text for accessibility"
+            />
           </div>
         </div>
-        <div>
-          <label className="admin-label">Alt text</label>
-          <input className="admin-input" value={form.cover_alt} onChange={(e) => set("cover_alt", e.target.value)} />
-        </div>
+
         <div>
           <label className="admin-label">Featured on home page</label>
           <label className="flex items-center gap-2 text-sm">
@@ -167,9 +283,9 @@ export function EventEditor({
           <label className="admin-label">Recap (after the event: text, testimonies, photos)</label>
           <textarea className="admin-textarea !min-h-20" value={form.recap} onChange={(e) => set("recap", e.target.value)} />
         </div>
-        <div>
-          <label className="admin-label">Recap video link</label>
-          <input className="admin-input" value={form.recap_video_url ?? ""} onChange={(e) => set("recap_video_url", e.target.value || null)} />
+        <div className="md:col-span-2">
+          <label className="admin-label">Recap video link (YouTube URL)</label>
+          <input className="admin-input" value={form.recap_video_url ?? ""} onChange={(e) => set("recap_video_url", e.target.value || null)} placeholder="https://youtube.com/watch?v=…" />
         </div>
       </div>
 
@@ -199,14 +315,21 @@ export function EventEditor({
               type="button"
               className="admin-btn admin-btn-danger"
               disabled={busy || !exDate}
-              onClick={async () => {
-                if (!form.id) return;
-                if (!confirm(`Cancel this event on ${exDate}?`)) return;
-                setBusy(true);
-                const res = await addEventException(form.id, exDate, "cancel", null, exNote);
-                setBusy(false);
-                if (res.ok) window.location.reload();
-                else setMessage(res.error ?? "Failed");
+              onClick={() => {
+                if (!form.id || !exDate) return;
+                openConfirm({
+                  title: "Cancel Date Occurrence",
+                  message: `Cancel this event on ${exDate}?`,
+                  mode: "warning",
+                  confirmLabel: "Cancel Date",
+                  onConfirm: async () => {
+                    setBusy(true);
+                    const res = await addEventException(form.id!, exDate, "cancel", null, exNote);
+                    setBusy(false);
+                    if (res.ok) window.location.reload();
+                    else openAlert("Error", res.error ?? "Failed", "danger");
+                  },
+                });
               }}
             >
               <CalendarX size={13} /> Cancel this date
@@ -229,10 +352,28 @@ export function EventEditor({
       )}
 
       {form.id && (
-        <button type="button" className="admin-btn admin-btn-danger mt-3" onClick={remove}>
+        <button type="button" className="admin-btn admin-btn-danger mt-3" onClick={promptRemove}>
           <Trash2 size={13} /> Delete event
         </button>
       )}
+
+      {/* Admin Modal Dialog */}
+      <AdminModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={modalTitle}
+        message={modalMessage}
+        mode={modalMode}
+        confirmLabel={modalConfirmLabel}
+        onConfirm={
+          pendingAction
+            ? async () => {
+                await pendingAction();
+                setModalOpen(false);
+              }
+            : undefined
+        }
+      />
     </form>
   );
 }

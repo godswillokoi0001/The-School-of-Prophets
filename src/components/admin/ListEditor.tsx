@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { LoaderCircle, PlusCircle, Save, Trash2 } from "lucide-react";
 import { AdminBack } from "@/components/admin/AdminBack";
+import { AdminModal } from "@/components/admin/AdminModal";
 
 type Field = {
   key: string;
@@ -32,6 +33,29 @@ export function ListEditor<Row extends Record<string, unknown>>({
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [pending, start] = useTransition();
+
+  // Modal State
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalTitle, setModalTitle] = useState("");
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalMode, setModalMode] = useState<"danger" | "warning" | "info" | "success">("warning");
+  const [modalConfirmLabel, setModalConfirmLabel] = useState<string | undefined>(undefined);
+  const [pendingAction, setPendingAction] = useState<(() => Promise<void>) | null>(null);
+
+  function openConfirm(opts: {
+    title: string;
+    message: string;
+    mode: "danger" | "warning" | "info" | "success";
+    confirmLabel?: string;
+    onConfirm: () => Promise<void>;
+  }) {
+    setModalTitle(opts.title);
+    setModalMessage(opts.message);
+    setModalMode(opts.mode);
+    setModalConfirmLabel(opts.confirmLabel);
+    setPendingAction(() => opts.onConfirm);
+    setModalOpen(true);
+  }
 
   function set(rowIndex: number, key: string, value: unknown) {
     setRows((prev) => prev.map((r, i) => (i === rowIndex ? { ...r, [key]: value } : r)));
@@ -97,12 +121,19 @@ export function ListEditor<Row extends Record<string, unknown>>({
             {deleteAction && "id" in row && typeof row.id === "string" && row.id && (
               <button
                 className="admin-btn admin-btn-danger mt-2 !py-1"
-                onClick={async () => {
-                  if (!confirm("Delete this item permanently?")) return;
-                  setBusy(true);
-                  await deleteAction(row.id as string);
-                  setBusy(false);
-                  setRows((prev) => prev.filter((_, j) => j !== i));
+                onClick={() => {
+                  openConfirm({
+                    title: "Delete Item",
+                    message: "Delete this item permanently?",
+                    mode: "danger",
+                    confirmLabel: "Delete",
+                    onConfirm: async () => {
+                      setBusy(true);
+                      await deleteAction(row.id as string);
+                      setBusy(false);
+                      setRows((prev) => prev.filter((_, j) => j !== i));
+                    },
+                  });
                 }}
               >
                 <Trash2 size={12} /> Delete
@@ -121,6 +152,23 @@ export function ListEditor<Row extends Record<string, unknown>>({
         </button>
         {message && <span className="text-xs opacity-80">{message}</span>}
       </div>
+
+      <AdminModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={modalTitle}
+        message={modalMessage}
+        mode={modalMode}
+        confirmLabel={modalConfirmLabel}
+        onConfirm={
+          pendingAction
+            ? async () => {
+                await pendingAction();
+                setModalOpen(false);
+              }
+            : undefined
+        }
+      />
     </div>
   );
 }

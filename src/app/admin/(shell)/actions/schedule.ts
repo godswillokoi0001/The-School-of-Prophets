@@ -21,9 +21,24 @@ export async function saveSessions(rows: SessionInput[]) {
   const staff = await requireStaff("admin");
   const svc = await getAdminClient();
   if (!svc) return { ok: false, error: "No database connection" };
+
+  const payload = rows.map((r, i) => ({
+    id: r.id && r.id.trim() ? r.id : crypto.randomUUID(),
+    day: Number(r.day),
+    title: r.title ? r.title.trim() : "Untitled Gathering",
+    type: r.type || "Teaching",
+    start_time: r.start_time || "19:00",
+    end_time: r.end_time || null,
+    description: r.description ?? "",
+    join_url: r.join_url ?? "",
+    active: r.active ?? true,
+    sort_order: i + 1,
+    updated_at: new Date().toISOString(),
+  }));
+
   const { error } = await svc
     .from("schedule_sessions")
-    .upsert(rows.map((r) => ({ ...r, id: r.id || undefined })));
+    .upsert(payload, { onConflict: "id" });
   if (error) return { ok: false, error: error.message };
   await audit(staff, "update", "schedule_sessions", undefined, { count: rows.length });
   revalidateTag("schedule");

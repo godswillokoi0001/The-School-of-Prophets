@@ -13,6 +13,7 @@ import {
 } from "@/app/admin/(shell)/actions/inbox";
 import type { Role } from "@/lib/admin";
 import { AdminBack } from "@/components/admin/AdminBack";
+import { AdminModal } from "@/components/admin/AdminModal";
 
 export type SubmissionRow = {
   id: string; type: string; status: string; private: boolean;
@@ -39,6 +40,29 @@ export function InboxList({ rows, role }: { rows: SubmissionRow[]; role: Role })
   const [pending, start] = useTransition();
   const [busy, setBusy] = useState(false);
 
+  // Modal State
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalTitle, setModalTitle] = useState("");
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalMode, setModalMode] = useState<"danger" | "warning" | "info" | "success">("warning");
+  const [modalConfirmLabel, setModalConfirmLabel] = useState<string | undefined>(undefined);
+  const [pendingAction, setPendingAction] = useState<(() => Promise<void>) | null>(null);
+
+  function openConfirm(opts: {
+    title: string;
+    message: string;
+    mode: "danger" | "warning" | "info" | "success";
+    confirmLabel?: string;
+    onConfirm: () => Promise<void>;
+  }) {
+    setModalTitle(opts.title);
+    setModalMessage(opts.message);
+    setModalMode(opts.mode);
+    setModalConfirmLabel(opts.confirmLabel);
+    setPendingAction(() => opts.onConfirm);
+    setModalOpen(true);
+  }
+
   function toggle(id: string) {
     setSelected((prev) => {
       const next = new Set(prev);
@@ -49,7 +73,21 @@ export function InboxList({ rows, role }: { rows: SubmissionRow[]; role: Role })
   }
 
   function runBulk(action: string) {
-    if (action === "delete" && !confirm(`Soft-delete ${selected.size} submission(s)? They can be restored for 30 days.`)) return;
+    if (action === "delete") {
+      openConfirm({
+        title: "Delete Submissions",
+        message: `Soft-delete ${selected.size} submission(s)? They can be restored for 30 days.`,
+        mode: "danger",
+        confirmLabel: "Delete",
+        onConfirm: async () => {
+          setBusy(true);
+          await bulkAction([...selected], action);
+          setBusy(false);
+          location.reload();
+        },
+      });
+      return;
+    }
     start(async () => {
       setBusy(true);
       await bulkAction([...selected], action);
@@ -59,12 +97,17 @@ export function InboxList({ rows, role }: { rows: SubmissionRow[]; role: Role })
   }
 
   function runWaitlist() {
-    if (!confirm(`Email "enrolment is now open" to ${selected.size} waitlist entries?`)) return;
-    start(async () => {
-      setBusy(true);
-      await convertWaitlist([...selected]);
-      setBusy(false);
-      location.reload();
+    openConfirm({
+      title: "Email Waitlist",
+      message: `Email "enrolment is now open" to ${selected.size} waitlist entries?`,
+      mode: "info",
+      confirmLabel: "Send Email",
+      onConfirm: async () => {
+        setBusy(true);
+        await convertWaitlist([...selected]);
+        setBusy(false);
+        location.reload();
+      },
     });
   }
 
@@ -148,6 +191,23 @@ export function InboxList({ rows, role }: { rows: SubmissionRow[]; role: Role })
         )}
         {busy && <p className="flex items-center gap-2 p-3 text-xs"><LoaderCircle size={12} className="animate-spin" /> Working…</p>}
       </div>
+
+      <AdminModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={modalTitle}
+        message={modalMessage}
+        mode={modalMode}
+        confirmLabel={modalConfirmLabel}
+        onConfirm={
+          pendingAction
+            ? async () => {
+                await pendingAction();
+                setModalOpen(false);
+              }
+            : undefined
+        }
+      />
     </div>
   );
 }
@@ -167,11 +227,34 @@ export function SubmissionDetail({
   const [testimonyEdit, setTestimonyEdit] = useState(String(row.payload.testimony ?? ""));
   const [result, setResult] = useState("");
 
-  async function act(fn: () => Promise<{ ok?: boolean; error?: string; result?: string }>, done: string) {
+  // Modal State
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalTitle, setModalTitle] = useState("");
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalMode, setModalMode] = useState<"danger" | "warning" | "info" | "success">("warning");
+  const [modalConfirmLabel, setModalConfirmLabel] = useState<string | undefined>(undefined);
+  const [pendingAction, setPendingAction] = useState<(() => Promise<void>) | null>(null);
+
+  function openConfirm(opts: {
+    title: string;
+    message: string;
+    mode: "danger" | "warning" | "info" | "success";
+    confirmLabel?: string;
+    onConfirm: () => Promise<void>;
+  }) {
+    setModalTitle(opts.title);
+    setModalMessage(opts.message);
+    setModalMode(opts.mode);
+    setModalConfirmLabel(opts.confirmLabel);
+    setPendingAction(() => opts.onConfirm);
+    setModalOpen(true);
+  }
+
+  async function act(fn: () => Promise<{ ok?: boolean; error?: string; result?: string; message?: string }>, done: string) {
     setBusy(true);
     const res = await fn();
     setBusy(false);
-    setResult(res?.ok ? done : res?.error || res?.result || "Failed");
+    setResult(res?.ok ? (res.message || done) : res?.error || res?.result || "Failed");
     if (res?.ok) location.reload();
   }
 
@@ -282,7 +365,15 @@ export function SubmissionDetail({
             className="admin-btn admin-btn-danger"
             disabled={busy}
             onClick={() => {
-              if (confirm("Move to trash? It can be restored for 30 days.")) act(() => bulkAction([row.id], "delete"), "Deleted (restorable 30 days)");
+              openConfirm({
+                title: "Move to Trash",
+                message: "Move this submission to trash? It can be restored for 30 days.",
+                mode: "danger",
+                confirmLabel: "Move to Trash",
+                onConfirm: async () => {
+                  await act(() => bulkAction([row.id], "delete"), "Deleted (restorable 30 days)");
+                },
+              });
             }}
           >
             <Trash2 size={13} /> Delete
@@ -363,6 +454,23 @@ export function SubmissionDetail({
           <button className="admin-btn admin-btn-ghost" disabled={busy || !note.trim()}>Save note</button>
         </form>
       </section>
+
+      <AdminModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={modalTitle}
+        message={modalMessage}
+        mode={modalMode}
+        confirmLabel={modalConfirmLabel}
+        onConfirm={
+          pendingAction
+            ? async () => {
+                await pendingAction();
+                setModalOpen(false);
+              }
+            : undefined
+        }
+      />
     </div>
   );
 }
