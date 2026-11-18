@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { PrayerForm } from "@/components/forms/PrayerForm";
 import { Timetable } from "@/components/Timetable";
 import { getSchedule } from "@/lib/data";
-import { HandHeart, Lock, ShieldCheck, CalendarPlus } from "lucide-react";
+import { CalendarPlus } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -29,17 +29,12 @@ export default async function PrayerPage() {
 
       <section className="wrap grid gap-12 py-14 md:py-20 lg:grid-cols-12">
         <div className="lg:col-span-7">
-          <div className="border border-ink/15 p-6 sm:p-8">
-            <PrayerForm />
-          </div>
+          <PrayerForm />
         </div>
 
         <aside className="lg:col-span-5 lg:pl-6">
           <div className="border-t border-ink/20 pt-5">
-            <p className="label flex items-center gap-2 text-ember">
-              <Lock aria-hidden="true" className="h-3.5 w-3.5" />
-              Privacy
-            </p>
+            <p className="label text-ember">Privacy</p>
             <p className="mt-2 text-sm leading-relaxed text-ink/80">
               Requests are delivered to the prayer team&apos;s inbox, not to a
               public page. Private requests are not shared in the group, and no
@@ -48,36 +43,24 @@ export default async function PrayerPage() {
           </div>
 
           <div className="mt-8 border-t border-ink/20 pt-5">
-            <p className="label flex items-center gap-2 text-ember">
-              <HandHeart aria-hidden="true" className="h-3.5 w-3.5" />
-              Join the intercessors
-            </p>
+            <p className="label text-ember">Join the intercessors</p>
             <p className="mt-2 text-sm leading-relaxed text-ink/80">
               Our vision includes building a Christian community of intercessors.
               If that is your burden, tell us and we will show you where to stand.
             </p>
-            <Link
-              href="/contact"
-              className="link-underline mt-3 inline-block text-sm font-semibold"
-            >
-              Contact the team →
+            <Link href="/contact" className="link-quiet mt-3 inline-block text-sm font-semibold">
+              Contact the team
             </Link>
           </div>
 
           <div className="mt-8 border-t border-ink/20 pt-5">
-            <p className="label flex items-center gap-2 text-ember">
-              <ShieldCheck aria-hidden="true" className="h-3.5 w-3.5" />
-              Prayer nights
-            </p>
+            <p className="label text-ember">Prayer nights</p>
             <p className="mt-2 text-sm leading-relaxed text-ink/80">
               We gather to pray through the week, usually at 9:00 PM WAT. See the
               full timetable for the current pattern.
             </p>
-            <Link
-              href="/gatherings"
-              className="link-underline mt-3 inline-block text-sm font-semibold"
-            >
-              The weekly schedule →
+            <Link href="/gatherings" className="link-quiet mt-3 inline-block text-sm font-semibold">
+              The weekly schedule
             </Link>
           </div>
         </aside>

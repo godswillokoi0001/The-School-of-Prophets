@@ -3,14 +3,13 @@ import { PageHeader } from "@/components/PageHeader";
 import { NewsletterSubscribe } from "@/components/NewsletterSubscribe";
 import { getServiceClient, supabaseConfigured } from "@/lib/supabase/server";
 import { formatDate } from "@/lib/time";
-import { Mail, ScrollText, Sparkles, CheckCircle2 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Newsletter & Epistles | The School of Prophets",
+  title: "The letter",
   description:
-    "Apostolic teachings, weekly prophetic insights, and gathering notices from Prophet Lawrence and The School of Prophets fellowship.",
+    "The weekly letter from The School of Prophets: the teaching outline, the times for the week, and notices from the fellowship.",
   alternates: { canonical: "/newsletter" },
 };
 
@@ -21,6 +20,13 @@ type PastBroadcast = {
   sent_at: string | null;
   created_at: string;
 };
+
+function plainText(html: string) {
+  return html
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
 export default async function NewsletterPage() {
   let archives: PastBroadcast[] = [];
@@ -38,100 +44,61 @@ export default async function NewsletterPage() {
         archives = (data ?? []) as PastBroadcast[];
       }
     } catch {
-      // Fallback silently if table not populated
+      // No archive table yet; the page still works without one.
     }
   }
 
   return (
     <>
       <PageHeader
-        label="Epistles & Letters"
-        title="The School of Prophets Newsletter"
-        lead="Apostolic teachings, weekly prophetic insights, and gathering notices from Prophet Lawrence and the fellowship sent directly to your inbox."
-        image="/images/bible-open.webp"
-        imageAlt="An open Bible under warm light"
+        label="The letter"
+        title="One letter a week."
+        lead="The teaching outline, the times for the week, and anything the fellowship needs to say. Nothing else, and no forwarding of your address."
       />
 
-      {/* SUBSCRIBE SECTION */}
       <section className="bg-ink text-parchment">
-        <NewsletterSubscribe
-          variant="banner"
-          title="Subscribe to the Weekly Epistle"
-          description="Enter your email to receive every new teaching, prophetic bulletin, and gathering announcement. Free of charge, no spam."
-        />
+        <div className="wrap py-10 md:py-12">
+          <NewsletterSubscribe variant="inline" />
+        </div>
       </section>
 
-      {/* WHY SUBSCRIBE */}
-      <section className="wrap py-14 md:py-20">
-        <div className="grid gap-8 md:grid-cols-3">
-          <div className="border border-ink/10 bg-parchment-2/40 p-6">
-            <div className="flex items-center gap-2 text-ember">
-              <ScrollText className="h-5 w-5" />
-              <h3 className="font-display text-lg text-ink">Apostolic Teachings</h3>
-            </div>
-            <p className="mt-3 text-xs leading-relaxed text-quiet">
-              Unpack deep scriptural mysteries, prophetic protocols, and biblical doctrines taught during fellowship sessions.
+      <section className="wrap py-16 md:py-24">
+        <div className="grid gap-10 md:grid-cols-12">
+          <div className="md:col-span-3">
+            <p className="label text-ember">The archive</p>
+            <p className="mt-3 text-sm leading-relaxed text-quiet">
+              Every letter that has gone out, newest first.
             </p>
           </div>
 
-          <div className="border border-ink/10 bg-parchment-2/40 p-6">
-            <div className="flex items-center gap-2 text-ember">
-              <Sparkles className="h-5 w-5" />
-              <h3 className="font-display text-lg text-ink">Prophetic Insights</h3>
-            </div>
-            <p className="mt-3 text-xs leading-relaxed text-quiet">
-              Receive timely pastoral exhortations, words of encouragement, and discernment for the current spiritual season.
-            </p>
+          <div className="md:col-span-9">
+            {archives.length > 0 ? (
+              <ul>
+                {archives.map((letter) => (
+                  <li key={letter.id} className="border-t border-ink/15 py-6">
+                    <p className="text-xs uppercase tracking-[0.12em] text-quiet">
+                      {formatDate(letter.sent_at ?? letter.created_at)}
+                    </p>
+                    <h2 className="mt-1.5 font-display text-2xl leading-snug">
+                      {letter.subject}
+                    </h2>
+                    <p className="measure mt-2 text-sm leading-relaxed text-quiet">
+                      {plainText(letter.body).slice(0, 220)}
+                      {plainText(letter.body).length > 220 ? "…" : ""}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="border-y border-ink/15 py-10">
+                <p className="font-display text-2xl">No letters have been archived yet.</p>
+                <p className="measure mt-2 text-sm leading-relaxed text-quiet">
+                  The first one goes out after Sunday. Subscribe above and it will
+                  arrive without anything else attached.
+                </p>
+              </div>
+            )}
           </div>
-
-          <div className="border border-ink/10 bg-parchment-2/40 p-6">
-            <div className="flex items-center gap-2 text-ember">
-              <CheckCircle2 className="h-5 w-5" />
-              <h3 className="font-display text-lg text-ink">Gathering Notices</h3>
-            </div>
-            <p className="mt-3 text-xs leading-relaxed text-quiet">
-              Never miss a Tuesday Bible Study, Friday Word of Knowledge, or special watch night prayer gathering.
-            </p>
-          </div>
-        </div>
-
-        {/* ARCHIVED LETTERS */}
-        <div className="mt-16 border-t border-ink/15 pt-12">
-          <div className="flex items-center gap-2 text-ember">
-            <Mail className="h-4 w-4" />
-            <span className="text-xs font-semibold uppercase tracking-widest text-ink">
-              Recent Epistles & Letters
-            </span>
-          </div>
-          <h2 className="mt-2 font-display text-2xl text-ink">Sent from the Fellowship</h2>
-
-          {archives.length === 0 ? (
-            <div className="mt-6 border border-dashed border-ink/20 p-8 text-center">
-              <p className="font-display text-base text-ink">No archived letters published yet.</p>
-              <p className="mt-1 text-xs text-quiet">
-                Subscribe above to receive our inaugural edition directly in your email.
-              </p>
-            </div>
-          ) : (
-            <div className="mt-6 divide-y divide-ink/10">
-              {archives.map((letter) => (
-                <article key={letter.id} className="py-8">
-                  <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-quiet">
-                    <span className="font-mono">
-                      {letter.sent_at ? formatDate(letter.sent_at) : formatDate(letter.created_at)}
-                    </span>
-                    <span className="rounded bg-gold/15 px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wider text-gold">
-                      Fellowship Epistle
-                    </span>
-                  </div>
-                  <h3 className="mt-2 font-display text-xl text-ink">{letter.subject}</h3>
-                  <div className="prose prose-sm mt-3 max-w-none text-quiet line-clamp-3 whitespace-pre-line">
-                    {letter.body}
-                  </div>
-                </article>
-              ))}
-            </div>
-          )}
         </div>
       </section>
     </>

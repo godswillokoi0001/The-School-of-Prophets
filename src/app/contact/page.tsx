@@ -5,7 +5,7 @@ import { ContactForm } from "@/components/forms/ContactForm";
 import { SocialLinks } from "@/components/SocialLinks";
 import { getContactSettings, getFaqs } from "@/lib/data";
 import { site } from "@/config/site";
-import { Plus, Users, MessageSquare, Phone } from "lucide-react";
+import { Plus, Phone } from "lucide-react";
 import { FacebookIcon, YouTubeIcon } from "@/components/BrandIcons";
 
 export const metadata: Metadata = {
@@ -54,10 +54,7 @@ export default async function ContactPage() {
 
       <section className="wrap grid gap-12 py-14 md:py-20 lg:grid-cols-12">
         <div className="lg:col-span-5">
-          <p className="label flex items-center gap-2 text-ember">
-            <Users aria-hidden="true" className="h-3.5 w-3.5" />
-            The community
-          </p>
+          <p className="label text-ember">The community</p>
           <SocialLinks
             variant="list"
             className="mt-4"
@@ -76,8 +73,7 @@ export default async function ContactPage() {
           </p>
 
           <div className="mt-10 border-t border-ink/20 pt-5">
-            <p className="label flex items-center gap-2 text-ember">
-              <MessageSquare aria-hidden="true" className="h-3.5 w-3.5" />
+            <p className="label text-ember">
               Where else to find us
             </p>
             <ul className="mt-3 space-y-2 text-sm">

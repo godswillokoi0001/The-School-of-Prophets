@@ -4,7 +4,6 @@ import { TestimonyForm } from "@/components/forms/TestimonyForm";
 import { testimonyNote } from "@/content/testimonies";
 import { getTestimonies } from "@/lib/data";
 import { formatDate } from "@/lib/time";
-import { Quote, ShieldCheck } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -28,12 +27,9 @@ export default async function TestimoniesPage() {
       />
 
       <section className="wrap py-14 md:py-20">
-        <div className="flex items-start gap-3 border border-ink/15 bg-parchment-2/50 p-4">
-          <ShieldCheck aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-ember" />
-          <p className="text-xs leading-relaxed text-quiet">
-            {testimonyNote} Entries below are labelled accordingly.
-          </p>
-        </div>
+        <p className="max-w-[70ch] border-y border-ink/15 py-4 text-xs leading-relaxed text-quiet">
+          {testimonyNote} Entries below are labelled accordingly.
+        </p>
 
         <ul className="mt-10">
           {testimonies.map((testimony) => (
@@ -54,12 +50,7 @@ export default async function TestimoniesPage() {
                 )}
               </div>
               <blockquote className="md:col-span-9">
-                <Quote
-                  aria-hidden="true"
-                  className="mb-3 h-6 w-6 text-gold"
-                  strokeWidth={1.4}
-                />
-                <p className="max-w-[62ch] font-display text-xl leading-snug text-ink/90">
+                <p className="pullquote max-w-[30ch] font-display text-2xl leading-[1.3] md:text-3xl">
                   &ldquo;{testimony.body}&rdquo;
                 </p>
               </blockquote>
@@ -84,9 +75,7 @@ export default async function TestimoniesPage() {
             </ul>
           </div>
           <div className="md:col-span-8">
-            <div className="border border-ink/15 bg-parchment p-6 sm:p-8">
-              <TestimonyForm />
-            </div>
+            <TestimonyForm />
           </div>
         </div>
       </section>

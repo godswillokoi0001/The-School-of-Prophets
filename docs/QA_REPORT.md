@@ -94,7 +94,9 @@ This is a design claim backed by layout structure, **not** a visual confirmation
 | Series | No | One-column catalogue, count in the margin. |
 | Training | No | Long read with sticky enrolment summary; syllabus as numerals, no icons; calm form. |
 | Events | No | Date-led list with rules; photography removed rather than faked. |
-| Prayer, Give, Contact, Book, Testimonies, Newsletter | Partial | They inherit the new header/footer/tokens but keep earlier body compositions; see "Remaining work". |
+| Prayer, Give, Testimonies, Newsletter | No | Flat forms and lists without icon-in-circle labels or boxed panels; the letter page is a plain archive. |
+| Contact | Mostly | Typographic header, hairline community list and form; the FAQ block still uses its earlier accordion styling. |
+| Book | Partial | The booking flow keeps its earlier card styling; scheduled for the next pass. |
 | 404 / error / 500 | No | Written in the site's voice, no illustration, one action each. |
 
 ### 3. Word test
@@ -162,9 +164,9 @@ this redesign and was not repeated.
 
 1. Capture every page at 1440 and on a real 375 px device, and critique against
    the checklist; the home page is the only page reviewed visually so far.
-2. Give Prayer, Give, Contact, Book, Testimonies and Newsletter the same
-   page-by-page treatment as About and Gatherings. They currently inherit tokens
-   but not new compositions.
+2. Finish `Book` (the booking flow is a client component that still uses its
+   earlier card styling) and give `Contact` a full composition pass; its header,
+   icons and form now match the system, the FAQ block does not yet.
 3. Run Lighthouse mobile and axe once Chrome tooling is available; attach the
    JSON reports to this file.
 4. Replace `public/images` AI scenes with the real photographs listed in
