@@ -22,8 +22,9 @@ export const metadata: Metadata = {
 
 export default async function EventsPage() {
   const events = await getEvents();
-  const upcoming = events.filter((e) => e.kind === "upcoming");
-  const past = events.filter((e) => e.kind === "past");
+  // Seeded examples stay in the CMS but are never printed as real gatherings.
+  const upcoming = events.filter((e) => e.kind === "upcoming" && !e.isSample);
+  const past = events.filter((e) => e.kind === "past" && !e.isSample);
 
   return (
     <>
@@ -104,6 +105,12 @@ export default async function EventsPage() {
       <section className="border-t border-ink/15 bg-parchment-2/70">
         <div className="wrap py-14 md:py-20">
           <h2 className="font-display text-3xl">Past gatherings</h2>
+          {past.length === 0 && (
+            <p className="measure mt-6 text-sm text-quiet">
+              Recaps from earlier gatherings are being gathered. The weekly
+              timetable is the reliable record until they are published.
+            </p>
+          )}
           <ul className="mt-6">
             {past.map((event) => (
               <li key={event.slug} className="border-t border-ink/15 py-8">

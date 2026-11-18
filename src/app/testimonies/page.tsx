@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 };
 
 export default async function TestimoniesPage() {
-  const testimonies = await getTestimonies();
+  const testimonies = (await getTestimonies()).filter((t) => !t.isSample);
   return (
     <>
       <PageHeader
@@ -30,6 +30,17 @@ export default async function TestimoniesPage() {
         <p className="max-w-[70ch] border-y border-ink/15 py-4 text-xs leading-relaxed text-quiet">
           {testimonyNote} Entries below are labelled accordingly.
         </p>
+
+        {testimonies.length === 0 && (
+          <div className="mt-10 border-t border-ink/15 py-10">
+            <p className="font-display text-2xl">The first testimonies are being collected.</p>
+            <p className="measure mt-2 text-sm leading-relaxed text-quiet">
+              Each one is confirmed with the member and published in their own words.
+              If God has done something you want told, send it below and the team
+              will come back to you before anything appears here.
+            </p>
+          </div>
+        )}
 
         <ul className="mt-10">
           {testimonies.map((testimony) => (

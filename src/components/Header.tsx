@@ -66,7 +66,7 @@ export function Header() {
             className="flex shrink-0 items-center gap-3"
             aria-label={`${site.name} home`}
           >
-            <Crest className="h-11 w-auto md:h-12" priority />
+            <Crest className="h-12 w-auto md:h-14" priority />
             <span className="font-display text-[1.05rem] leading-[1.05] tracking-tight">
               The School
               <br />
