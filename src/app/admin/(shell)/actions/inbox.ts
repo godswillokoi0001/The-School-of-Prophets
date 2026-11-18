@@ -41,11 +41,24 @@ export async function addNote(id: string, body: string) {
 
 export async function replyByEmail(id: string, to: string, subject: string, body: string) {
   const staff = await requireStaff("moderator");
+  if (!to || !to.includes("@")) {
+    return { ok: false, error: "Recipient email is invalid or missing." };
+  }
   const result = await sendReplyEmail(to, subject, body);
+  if (result.startsWith("failed")) {
+    let errMsg = "Email service rejected the message.";
+    try {
+      const parsed = JSON.parse(result.replace(/^failed:\s*/, ""));
+      if (parsed.message) errMsg = parsed.message;
+    } catch {
+      errMsg = result;
+    }
+    return { ok: false, error: errMsg };
+  }
   await recordChange(id, staff.id, "reply", null, to);
   await addNote(id, `Reply sent to ${to}:\nSubject: ${subject}\n\n${body}`);
   await setStatus(id, "replied");
-  return { ok: true, result, message: "Reply sent successfully." };
+  return { ok: true, result, message: "Reply sent successfully to " + to };
 }
 
 export async function bulkAction(ids: string[], action: string) {
