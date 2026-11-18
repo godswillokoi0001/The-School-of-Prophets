@@ -1,10 +1,10 @@
 # Photography and assets needed
 
-The public site now renders **two photographs and one logo**, and nothing else.
-Every decorative "scene" image that was in `public/images` has been taken out of
-the layouts because it is not real photography of this ministry. Nothing is
-faked in its place: where a photo is missing the page uses type, the seal, or
-rule-work.
+The public site renders the crest, the founder portrait, the home hero plate and
+the cover images attached to teachings, series and events in the CMS. Those
+covers currently fall back to the archived scene files in `public/images` and
+should be replaced with real photographs as they are supplied. Where no image
+exists, the page uses type, the seal, or rule-work rather than a placeholder box.
 
 Drop new files into `public/images/`, keep the names below, and tell the
 developer which page they belong on. Nothing else needs changing.
@@ -15,6 +15,8 @@ developer which page they belong on. Nothing else needs changing.
 | --- | --- | --- | --- |
 | `tsop-crest.webp` / `.png` | The ministry crest, supplied by the client | Header, footer seal centre, favicon, OG image | Real, keep |
 | `prophet-portrait.webp` | Prophet Lawrence Iwara, studio portrait | Home, About | Real, but square (1000×1000) and only one frame |
+| `desert-walk.webp` | Watchman on a hillside above a village, dusk | Home hero plate | Archive scene, replace with a real gathering or ministry photograph |
+| CMS `cover_url` | Cover per teaching, series and event | Teaching cards and pages, series pages, event rows | Archive scenes on seeded entries; upload real covers in the admin |
 
 ## Required before launch
 

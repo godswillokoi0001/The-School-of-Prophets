@@ -86,14 +86,14 @@ This is a design claim backed by layout structure, **not** a visual confirmation
 
 | Page | Would a reviewer flag AI/template? | Why not |
 | --- | --- | --- |
-| Home | No | No badge, no gradient, no three-up icon row, no stats band, no newsletter hero. Opens with a statement and one action. Timetable is the centrepiece. |
+| Home | No | No badge, no three-up icon row, no stats band, no newsletter hero. Opens with a full-bleed photograph under an ink gradient, a statement and one action. Timetable is the centrepiece. |
 | About | No | Long-read with drop cap, margin notes, hairline timeline, numbered vision. No image triptych, no crucifixion scene. |
 | Gatherings | No | Timetable first, prose "what to expect", covenant as numbered rules on ink. |
-| Teachings | No | Publisher's catalogue: hairline rows, quiet text filters, typographic series list. No card grid, no images. |
-| Teaching detail | No | Scripture set as a typographic plate instead of a hero image; reading measure 64ch; series navigation in the margin. |
+| Teachings | No | Publisher's catalogue: hairline rows with CMS covers, quiet text filters, series list. No card grid, no shadows. |
+| Teaching detail | No | CMS cover as a full-bleed plate under the header; scripture set as a typographic plate; reading measure 64ch. |
 | Series | No | One-column catalogue, count in the margin. |
 | Training | No | Long read with sticky enrolment summary; syllabus as numerals, no icons; calm form. |
-| Events | No | Date-led list with rules; photography removed rather than faked. |
+| Events | No | Date-led list with rules and CMS cover plates; unconfirmed details stay marked. |
 | Prayer, Give, Testimonies, Newsletter | No | Flat forms and lists without icon-in-circle labels or boxed panels; the letter page is a plain archive. |
 | Contact | Mostly | Typographic header, hairline community list and form; the FAQ block still uses its earlier accordion styling. |
 | Book | Partial | The booking flow keeps its earlier card styling; scheduled for the next pass. |

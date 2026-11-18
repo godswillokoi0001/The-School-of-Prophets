@@ -76,12 +76,15 @@ that draws from left. Nothing loops, nothing parallaxes, no cursor effects.
 
 ## Imagery
 
-Only photographs supplied by the ministry, graded warm and slightly desaturated,
-with fixed ratios: 3:4 portraits, 3:2 landscapes, 16:10 for teaching covers.
-Captions in small caps, set outside the image. Where no real photograph exists,
-the slot becomes a typographic plate (series name, scripture or seal) rather than
-a stock image, an AI scene or a labelled grey box. Needed photographs are logged
-in `docs/ASSETS_NEEDED.md`.
+Photographs supplied by the ministry, graded warm and slightly desaturated, with
+fixed ratios: 3:4 portraits, 3:2 landscapes, 16:10 for covers. The hero on the
+home page is a full-bleed plate under two ink gradients; every other photograph
+is set inside a rule or a fixed-ratio frame, never floated inside a card.
+
+Covers for teachings, series and events come from the CMS `cover_url` field, so
+the ministry can change them without a deploy. Entries with no cover fall back
+to type rather than to a placeholder box. Captions in small caps, set outside the
+image. Needed photographs are logged in `docs/ASSETS_NEEDED.md`.
 
 ## The mark
 
@@ -99,8 +102,8 @@ sparingly, cited by book, chapter and verse. Unconfirmed facts stay marked.
 
 ## What this replaces
 
-- Full-bleed photographic hero with two gradient overlays → typographic hero
-  with seal, rule and one primary action.
+- Decorative icon rows and badge chips in the hero → one full-bleed photograph
+  under an ink gradient, with the type and a single primary action over it.
 - Three identical image cards for the systems → typographic numerals on a rule.
 - Rounded, shadowed series cards with badges and hover zoom → catalogue rows.
 - Newsletter banner repeated on home and footer, in promotional tone → one quiet
