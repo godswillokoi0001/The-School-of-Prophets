@@ -37,7 +37,7 @@ function render(d: Delivery) {
     .filter(([, v]) => v !== undefined && v !== "")
     .map(([k, v]) => `${k}: ${v}`)
     .join("\n");
-  return `${rows}\n\n— Sent from theschoolofprophets.org (${d.kind})`;
+  return `${rows}\n\n— Sent from theschoolofprophets.site (${d.kind})`;
 }
 
 export async function deliver(d: Delivery) {

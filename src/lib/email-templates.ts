@@ -6,7 +6,7 @@
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL && !process.env.NEXT_PUBLIC_SITE_URL.includes("localhost")
     ? process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, "")
-    : "https://theschoolofprophets.org";
+    : "https://theschoolofprophets.site";
 
 export type BaseEmailOptions = {
   preheader?: string;

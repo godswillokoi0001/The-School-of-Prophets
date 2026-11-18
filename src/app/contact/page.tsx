@@ -5,7 +5,7 @@ import { ContactForm } from "@/components/forms/ContactForm";
 import { SocialLinks } from "@/components/SocialLinks";
 import { getContactSettings, getFaqs } from "@/lib/data";
 import { site } from "@/config/site";
-import { Plus, Phone } from "lucide-react";
+import { Plus, Phone, Mail } from "lucide-react";
 import { FacebookIcon, YouTubeIcon } from "@/components/BrandIcons";
 
 export const metadata: Metadata = {
@@ -77,6 +77,15 @@ export default async function ContactPage() {
               Where else to find us
             </p>
             <ul className="mt-3 space-y-2 text-sm">
+              <li>
+                <a
+                  href={`mailto:${contact.email || site.email.publicAddress}`}
+                  className="link-underline inline-flex items-center gap-2"
+                >
+                  <Mail aria-hidden="true" className="h-4 w-4 text-ember" />
+                  Email — {contact.email || site.email.publicAddress}
+                </a>
+              </li>
               <li>
                 <a
                   href={contact.youtube}

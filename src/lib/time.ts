@@ -124,7 +124,7 @@ export function icsForSessions(sessions: Session[], weeks = 8, now = new Date())
       const end = start + (session.durationMinutes ?? 60) * 60_000;
       lines.push(
         "BEGIN:VEVENT",
-        `UID:tsop-${session.id}-${icsStamp(start)}@theschoolofprophets.org`,
+        `UID:tsop-${session.id}-${icsStamp(start)}@theschoolofprophets.site`,
         `DTSTAMP:${icsStamp(now.getTime())}`,
         `DTSTART:${icsStamp(start)}`,
         `DTEND:${icsStamp(end)}`,

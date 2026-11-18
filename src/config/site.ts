@@ -17,7 +17,7 @@ export const site = {
   timezone: "Africa/Lagos",
   timezoneLabel: "WAT",
   locale: "en-NG",
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://theschoolofprophets.org",
+  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://theschoolofprophets.site",
   analytics: {
     // Plausible domain. Empty string = no analytics script at all.
     plausibleDomain: process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN ?? "",
@@ -41,9 +41,7 @@ export const site = {
     telegramInvite: "https://t.me/naiotr",
   },
   email: {
-    // TODO(ministry): a mailbox for general enquiries. Until then the contact
-    // form is the front door and submissions go to FORMS_INBOX.
-    publicAddress: "",
+    publicAddress: "info@theschoolofprophets.site",
   },
   /**
    * Colophon credit. Left empty for this build: a studio name is a fact, not a

@@ -59,6 +59,18 @@ async function log(
   }
 }
 
+export function getFromAddress(recipient?: string): string {
+  const envFrom = process.env.FORMS_FROM;
+  if (envFrom && !envFrom.includes("onboarding@resend.dev")) {
+    return envFrom;
+  }
+  // While custom domain DNS is pending verification, onboarding@resend.dev is the only sender accepted for the account owner
+  if (recipient && recipient.toLowerCase().trim() === "censusokoi515@gmail.com") {
+    return "The School of Prophets <onboarding@resend.dev>";
+  }
+  return "The School of Prophets <info@theschoolofprophets.site>";
+}
+
 export async function sendEmail(
   to: string,
   subject: string,
@@ -72,7 +84,7 @@ export async function sendEmail(
     return "skipped:no-config";
   }
 
-  const from = process.env.FORMS_FROM ?? "The School of Prophets <onboarding@resend.dev>";
+  const from = getFromAddress(to);
 
   try {
     const res = await fetch("https://api.resend.com/emails", {
@@ -107,7 +119,7 @@ export async function sendEmail(
 }
 
 export async function sendReplyEmail(to: string, subject: string, body: string) {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://theschoolofprophets.org";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://theschoolofprophets.site";
   const rendered = renderGenericEmail({
     title: subject,
     badge: "Ministry Response",
@@ -130,7 +142,7 @@ async function pushToAdmins(title: string, body: string, relatedId?: string) {
   if (!subs?.length) return;
   try {
     webpush.setVapidDetails(
-      process.env.VAPID_SUBJECT ?? "mailto:admin@theschoolofprophets.org",
+      process.env.VAPID_SUBJECT ?? "mailto:admin@theschoolofprophets.site",
       pub,
       priv,
     );

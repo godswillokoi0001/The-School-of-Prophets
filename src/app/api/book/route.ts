@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getServiceClient, supabaseConfigured } from "@/lib/supabase/server";
 import { availableSlots, getBookingConfig } from "@/lib/booking";
 import { clientKey, rateLimit } from "@/lib/forms";
-import { notifySubmission, sendConfirmation } from "@/lib/notify";
+import { notifySubmission, sendConfirmation, getFromAddress } from "@/lib/notify";
 import { icsFor } from "@/lib/booking";
 import crypto from "crypto";
 export async function GET(request: Request) {
@@ -90,7 +90,7 @@ export async function POST(request: Request) {
         method: "POST",
         headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
         body: JSON.stringify({
-          from: process.env.FORMS_FROM ?? "The School of Prophets <onboarding@resend.dev>",
+          from: getFromAddress(email),
           to: [email],
           subject: `Your call is booked: ${new Date(startsAt).toLocaleString("en-GB", { timeZone: "Africa/Lagos" })} (WAT)`,
           text: `Hello ${name},\n\nYour ${callType.name} call is booked for ${new Date(startsAt).toLocaleString("en-GB", { timeZone: "Africa/Lagos" })} WAT (shown in your timezone when you open the calendar file).\n\nCancel or reschedule: ${site}/book/cancel?b=${booking.id}&t=${token}\n\nThe School of Prophets`,

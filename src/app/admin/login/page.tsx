@@ -158,7 +158,7 @@ export default function AdminLogin() {
                 className="admin-input"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@theschoolofprophets.org"
+                placeholder="admin@theschoolofprophets.site"
               />
             </div>
 

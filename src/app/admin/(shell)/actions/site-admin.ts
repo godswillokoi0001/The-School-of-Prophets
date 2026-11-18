@@ -6,7 +6,7 @@ import { audit, requireStaff, getStaff } from "@/lib/admin";
 import { generateInviteToken } from "@/lib/invites";
 import { getPublicSiteUrl } from "@/lib/site-url";
 import { renderInviteEmail, buildHtmlEmail } from "@/lib/email-templates";
-import { sendEmail } from "@/lib/notify";
+import { sendEmail, getFromAddress } from "@/lib/notify";
 
 /* FAQ */
 export async function saveFaqs(rows: { id?: string; question: string; answer: string; sort_order: number; active: boolean }[]) {
@@ -333,7 +333,7 @@ export async function sendBroadcast(subject: string, body: string, segment: stri
             method: "POST",
             headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
             body: JSON.stringify({
-              from,
+              from: getFromAddress(recip.email),
               to: [recip.email],
               subject,
               text: personalizedText,

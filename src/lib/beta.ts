@@ -9,7 +9,7 @@ export const BETA_TYPE = "beta_feedback";
 export const BETA_SETTING_KEY = "beta_feedback";
 export const BETA_BUCKET = "beta-screenshots";
 export const BETA_SITE_URL = "https://the-school-of-prophets.vercel.app";
-export const BETA_SHARE_URL = "https://theschoolofprophets.org/beta-testers";
+export const BETA_SHARE_URL = "https://theschoolofprophets.site/beta-testers";
 
 export const DEVICES = ["Phone", "Tablet", "Computer", "More than one"] as const;
 

@@ -10,5 +10,5 @@ export function getPublicSiteUrl(): string {
   if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
     return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
   }
-  return "https://theschoolofprophets.org";
+  return "https://theschoolofprophets.site";
 }
