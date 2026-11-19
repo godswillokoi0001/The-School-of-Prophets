@@ -60,7 +60,7 @@ export function AdminModal({
       className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-150"
     >
       <div
-        className="relative w-full max-w-md rounded-xl border border-gold/30 bg-[#171512] p-6 text-parchment shadow-2xl transition-all"
+        className="relative w-full max-w-md border border-gold/30 bg-ink-2 p-6 text-parchment"
         onClick={(e) => e.stopPropagation()}
       >
         <button

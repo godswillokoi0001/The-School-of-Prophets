@@ -3,34 +3,38 @@ import { requireStaff } from "@/lib/admin";
 
 export const dynamic = "force-dynamic";
 
-const cards = [
-  { href: "/admin/enrolment", title: "Enrolment", desc: "Open/close cohort applications, dates, fee note, waitlist." },
-  { href: "/admin/announcements", title: "Announcement Pop-up", desc: "Site-wide popup modal and notice banner for visitors." },
-  { href: "/admin/settings/giving", title: "Giving details", desc: "Bank account details, currency and Paystack link." },
-  { href: "/admin/settings/contact", title: "Contact & socials", desc: "WhatsApp, Telegram invites, phone, email and address." },
-  { href: "/admin/settings/team", title: "Team & leaders", desc: "Leadership and ministry team members." },
-  { href: "/admin/settings/emails", title: "Email templates", desc: "Confirmation, acceptance, decline, waitlist, reminders." },
-  { href: "/admin/settings/notifications", title: "My notifications", desc: "Which forms alert you, quiet hours, digest." },
-  { href: "/admin/settings/privacy", title: "Privacy tools", desc: "Search a person, export or erase their data." },
+const links = [
+  { href: "/admin/settings/giving", title: "Giving", desc: "Bank details, currency and the Paystack link." },
+  { href: "/admin/settings/contact", title: "Contact & social", desc: "WhatsApp, Telegram, phone, email and address." },
+  { href: "/admin/settings/team", title: "Team", desc: "Leadership and ministry team members." },
+  { href: "/admin/settings/emails", title: "Email templates", desc: "Wording for confirmations, decisions and reminders." },
+  { href: "/admin/settings/notifications", title: "Notifications", desc: "Which forms alert you, quiet hours and digest." },
+  { href: "/admin/settings/privacy", title: "Privacy", desc: "Find a person, export or erase their data." },
+  { href: "/admin/enrolment", title: "Enrolment", desc: "Open or close the cohort, dates and fee note." },
+  { href: "/admin/announcements", title: "Announcements", desc: "The site-wide notice and pop-up." },
 ];
 
 export default async function SettingsIndex() {
   await requireStaff("admin");
   return (
-    <div className="mx-auto max-w-4xl">
-      <h1 className="mb-1 font-display text-2xl">Site settings</h1>
-      <p className="mb-4 text-xs opacity-60">
-        Everything else the admin team may need. Changes are live on the site
-        within seconds and recorded in the audit log.
+    <div>
+      <p className="mb-3 text-sm opacity-70">
+        Choose a section. Nothing here is destructive; every change is live within
+        seconds.
       </p>
-      <div className="grid gap-3 sm:grid-cols-2">
-        {cards.map((c) => (
-          <Link key={c.href} href={c.href} className="admin-surface p-4 transition-colors hover:border-gold/50">
-            <p className="font-semibold">{c.title}</p>
-            <p className="text-xs opacity-60">{c.desc}</p>
-          </Link>
+      <ul className="border-t border-parchment/12">
+        {links.map((l) => (
+          <li key={l.href} className="border-b border-parchment/12">
+            <Link
+              href={l.href}
+              className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 py-3 transition-colors hover:text-gold-soft"
+            >
+              <span className="font-medium">{l.title}</span>
+              <span className="text-xs opacity-60">{l.desc}</span>
+            </Link>
+          </li>
         ))}
-      </div>
+      </ul>
     </div>
   );
 }

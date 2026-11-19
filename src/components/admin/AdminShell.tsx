@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   LayoutDashboard, Inbox, BookOpen, LibraryBig, CalendarDays, Clock,
-  CalendarClock, Settings, Image as ImageIcon, Users, Mail, Search, Menu, X,
-  LogOut, Radio, ShieldCheck, PanelLeftClose, PanelLeftOpen, Star,
+  CalendarClock, Settings, Image as ImageIcon, Users, Mail, Search, Menu,
+  LogOut, Radio, ShieldCheck, PanelLeftClose, PanelLeftOpen, Star, MoreHorizontal,
 } from "lucide-react";
 import { Crest } from "@/components/Crest";
 import { AdminSearch } from "@/components/admin/AdminSearch";
@@ -17,9 +17,71 @@ import type { Role } from "@/lib/admin";
 const rank: Record<Role, number> = { viewer: 1, moderator: 2, admin: 3, owner: 4 };
 
 type NavEntry = {
-  href: string; label: string; icon: React.ComponentType<{ size?: number }>;
-  min?: Role; badge?: number; group: string;
+  href: string;
+  label: string;
+  icon: React.ComponentType<{ size?: number }>;
+  min?: Role;
+  badge?: number;
 };
+
+type NavGroup = { name: string; items: NavEntry[] };
+
+const GROUPS: NavGroup[] = [
+  {
+    name: "Overview",
+    items: [
+      { href: "/admin", label: "Today", icon: LayoutDashboard },
+      { href: "/admin/inbox", label: "Inbox", icon: Inbox, min: "moderator" },
+    ],
+  },
+  {
+    name: "Content",
+    items: [
+      { href: "/admin/teachings", label: "Teachings", icon: BookOpen, min: "admin" },
+      { href: "/admin/series", label: "Series", icon: LibraryBig, min: "admin" },
+      { href: "/admin/events", label: "Events", icon: CalendarDays, min: "admin" },
+      { href: "/admin/media", label: "Media library", icon: ImageIcon, min: "admin" },
+    ],
+  },
+  {
+    name: "Gatherings",
+    items: [
+      { href: "/admin/schedule", label: "Weekly rhythm", icon: Clock, min: "admin" },
+      { href: "/admin/calendar", label: "Calls & calendar", icon: CalendarClock, min: "moderator" },
+      { href: "/admin/availability", label: "Availability", icon: CalendarDays, min: "admin" },
+    ],
+  },
+  {
+    name: "Audience",
+    items: [
+      { href: "/admin/subscribers", label: "Subscribers", icon: Users, min: "admin" },
+      { href: "/admin/broadcasts", label: "Newsletters", icon: Mail, min: "admin" },
+      { href: "/admin/beta", label: "Beta reviews", icon: Star, min: "moderator" },
+    ],
+  },
+  {
+    name: "Site",
+    items: [
+      { href: "/admin/settings", label: "Settings", icon: Settings, min: "admin" },
+      { href: "/admin/enrolment", label: "Enrolment", icon: ShieldCheck, min: "admin" },
+      { href: "/admin/announcements", label: "Announcements", icon: Radio, min: "admin" },
+    ],
+  },
+  {
+    name: "Admin",
+    items: [
+      { href: "/admin/users", label: "Team & roles", icon: Users, min: "admin" },
+      { href: "/admin/audit", label: "Audit log", icon: ShieldCheck, min: "moderator" },
+      { href: "/admin/settings/privacy", label: "Privacy tools", icon: ShieldCheck, min: "admin" },
+    ],
+  },
+];
+
+const MOBILE_TABS: { href: string; label: string; icon: React.ComponentType<{ size?: number }> }[] = [
+  { href: "/admin", label: "Today", icon: LayoutDashboard },
+  { href: "/admin/inbox", label: "Inbox", icon: Inbox },
+  { href: "/admin/calendar", label: "Calls", icon: CalendarClock },
+];
 
 export function AdminShell({
   children,
@@ -42,6 +104,8 @@ export function AdminShell({
   const [searchOpen, setSearchOpen] = useState(false);
   const pathname = usePathname();
   const lastKey = useRef<string>("");
+  const drawerRef = useRef<HTMLDivElement>(null);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     try {
@@ -63,6 +127,31 @@ export function AdminShell({
       return next;
     });
   }
+
+  // Close the drawer on navigation.
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  // Drawer: lock the page, close on Escape, move focus in and back out.
+  useEffect(() => {
+    if (!open) return;
+    const menuButton = menuButtonRef.current;
+    const previous = document.activeElement as HTMLElement | null;
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    drawerRef.current?.focus();
+
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = overflow;
+      (previous ?? menuButton)?.focus();
+    };
+  }, [open]);
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -92,59 +181,30 @@ export function AdminShell({
     return () => document.removeEventListener("keydown", onKey);
   }, []);
 
-  const groups: { name: string; items: NavEntry[] }[] = [
-    {
-      name: "Today",
-      items: [
-        { href: "/admin", label: "Dashboard", icon: LayoutDashboard, group: "Today" },
-        { href: "/admin/inbox", label: "Inbox", icon: Inbox, min: "moderator", badge: unread, group: "Today" },
-        { href: "/admin/beta", label: "Beta feedback", icon: Star, min: "moderator", group: "Today" },
-        { href: "/admin/calendar", label: "Calendar", icon: CalendarClock, min: "moderator", group: "Today" },
-      ],
-    },
-    {
-      name: "Content",
-      items: [
-        { href: "/admin/teachings", label: "Teachings", icon: BookOpen, min: "admin", group: "Content" },
-        { href: "/admin/series", label: "Series", icon: LibraryBig, min: "admin", group: "Content" },
-        { href: "/admin/schedule", label: "Weekly schedule", icon: Clock, min: "admin", group: "Content" },
-        { href: "/admin/events", label: "Events", icon: CalendarDays, min: "admin", group: "Content" },
-        { href: "/admin/media", label: "Media library", icon: ImageIcon, min: "admin", group: "Content" },
-      ],
-    },
-    {
-      name: "Site",
-      items: [
-        { href: "/admin/settings", label: "Site settings", icon: Settings, min: "admin", group: "Site" },
-        { href: "/admin/enrolment", label: "Enrolment", icon: ShieldCheck, min: "admin", group: "Site" },
-        { href: "/admin/announcements", label: "Announcements", icon: Radio, min: "admin", group: "Site" },
-        { href: "/admin/broadcasts", label: "Newsletters", icon: Mail, min: "admin", group: "Site" },
-        { href: "/admin/users", label: "Team & roles", icon: Users, min: "admin", group: "Site" },
-      ],
-    },
-  ];
-
   const normalizedRole = ((role || "owner").toLowerCase().trim()) as Role;
   const userRank = rank[normalizedRole] ?? 4;
 
-  const visible = groups
-    .map((g) => ({
-      ...g,
-      items: g.items.filter((i) => !i.min || userRank >= (rank[i.min] ?? 1)),
-    }))
-    .filter((g) => g.items.length > 0);
+  const visible = GROUPS.map((g) => ({
+    ...g,
+    items: g.items
+      .filter((i) => !i.min || userRank >= (rank[i.min] ?? 1))
+      .map((i) => (i.href === "/admin/inbox" ? { ...i, badge: unread } : i)),
+  })).filter((g) => g.items.length > 0);
+
+  const isActive = (href: string) =>
+    href === "/admin" ? pathname === "/admin" : pathname === href || pathname.startsWith(`${href}/`);
 
   const renderNav = (isMobile = false) => {
     const isMini = !isMobile && collapsed;
     return (
       <div className="flex h-full flex-col">
-        <div className={`flex items-center px-4 py-3.5 border-b border-parchment/10 ${isMini ? "justify-center" : "gap-3"}`}>
-          <Link href="/admin" className="flex items-center gap-3 shrink-0" title="The School of Prophets">
-            <Crest width={30} height={34} className="text-gold shrink-0" />
+        <div className={`flex items-center border-b border-parchment/10 px-4 py-3.5 ${isMini ? "justify-center" : "gap-3"}`}>
+          <Link href="/admin" className="flex shrink-0 items-center gap-3" title="The School of Prophets">
+            <Crest width={30} height={34} className="shrink-0 text-gold" />
             {!isMini && (
               <div>
                 <p className="font-display text-sm leading-tight text-parchment">The School of Prophets</p>
-                <p className="text-[0.62rem] tracking-widest uppercase opacity-50">Admin dashboard</p>
+                <p className="text-[0.62rem] uppercase tracking-widest opacity-50">Admin dashboard</p>
               </div>
             )}
           </Link>
@@ -155,13 +215,13 @@ export function AdminShell({
               onClick={() => setOpen(false)}
               aria-label="Close menu"
             >
-              <X size={18} />
+              <MoreHorizontal size={18} />
             </button>
           ) : (
             <button
               type="button"
               onClick={toggleCollapse}
-              className={`p-1.5 rounded text-parchment/50 hover:text-parchment hover:bg-parchment/10 transition-colors ${
+              className={`p-1.5 text-parchment/50 transition-colors hover:bg-parchment/10 hover:text-parchment ${
                 isMini ? "hidden" : "ml-auto"
               }`}
               title="Collapse sidebar"
@@ -176,21 +236,19 @@ export function AdminShell({
           {visible.map((g) => (
             <div key={g.name} className="mb-3">
               {!isMini && (
-                <p className="px-3 py-1 text-[0.6rem] font-bold tracking-[0.18em] uppercase opacity-40">
+                <p className="px-3 py-1 text-[0.6rem] font-bold uppercase tracking-[0.18em] opacity-40">
                   {g.name}
                 </p>
               )}
               <div className="space-y-0.5">
                 {g.items.map((item) => {
-                  const active =
-                    item.href === "/admin"
-                      ? pathname === "/admin"
-                      : pathname.startsWith(item.href);
+                  const active = isActive(item.href);
                   return (
                     <Link
                       key={item.href}
                       href={item.href}
                       data-active={active}
+                      aria-current={active ? "page" : undefined}
                       title={isMini ? item.label : undefined}
                       className={`nav-item relative ${isMini ? "justify-center !px-0" : ""}`}
                       onClick={() => setOpen(false)}
@@ -199,7 +257,7 @@ export function AdminShell({
                       {!isMini && <span className="flex-1">{item.label}</span>}
                       {item.badge && item.badge > 0 ? (
                         isMini ? (
-                          <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-gold" />
+                          <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-gold" />
                         ) : (
                           <span className="admin-badge admin-badge-new">{item.badge}</span>
                         )
@@ -212,7 +270,7 @@ export function AdminShell({
           ))}
         </nav>
 
-        <div className={`border-t border-parchment/10 p-3 ${isMini ? "text-center" : "px-4 py-3"}`}>
+        <div className={`border-t border-parchment/10 ${isMini ? "p-3 text-center" : "px-4 py-3"}`}>
           {!isMini ? (
             <>
               <p className="truncate text-xs font-semibold text-parchment">{fullName || email}</p>
@@ -220,7 +278,7 @@ export function AdminShell({
             </>
           ) : (
             <div
-              className="mx-auto h-7 w-7 rounded-full bg-gold/15 text-gold flex items-center justify-center text-xs font-bold"
+              className="mx-auto flex h-7 w-7 items-center justify-center rounded-full bg-gold/15 text-xs font-bold text-gold"
               title={`${fullName || email} (${role})`}
             >
               {(fullName || email || "A")[0].toUpperCase()}
@@ -232,19 +290,19 @@ export function AdminShell({
   };
 
   return (
-    <div className="admin-body min-h-screen flex">
+    <div className="admin-body flex min-h-screen">
       <PushSetup />
 
-      {/* Desktop Fixed/Sticky Sidebar */}
+      {/* Desktop sidebar */}
       <aside
-        className={`hidden md:flex sticky top-0 h-screen overflow-hidden flex-col border-r border-parchment/10 bg-ink-2 z-20 shrink-0 transition-all duration-200 ${
+        className={`sticky top-0 z-20 hidden h-screen shrink-0 flex-col overflow-hidden border-r border-parchment/10 bg-ink-2 transition-[width] duration-200 md:flex ${
           collapsed ? "w-16" : "w-60"
         }`}
       >
         {renderNav(false)}
       </aside>
 
-      {/* Mobile Drawer */}
+      {/* Mobile drawer */}
       {open && (
         <div className="fixed inset-0 z-40 md:hidden">
           <div
@@ -252,18 +310,27 @@ export function AdminShell({
             onClick={() => setOpen(false)}
             aria-hidden="true"
           />
-          <aside className="absolute left-0 top-0 h-full w-64 bg-ink-2 border-r border-parchment/10">
+          <div
+            ref={drawerRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Admin menu"
+            tabIndex={-1}
+            className="absolute left-0 top-0 h-full w-64 border-r border-parchment/10 bg-ink-2 outline-none"
+          >
             {renderNav(true)}
-          </aside>
+          </div>
         </div>
       )}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-12 items-center gap-2 border-b border-parchment/10 bg-ink/90 backdrop-blur px-3">
+        <header className="sticky top-0 z-30 flex h-12 items-center gap-2 border-b border-parchment/10 bg-ink px-3">
           <button
-            className="md:hidden p-2 text-parchment/70 hover:text-parchment"
+            ref={menuButtonRef}
+            className="p-2 text-parchment/70 hover:text-parchment md:hidden"
             onClick={() => setOpen(true)}
             aria-label="Open menu"
+            aria-expanded={open}
           >
             <Menu size={18} />
           </button>
@@ -272,7 +339,7 @@ export function AdminShell({
             <button
               type="button"
               onClick={toggleCollapse}
-              className="hidden md:flex p-1.5 rounded text-parchment/60 hover:text-parchment hover:bg-parchment/10 transition-colors"
+              className="hidden p-1.5 text-parchment/60 transition-colors hover:bg-parchment/10 hover:text-parchment md:flex"
               title="Expand sidebar"
               aria-label="Expand sidebar"
             >
@@ -282,12 +349,12 @@ export function AdminShell({
 
           <button
             onClick={() => setSearchOpen(true)}
-            className="flex items-center gap-2 admin-input !w-auto !py-1 text-xs opacity-80 hover:opacity-100"
+            className="admin-input !flex !w-auto items-center gap-2 !py-1 text-xs opacity-80 hover:opacity-100"
             aria-label="Search everything"
           >
             <Search size={14} />
             <span className="hidden sm:inline">Search everything</span>
-            <kbd className="hidden sm:inline text-[0.6rem] opacity-60">Ctrl K</kbd>
+            <kbd className="hidden text-[0.6rem] opacity-60 sm:inline">Ctrl K</kbd>
           </button>
           <div className="ml-auto flex items-center gap-1">
             <NotificationBell initialUnread={unread} initialNotifications={notifications} userRole={role} />
@@ -303,8 +370,43 @@ export function AdminShell({
             </form>
           </div>
         </header>
-        <main className="flex-1 p-3 md:p-6">{children}</main>
+        <main className="flex-1 px-3 pb-24 pt-3 md:p-6 md:pb-6">{children}</main>
       </div>
+
+      {/* Mobile: the four places a leader actually goes */}
+      <nav
+        aria-label="Quick navigation"
+        className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-4 border-t border-parchment/12 bg-ink-2 pb-[env(safe-area-inset-bottom)] md:hidden"
+      >
+        {MOBILE_TABS.map((tab) => {
+          const active = isActive(tab.href);
+          return (
+            <Link
+              key={tab.href}
+              href={tab.href}
+              aria-current={active ? "page" : undefined}
+              className={`relative flex min-h-12 flex-col items-center justify-center gap-1 py-1.5 text-[0.6rem] uppercase tracking-[0.1em] ${
+                active ? "text-gold-soft" : "text-parchment/55"
+              }`}
+            >
+              <tab.icon size={17} />
+              {tab.label}
+              {tab.href === "/admin/inbox" && unread > 0 && (
+                <span className="absolute right-[28%] top-1.5 h-1.5 w-1.5 rounded-full bg-gold" />
+              )}
+            </Link>
+          );
+        })}
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="flex min-h-12 flex-col items-center justify-center gap-1 py-1.5 text-[0.6rem] uppercase tracking-[0.1em] text-parchment/55"
+          aria-label="More sections"
+        >
+          <Menu size={17} />
+          More
+        </button>
+      </nav>
 
       {searchOpen && <AdminSearch onClose={() => setSearchOpen(false)} />}
     </div>

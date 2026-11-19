@@ -11,11 +11,13 @@ import {
   getContactSettings,
   getEnrolmentSettings,
   getSchedule,
+  getMediaMeta,
   getScheduleExceptions,
   getSeries,
   getSetting,
   getTeachings,
 } from "@/lib/data";
+import { focalFor } from "@/lib/media";
 import { site } from "@/config/site";
 import { training } from "@/content/ministry";
 import { formatDate } from "@/lib/time";
@@ -52,7 +54,7 @@ const systems = [
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [teachings, schedule, seriesList, contact, enrolment, homeSetting, exceptions] = await Promise.all([
+  const [teachings, schedule, seriesList, contact, enrolment, homeSetting, exceptions, mediaMeta] = await Promise.all([
     getTeachings(),
     getSchedule(),
     getSeries(),
@@ -60,6 +62,7 @@ export default async function HomePage() {
     getEnrolmentSettings(),
     getSetting("homepage", {}),
     getScheduleExceptions(),
+    getMediaMeta(),
   ]);
   const show = { ...defaultSections, ...(homeSetting as HomeSections) };
   // A stub saved in the CMS ("Title...") is not a teaching; never print it.
@@ -312,14 +315,15 @@ export default async function HomePage() {
                   <div className="lg:col-span-5">
                     <Link
                       href={`/teachings/${featured.slug}`}
-                      className="group relative block aspect-[16/10] overflow-hidden rounded border border-ink/15 bg-ink shadow-sm"
+                      className="group relative block aspect-[3/2] overflow-hidden border border-ink/15 bg-ink-2"
                     >
                       <Image
                         src={featured.image}
                         alt={featured.imageAlt || featured.title}
                         fill
                         sizes="(max-width: 768px) 100vw, 35vw"
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        style={{ objectFit: "contain" }}
+                        className="media-zoom"
                       />
                     </Link>
                   </div>

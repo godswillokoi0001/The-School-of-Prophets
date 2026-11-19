@@ -52,8 +52,10 @@ export function PageHeader({
 
       {image && (
         <div className="wrap pb-10 md:pb-14">
-          <div className="relative aspect-[16/9] overflow-hidden bg-ink md:aspect-[21/8]">
-            <Cover src={image} alt={imageAlt} sizes="100vw" />
+          {/* The plate shows the whole picture: a wide crop of a portrait
+              photograph cuts faces and text, which is never acceptable. */}
+          <div className="relative aspect-[3/2] overflow-hidden border border-ink/10 bg-ink-2">
+            <Cover src={image} alt={imageAlt} sizes="(max-width: 1200px) 100vw, 1200px" fit="contain" />
           </div>
         </div>
       )}

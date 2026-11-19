@@ -206,7 +206,7 @@ export default function AdminLogin() {
           aria-modal="true"
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
         >
-          <div className="admin-surface max-w-sm w-full p-6 text-center border border-gold/50 shadow-2xl rounded-lg space-y-4 relative">
+          <div className="admin-surface relative w-full max-w-sm space-y-4 border border-gold/40 p-6 text-center">
             <button
               type="button"
               onClick={() => setShowSuccessModal(false)}

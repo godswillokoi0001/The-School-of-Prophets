@@ -688,6 +688,134 @@
 }
 
 /* ------------------------------------------------------------------
+   Shared surface rules: status, tables, motion, numerals.
+   One table, one status indicator, one motion curve.
+   ------------------------------------------------------------------ */
+
+.admin-body :focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+/* Status as a small word with a dot, not a rainbow of pills. */
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+.status::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  flex: none;
+  border-radius: 9999px;
+  background: currentColor;
+  opacity: 0.9;
+}
+.status-new { color: var(--color-gold-soft); }
+.status-neutral { opacity: 0.65; }
+.status-ok { color: #8fd0a0; }
+.status-warn { color: #e6b566; }
+.status-bad { color: #ff9d8f; }
+.admin-light .status-new { color: #8a6a1f; }
+.admin-light .status-ok { color: #1e6b34; }
+.admin-light .status-warn { color: #8a5a00; }
+.admin-light .status-bad { color: #a33424; }
+
+/* Tables: hairline dividers, 44px rows, sticky head. */
+.admin-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--color-ink-2);
+}
+.admin-light .admin-table thead th {
+  background: var(--color-paper);
+}
+.admin-table tbody tr {
+  min-height: 2.75rem;
+}
+.admin-table tbody td {
+  font-variant-numeric: tabular-nums;
+}
+
+/* On a phone a table becomes a stack of labelled rows. */
+@media (max-width: 767px) {
+  .admin-table[data-stack] {
+    min-width: 0 !important;
+    display: block;
+  }
+  .admin-table[data-stack] thead {
+    display: none;
+  }
+  .admin-table[data-stack] tbody {
+    display: block;
+  }
+  .admin-table[data-stack] tr {
+    display: block;
+    padding: 0.7rem 0.75rem;
+    border-bottom: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+  }
+  .admin-table[data-stack] tr:last-child {
+    border-bottom: 0;
+  }
+  .admin-table[data-stack] td {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    padding: 0.15rem 0;
+    border: 0;
+    text-align: left !important;
+  }
+  .admin-table[data-stack] td::before {
+    content: attr(data-label);
+    flex: 0 0 5.75rem;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.55;
+    padding-top: 0.1rem;
+  }
+  .admin-table[data-stack] td[data-label=""]::before {
+    display: none;
+  }
+  .admin-table[data-stack] td[data-cell="full"] {
+    display: block;
+    text-align: right;
+  }
+  .admin-table[data-stack] td[data-cell="full"]::before {
+    display: none;
+  }
+  .admin-table[data-stack] td input[type="checkbox"] {
+    margin-right: 0.25rem;
+  }
+}
+
+/* Motion: hover-only, so a tap never jumps. */
+.media-zoom {
+  will-change: transform;
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .media-zoom {
+    transition: transform var(--dur-3) var(--ease);
+  }
+  .group:hover .media-zoom {
+    transform: scale(1.03);
+  }
+}
+
+/* Numbers line up. */
+.tnum,
+.admin-body .font-display {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------------------------
    Print: teachings and programme pages, ink-friendly.
    ------------------------------------------------------------------ */
 

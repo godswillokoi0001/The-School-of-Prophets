@@ -174,7 +174,7 @@ export function TeachingList({
       )}
 
       <div className="admin-surface overflow-x-auto">
-        <table className="admin-table min-w-[640px]">
+        <table data-stack className="admin-table min-w-[640px]">
           <thead>
             <tr>
               <th className="w-8"></th>
@@ -194,35 +194,33 @@ export function TeachingList({
                 }
                 className="admin-row hover:bg-gold/10 cursor-pointer transition-colors group"
               >
-                <td onClick={(e) => e.stopPropagation()}>
+                <td data-label="" onClick={(e) => e.stopPropagation()}>
                   <input
                     type="checkbox"
-                    className="accent-gold h-4 w-4 rounded"
+                    className="accent-gold h-4 w-4"
                     checked={selected.has(t.id)}
                     onChange={() => toggle(t.id)}
                     aria-label={`Select ${t.title}`}
                   />
                 </td>
-                <td>
-                  <span className="font-medium text-parchment group-hover:text-gold transition-colors">
+                <td data-label="Title">
+                  <span className="font-medium text-parchment transition-colors group-hover:text-gold">
                     {t.title}
                   </span>
                   {t.featured && (
-                    <span className="ml-2 admin-badge admin-badge-new">
+                    <span className="ml-2 text-[0.65rem] uppercase tracking-[0.1em] text-gold-soft">
                       Featured
                     </span>
                   )}
                 </td>
-                <td className="opacity-70 text-xs">{t.series_title ?? "—"}</td>
-                <td>
-                  <span
-                    className={`admin-badge text-xs uppercase ${statusBadge[t.status] ?? ""}`}
-                  >
+                <td data-label="Series" className="text-xs opacity-70">{t.series_title ?? "—"}</td>
+                <td data-label="Status">
+                  <span className={`status text-xs ${statusBadge[t.status] ?? "status-neutral"}`}>
                     {t.status}
                   </span>
                 </td>
-                <td className="text-xs opacity-70">{t.date_taught ?? "—"}</td>
-                <td className="text-right" onClick={(e) => e.stopPropagation()}>
+                <td data-label="Taught" className="text-xs tabular-nums opacity-70">{t.date_taught ?? "—"}</td>
+                <td data-cell="full" className="text-right" onClick={(e) => e.stopPropagation()}>
                   <div className="flex items-center justify-end gap-1.5">
                     <button
                       type="button"

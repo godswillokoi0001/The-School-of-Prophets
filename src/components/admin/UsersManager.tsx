@@ -177,7 +177,7 @@ export function UsersManager({
       )}
 
       <div className="admin-surface mt-4 overflow-x-auto">
-        <table className="admin-table min-w-[560px]">
+        <table data-stack className="admin-table min-w-[560px]">
           <thead>
             <tr>
               <th>Name</th>
@@ -190,12 +190,12 @@ export function UsersManager({
           <tbody>
             {pagedMembers.map((m) => (
               <tr key={m.id} className="admin-row">
-                <td>
+                <td data-label="Name">
                   {m.full_name || "—"}
-                  {m.id === selfId && <span className="ml-1 admin-badge">You</span>}
+                  {m.id === selfId && <span className="ml-1 text-[0.65rem] uppercase tracking-[0.1em] opacity-60">you</span>}
                 </td>
-                <td className="opacity-70">{m.email}</td>
-                <td>
+                <td data-label="Email" className="opacity-70">{m.email}</td>
+                <td data-label="Role">
                   {isOwner ? (
                     <select
                       className="admin-select !py-1 text-xs"
@@ -228,20 +228,16 @@ export function UsersManager({
                       ))}
                     </select>
                   ) : (
-                    <span className="admin-badge text-xs uppercase font-mono">{m.role}</span>
+                    <span className="text-xs uppercase tracking-[0.1em] opacity-75">{m.role}</span>
                   )}
                 </td>
-                <td>
-                  <span
-                    className={`admin-badge ${
-                      m.status === "active" ? "admin-badge-ok" : "admin-badge-bad"
-                    }`}
-                  >
+                <td data-label="Status">
+                  <span className={`status ${m.status === "active" ? "status-ok" : "status-bad"}`}>
                     {m.status}
                   </span>
                 </td>
                 {isOwner && (
-                  <td>
+                  <td data-cell="full">
                     {m.id !== selfId && (
                       <div className="flex items-center gap-2">
                         {/* Deactivate / Reactivate Icon Button */}

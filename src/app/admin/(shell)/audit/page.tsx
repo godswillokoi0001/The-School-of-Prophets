@@ -38,16 +38,16 @@ export default async function AuditPage({
         <button className="admin-btn admin-btn-gold">Filter</button>
       </form>
       <div className="admin-surface overflow-x-auto">
-        <table className="admin-table min-w-[640px]">
+        <table data-stack className="admin-table min-w-[640px]">
           <thead><tr><th>When</th><th>Who</th><th>Action</th><th>Area</th><th>Details</th></tr></thead>
           <tbody>
             {rows.map((r) => (
               <tr key={r.id} className="admin-row align-top">
-                <td className="whitespace-nowrap text-xs opacity-70">{new Date(r.created_at).toLocaleString("en-GB")}</td>
-                <td className="text-xs">{r.actor_email ?? "system"}</td>
-                <td><span className="admin-badge">{r.action}</span></td>
-                <td className="text-xs opacity-80">{r.entity}{r.entity_id ? ` · ${r.entity_id.slice(0, 8)}` : ""}</td>
-                <td className="max-w-72 break-all text-[0.7rem] opacity-60">{JSON.stringify(r.detail)}</td>
+                <td data-label="When" className="whitespace-nowrap text-xs tabular-nums opacity-70">{new Date(r.created_at).toLocaleString("en-GB")}</td>
+                <td data-label="Who" className="text-xs">{r.actor_email ?? "system"}</td>
+                <td data-label="Action"><span>{r.action}</span></td>
+                <td data-label="Area" className="text-xs opacity-80">{r.entity}{r.entity_id ? ` · ${r.entity_id.slice(0, 8)}` : ""}</td>
+                <td data-label="Details" className="max-w-72 break-all text-[0.7rem] opacity-60">{JSON.stringify(r.detail)}</td>
               </tr>
             ))}
           </tbody>

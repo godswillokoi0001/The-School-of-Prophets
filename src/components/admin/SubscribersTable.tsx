@@ -150,7 +150,7 @@ export function SubscribersTable({
             </span>
             <button
               type="button"
-              className="admin-btn border-red-500/40 text-red-400 hover:bg-red-500/10 !py-1 text-xs"
+              className="admin-btn admin-btn-danger !py-1 text-xs"
               onClick={handleDeleteSelected}
               disabled={busy}
             >
@@ -163,10 +163,10 @@ export function SubscribersTable({
 
       {feedback && (
         <div
-          className={`p-3 rounded text-xs border ${
+          className={`border p-3 text-xs ${
             feedback.type === "success"
-              ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
-              : "border-red-500/30 bg-red-500/10 text-red-300"
+              ? "border-[#8fd0a0]/40 text-[#8fd0a0]"
+              : "border-[#ff9d8f]/40 text-[#ff9d8f]"
           }`}
         >
           {feedback.message}
@@ -175,7 +175,7 @@ export function SubscribersTable({
 
       {/* Main Table */}
       <div className="admin-surface overflow-x-auto">
-        <table className="admin-table min-w-[540px]">
+        <table data-stack className="admin-table min-w-[540px]">
           <thead>
             <tr>
               {isOwner && (
@@ -200,35 +200,31 @@ export function SubscribersTable({
             {currentRows.map((r) => (
               <tr key={r.id} className="admin-row hover:bg-parchment/5">
                 {isOwner && (
-                  <td onClick={(e) => e.stopPropagation()}>
+                  <td data-label="" onClick={(e) => e.stopPropagation()}>
                     <input
                       type="checkbox"
-                      className="accent-gold h-3.5 w-3.5 rounded"
+                      className="accent-gold h-3.5 w-3.5"
                       checked={selected.has(r.id)}
                       onChange={() => toggleOne(r.id)}
                       aria-label={`Select ${r.email}`}
                     />
                   </td>
                 )}
-                <td className="font-medium text-parchment">{r.email}</td>
-                <td className="opacity-70">{r.name || "—"}</td>
-                <td className="text-xs opacity-70">
+                <td data-label="Email" className="font-medium text-parchment">{r.email}</td>
+                <td data-label="Name" className="opacity-70">{r.name || "—"}</td>
+                <td data-label="Joined" className="text-xs tabular-nums opacity-70">
                   {r.consent_at ? new Date(r.consent_at).toLocaleDateString("en-GB") : "—"}
                 </td>
-                <td>
-                  <span
-                    className={`admin-badge ${
-                      r.unsubscribed_at ? "admin-badge-warn" : "admin-badge-ok"
-                    }`}
-                  >
-                    {r.unsubscribed_at ? "Unsubscribed" : "Active"}
+                <td data-label="Status">
+                  <span className={`status ${r.unsubscribed_at ? "status-warn" : "status-ok"}`}>
+                    {r.unsubscribed_at ? "Unsubscribed" : "Subscribed"}
                   </span>
                 </td>
                 {isOwner && (
-                  <td className="text-right" onClick={(e) => e.stopPropagation()}>
+                  <td data-cell="full" className="text-right" onClick={(e) => e.stopPropagation()}>
                     <button
                       type="button"
-                      className="inline-flex items-center justify-center p-1.5 rounded border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-colors"
+                      className="inline-flex items-center justify-center p-1.5 border border-[#ff9d8f]/35 text-[#ff9d8f] transition-colors hover:bg-[#ff9d8f]/10"
                       title={`Delete ${r.email}`}
                       aria-label={`Delete subscriber ${r.email}`}
                       disabled={busy}

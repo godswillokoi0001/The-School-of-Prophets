@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { X, Mail, ArrowRight, Check } from "lucide-react";
+import { X } from "lucide-react";
 
 export function NewsletterModal() {
   const pathname = usePathname();
@@ -130,166 +130,132 @@ export function NewsletterModal() {
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Subscribe to the School of Prophets daily devotions and teaching alerts"
-      className="fixed inset-0 z-[120] flex items-center justify-center p-4 sm:p-6 bg-ink/80 backdrop-blur-sm animate-fadeIn"
+      aria-labelledby="letter-title"
+      className="fixed inset-0 z-[120] flex items-end justify-center bg-ink/85 p-3 sm:items-center sm:p-6"
       onClick={handleDismiss}
     >
       <div
-        className="relative w-full max-w-[360px] sm:max-w-[400px] max-h-[85vh] overflow-y-auto border border-gold/40 bg-[#0d1217] p-4 sm:p-5 text-parchment shadow-2xl transition-all rounded-sm mx-auto"
+        className="relative w-full max-w-[26rem] border border-ink/25 bg-parchment text-ink"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Subtle corner liturgical marks */}
-        <div className="absolute top-1.5 left-1.5 w-2 h-2 border-t border-l border-gold/50 pointer-events-none" />
-        <div className="absolute top-1.5 right-1.5 w-2 h-2 border-t border-r border-gold/50 pointer-events-none" />
-        <div className="absolute bottom-1.5 left-1.5 w-2 h-2 border-b border-l border-gold/50 pointer-events-none" />
-        <div className="absolute bottom-1.5 right-1.5 w-2 h-2 border-b border-r border-gold/50 pointer-events-none" />
+        <div className="flex items-center justify-between border-b border-ink/15 px-4 py-2">
+          <p className="label text-ember">A letter each morning</p>
+          <button
+            type="button"
+            onClick={handleDismiss}
+            className="-mr-2 flex h-11 w-11 items-center justify-center text-ink/55 transition-colors hover:text-ink"
+            aria-label="Close"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
 
-        <button
-          type="button"
-          onClick={handleDismiss}
-          className="absolute top-3 right-3 text-parchment/50 hover:text-parchment transition-colors p-1"
-          aria-label="Close dialog"
-        >
-          <X className="w-4 h-4" />
-        </button>
-
-        {success ? (
-          <div className="text-center py-4">
-            <div className="mx-auto mb-2.5 flex h-9 w-9 items-center justify-center rounded-full bg-gold/20 text-gold-soft border border-gold/40">
-              <Check className="h-4 w-4" />
+        <div className="px-5 py-5 sm:px-6">
+          {success ? (
+            <div>
+              <p className="label text-ember">You are on the list</p>
+              <h2 id="letter-title" className="mt-2 font-display text-2xl">
+                Thank you, {firstName}.
+              </h2>
+              <p className="mt-2 text-sm text-quiet">
+                Look for the first letter tomorrow morning. Every email has an
+                unsubscribe link at the foot of it.
+              </p>
             </div>
-            <h3 className="font-serif text-lg text-gold-soft">Welcome to the Fellowship</h3>
-            <p className="mt-1.5 text-xs text-parchment/80 leading-relaxed">
-              Grace and peace, {firstName}. You are subscribed for <strong>daily devotions</strong> and <strong>teaching alerts</strong>.
-            </p>
-            <div className="mt-3 inline-block rounded border border-gold/30 bg-gold/10 px-3 py-1.5 text-[11px] text-gold-soft">
-              Please check your email daily for spiritual nourishment.
-            </div>
-          </div>
-        ) : (
-          <div>
-            <div className="flex items-center gap-1.5 mb-1">
-              <div className="flex h-5 w-5 items-center justify-center rounded-sm bg-gold/15 text-gold-soft border border-gold/30">
-                <Mail className="h-2.5 w-2.5" />
-              </div>
-              <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-gold-soft">
-                Daily Devotions &amp; Alerts
-              </span>
-            </div>
+          ) : (
+            <>
+              <h2 id="letter-title" className="font-display text-2xl leading-tight">
+                A short word before the day begins.
+              </h2>
+              <p className="mt-2 text-sm leading-relaxed text-quiet">
+                Every weekday morning a devotion of a few minutes, and a note
+                whenever a new teaching is published. Nothing else.
+              </p>
 
-            <h3 className="font-serif text-lg sm:text-xl font-medium tracking-tight text-parchment">
-              Stay Spiritually Anchored
-            </h3>
-
-            <p className="mt-1 text-xs text-parchment/75 leading-relaxed">
-              Subscribe to receive morning devotions daily, alerts for every new teaching, and weekly fellowship updates.
-            </p>
-
-            <div className="mt-2 flex items-center gap-1.5 text-[10.5px] text-gold-soft/90 bg-gold/10 border border-gold/25 px-2.5 py-1 rounded">
-              <span className="text-gold">✦</span>
-              <span>Check your email daily for your morning devotion</span>
-            </div>
-
-            <form onSubmit={handleSubmit} className="mt-3 space-y-2.5">
-              <input
-                type="text"
-                name="website"
-                value={honeypot}
-                onChange={(e) => setHoneypot(e.target.value)}
-                className="hidden"
-                tabIndex={-1}
-                autoComplete="off"
-                aria-hidden="true"
-              />
-
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-[10px] uppercase tracking-wider text-parchment/60 mb-0.5">
-                    First Name *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    placeholder="Samuel"
-                    className="w-full border border-parchment/20 bg-ink/60 px-2.5 py-1.5 text-xs text-parchment placeholder:text-parchment/30 focus:border-gold focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] uppercase tracking-wider text-parchment/60 mb-0.5">
-                    Last Name *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    placeholder="Ade"
-                    className="w-full border border-parchment/20 bg-ink/60 px-2.5 py-1.5 text-xs text-parchment placeholder:text-parchment/30 focus:border-gold focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-[10px] uppercase tracking-wider text-parchment/60 mb-0.5">
-                  Email Address *
-                </label>
+              <form onSubmit={handleSubmit} className="mt-4 space-y-3">
                 <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  className="w-full border border-parchment/20 bg-ink/60 px-2.5 py-1.5 text-xs text-parchment placeholder:text-parchment/30 focus:border-gold focus:outline-none"
+                  type="text"
+                  name="website"
+                  value={honeypot}
+                  onChange={(e) => setHoneypot(e.target.value)}
+                  className="hidden"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  aria-hidden="true"
                 />
-              </div>
 
-              <div>
-                <label className="block text-[10px] uppercase tracking-wider text-parchment/60 mb-0.5">
-                  Phone / WhatsApp <span className="text-parchment/40 normal-case">(optional)</span>
+                <div className="grid grid-cols-2 gap-2">
+                  <label className="field">
+                    <span>First name</span>
+                    <input
+                      type="text"
+                      required
+                      autoComplete="given-name"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      className="input !min-h-11 text-sm"
+                    />
+                  </label>
+                  <label className="field">
+                    <span>Last name</span>
+                    <input
+                      type="text"
+                      required
+                      autoComplete="family-name"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      className="input !min-h-11 text-sm"
+                    />
+                  </label>
+                </div>
+
+                <label className="field">
+                  <span>Email</span>
+                  <input
+                    type="email"
+                    required
+                    autoComplete="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    className="input !min-h-11 text-sm"
+                  />
                 </label>
-                <input
-                  type="tel"
-                  autoComplete="tel"
-                  inputMode="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="+234 ... (optional)"
-                  className="w-full border border-parchment/20 bg-ink/60 px-2.5 py-1.5 text-xs text-parchment placeholder:text-parchment/30 focus:border-gold focus:outline-none"
-                />
-              </div>
 
-              {error && (
-                <p role="alert" className="text-[11px] text-rose-400">
-                  {error}
-                </p>
-              )}
+                <label className="field">
+                  <span>Phone or WhatsApp (optional)</span>
+                  <input
+                    type="tel"
+                    autoComplete="tel"
+                    inputMode="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="+234…"
+                    className="input !min-h-11 text-sm"
+                  />
+                </label>
 
-              <div className="pt-0.5">
-                <button
-                  type="submit"
-                  disabled={busy}
-                  className="btn btn-gold w-full py-2 justify-center text-xs font-medium tracking-wide shadow-md"
-                >
-                  {busy ? "Subscribing..." : "Subscribe for Daily Devotions & Alerts"}
-                  {!busy && <ArrowRight className="w-3.5 h-3.5 ml-1.5" />}
+                {error && (
+                  <p role="alert" className="text-xs text-[#8c2f24]">
+                    {error}
+                  </p>
+                )}
+
+                <button type="submit" disabled={busy} className="btn btn-ink w-full">
+                  {busy ? "Sending…" : "Send me the letters"}
                 </button>
-              </div>
 
-              <div className="flex items-center justify-between text-[10px] text-parchment/40 pt-0.5">
-                <span>Free forever</span>
                 <button
                   type="button"
                   onClick={handleDismiss}
-                  className="hover:text-parchment/70 underline underline-offset-2 transition-colors"
+                  className="w-full text-center text-[0.7rem] text-quiet underline underline-offset-4 hover:text-ink"
                 >
-                  Maybe later
+                  Not now
                 </button>
-              </div>
-            </form>
-          </div>
-        )}
+              </form>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

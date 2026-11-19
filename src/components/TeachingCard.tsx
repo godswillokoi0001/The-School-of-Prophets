@@ -3,6 +3,7 @@ import { ArrowRight } from "lucide-react";
 import type { Teaching } from "@/content/teachings";
 import { formatDate } from "@/lib/time";
 import { Cover } from "@/components/Cover";
+import type { Focal } from "@/lib/media";
 
 /**
  * A catalogue entry, set like a publisher's list: cover, date, series, title,
@@ -12,10 +13,12 @@ export function TeachingCard({
   teaching,
   featured = false,
   seriesTitle,
+  focal,
 }: {
   teaching?: Teaching | null;
   featured?: boolean;
   seriesTitle?: string;
+  focal?: Focal;
 }) {
   if (!teaching) return null;
 
@@ -35,15 +38,17 @@ export function TeachingCard({
     >
       {hasImage && (
         <div
-          className={`relative overflow-hidden bg-ink ${
-            featured ? "aspect-[16/10] md:col-span-4" : "aspect-[16/10] md:col-span-3"
+          className={`relative overflow-hidden border border-ink/10 bg-ink-2 ${
+            featured ? "aspect-[3/2] md:col-span-4" : "aspect-[3/2] md:col-span-3"
           }`}
         >
           <Cover
             src={teaching.image}
             alt={teaching.imageAlt}
             sizes={featured ? "(max-width: 768px) 100vw, 33vw" : "(max-width: 768px) 100vw, 25vw"}
-            className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+            focal={focal}
+            fit="contain"
+            className="media-zoom"
           />
         </div>
       )}

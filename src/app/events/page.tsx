@@ -4,7 +4,8 @@ import { CalendarDays, MapPin, Clock } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { EventCalendarLink } from "@/components/EventCalendarLink";
 import { Cover } from "@/components/Cover";
-import { getEvents } from "@/lib/data";
+import { getEvents, getMediaMeta } from "@/lib/data";
+import { focalFor } from "@/lib/media";
 import { formatDate } from "@/lib/time";
 
 export const dynamic = "force-dynamic";
@@ -22,7 +23,7 @@ export const metadata: Metadata = {
 };
 
 export default async function EventsPage() {
-  const events = await getEvents();
+  const [events, mediaMeta] = await Promise.all([getEvents(), getMediaMeta()]);
   // Seeded examples stay in the CMS but are never printed as real gatherings.
   const upcoming = events.filter((e) => e.kind === "upcoming" && !e.isSample);
   const past = events.filter((e) => e.kind === "past" && !e.isSample);
@@ -61,14 +62,15 @@ export default async function EventsPage() {
                 <p className="label text-ember">{formatDate(event.date)}</p>
 
                 {event.image && (
-                  <div className="relative aspect-[16/10] overflow-hidden bg-ink">
-                    <Cover
-                      src={event.image}
-                      alt={event.imageAlt}
-                      sizes="(max-width: 768px) 100vw, 192px"
-                      className="object-cover"
-                    />
-                  </div>
+                                      <div className="relative aspect-[3/2] overflow-hidden border border-ink/10 bg-ink-2">
+                      <Cover
+                        src={event.image}
+                        alt={event.imageAlt}
+                        sizes="(max-width: 768px) 100vw, 192px"
+                        fit="contain"
+                        focal={focalFor(mediaMeta, event.image)}
+                      />
+                    </div>
                 )}
 
                 <div>
@@ -130,12 +132,13 @@ export default async function EventsPage() {
                   <p className="label text-quiet">{formatDate(event.date)}</p>
 
                   {event.image && (
-                    <div className="relative aspect-[16/10] overflow-hidden bg-ink">
+                    <div className="relative aspect-[3/2] overflow-hidden border border-ink/10 bg-ink-2">
                       <Cover
                         src={event.image}
                         alt={event.imageAlt}
                         sizes="(max-width: 768px) 100vw, 192px"
-                        className="object-cover"
+                        fit="contain"
+                        focal={focalFor(mediaMeta, event.image)}
                       />
                     </div>
                   )}

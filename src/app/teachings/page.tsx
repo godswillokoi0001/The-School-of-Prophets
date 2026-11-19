@@ -121,7 +121,7 @@ export default async function TeachingsPage() {
                           src={cover}
                           alt={coverAlt}
                           sizes="(max-width: 640px) 100vw, 128px"
-                          className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+                          className="media-zoom"
                         />
                       </span>
                     )}

@@ -331,6 +331,15 @@ export async function getSetting(key: string, fallback: Json): Promise<Json> {
   }, fallback);
 }
 
+/**
+ * Framing metadata for uploaded images: focal point + natural size, keyed by
+ * the stored path. Kept in site settings so no table or column has to change.
+ */
+export async function getMediaMeta(): Promise<Record<string, { x: number; y: number; w?: number; h?: number }>> {
+  const value = await getSetting("media_meta", {});
+  return value as Record<string, { x: number; y: number; w?: number; h?: number }>;
+}
+
 export async function getEnrolmentSettings() {
   const s = await getSetting("enrolment", {
     status: seedTraining.status,

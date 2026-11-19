@@ -37,7 +37,7 @@ export function EventList({ rows }: { rows: EventRow[] }) {
       </div>
 
       <div className="admin-surface overflow-x-auto">
-        <table className="admin-table min-w-[560px]">
+        <table data-stack className="admin-table min-w-[560px]">
           <thead>
             <tr>
               <th>Title</th>
@@ -55,26 +55,26 @@ export function EventList({ rows }: { rows: EventRow[] }) {
                 onClick={() => router.push(`/admin/events/${e.slug}`)}
                 className="admin-row cursor-pointer transition-colors hover:bg-parchment/10"
               >
-                <td>
-                  <span className="font-medium text-parchment hover:text-gold transition-colors">
+                <td data-label="Event">
+                  <span className="font-medium text-parchment transition-colors hover:text-gold">
                     {e.title}
                   </span>
                 </td>
-                <td>
+                <td data-label="Status">
                   <span
-                    className={`admin-badge ${
+                    className={`status ${
                       e.status === "published"
-                        ? "admin-badge-ok"
+                        ? "status-ok"
                         : e.status === "cancelled"
-                        ? "admin-badge-bad"
-                        : ""
+                        ? "status-bad"
+                        : "status-neutral"
                     }`}
                   >
                     {e.status}
                     {e.starts_at < past && e.status === "published" ? " (past)" : ""}
                   </span>
                 </td>
-                <td className="text-xs whitespace-nowrap opacity-75">
+                <td data-label="When" className="whitespace-nowrap text-xs opacity-75">
                   {new Date(e.starts_at).toLocaleString("en-GB", {
                     timeZone: "Africa/Lagos",
                     day: "numeric",
@@ -84,11 +84,11 @@ export function EventList({ rows }: { rows: EventRow[] }) {
                     minute: "2-digit",
                   })}
                 </td>
-                <td className="text-xs opacity-75 capitalize">{e.format}</td>
-                <td className="text-xs opacity-75">
-                  {e.registration_required ? "Required" : "—"}
+                <td data-label="Format" className="text-xs capitalize opacity-75">{e.format}</td>
+                <td data-label="Registration" className="text-xs opacity-75">
+                  {e.registration_required ? "Required" : "Not needed"}
                 </td>
-                <td className="text-right" onClick={(ev) => ev.stopPropagation()}>
+                <td data-cell="full" className="text-right" onClick={(ev) => ev.stopPropagation()}>
                   <div className="flex items-center justify-end gap-1.5">
                     <Link
                       href={`/admin/events/${e.slug}`}

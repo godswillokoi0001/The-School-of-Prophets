@@ -6,6 +6,7 @@ import {
   Link2, List, ListOrdered, Quote, BookMarked, LoaderCircle,
 } from "lucide-react";
 import { ImageEditorModal } from "@/components/admin/ImageEditorModal";
+import { focalPosition, type Focal, type RatioName } from "@/lib/media";
 
 const ALLOWED_TAGS = new Set([
   "p", "h2", "h3", "strong", "em", "ul", "ol", "li", "blockquote",
@@ -197,10 +198,18 @@ export function ImagePickerDialog({
         <UploadButton onUploaded={(path) => onPick(path)} setBusy={setBusy} />
         <div className="mt-3 grid grid-cols-3 gap-2">
           {list.map((m) => (
-            <button key={m.path} className="admin-surface p-1 text-left" onClick={() => onPick(m.path)}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={m.path} alt={m.alt} className="h-20 w-full object-cover" />
-              <span className="block truncate text-[0.6rem] opacity-60">{m.path.split("/").pop()}</span>
+            <button key={m.path} className="admin-surface p-2 text-left" onClick={() => onPick(m.path)}>
+              {/* Thumbnails show the whole picture; framing is decided by the focal point. */}
+              <div className="aspect-square w-full overflow-hidden bg-ink">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={m.path}
+                  alt={m.alt}
+                  className="h-full w-full object-contain"
+                  style={{ objectPosition: focalPosition() }}
+                />
+              </div>
+              <span className="mt-1 block truncate text-[0.6rem] opacity-60">{m.path.split("/").pop()}</span>
             </button>
           ))}
         </div>
@@ -213,22 +222,41 @@ export function UploadButton({
   onUploaded,
   setBusy,
   label = "Upload image",
-  aspectPreset = "16:9",
+  ratio = "hero",
+  aspectPreset,
 }: {
   onUploaded: (path: string, alt?: string) => void;
   setBusy: (b: boolean) => void;
   label?: string;
+  ratio?: RatioName;
+  /** @deprecated use `ratio`; kept so older call sites keep working. */
   aspectPreset?: "16:9" | "1:1" | "4:5" | "free";
 }) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [editorOpen, setEditorOpen] = useState(false);
 
-  async function directUpload(file: File, customAlt?: string) {
+  const legacyRatio: RatioName =
+    aspectPreset === "1:1" ? "thumb" : aspectPreset === "4:5" ? "portrait" : ratio;
+
+  async function directUpload(
+    file: File,
+    customAlt?: string,
+    focal?: Focal,
+    size?: { w: number; h: number },
+  ) {
     setBusy(true);
     const compressed = await compressImage(file);
     const form = new FormData();
     form.append("file", compressed);
     form.append("alt", customAlt || file.name.replace(/\.[^.]+$/, ""));
+    if (focal) {
+      form.append("focalX", String(focal.x));
+      form.append("focalY", String(focal.y));
+    }
+    if (size?.w && size?.h) {
+      form.append("width", String(size.w));
+      form.append("height", String(size.h));
+    }
     const res = await fetch("/api/admin/media", { method: "POST", body: form });
     const data = await res.json();
     setBusy(false);
@@ -258,13 +286,13 @@ export function UploadButton({
         <ImageEditorModal
           file={selectedFile}
           isOpen={editorOpen}
-          aspectPreset={aspectPreset}
+          ratio={legacyRatio}
           onClose={() => {
             setEditorOpen(false);
             setSelectedFile(null);
           }}
-          onApplyAndUpload={async (editedFile, alt) => {
-            await directUpload(editedFile, alt);
+          onApplyAndUpload={async (editedFile, alt, focalPoint, dims) => {
+            await directUpload(editedFile, alt, focalPoint, dims);
             setEditorOpen(false);
             setSelectedFile(null);
           }}

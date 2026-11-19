@@ -116,11 +116,12 @@ export default async function TeachingPage({ params }: Params) {
         </div>
 
         {teaching.image && (
-          <div className="relative aspect-[16/9] w-full overflow-hidden bg-ink md:aspect-[24/9]">
+          <div className="relative aspect-[3/2] w-full overflow-hidden border-y border-ink/10 bg-ink-2 md:aspect-[21/9]">
             <Cover
               src={teaching.image}
               alt={teaching.imageAlt}
               sizes="100vw"
+              fit="contain"
               priority
             />
           </div>

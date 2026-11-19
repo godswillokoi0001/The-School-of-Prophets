@@ -1,151 +1,94 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Check, Crop, FlipHorizontal, LoaderCircle, RotateCcw, RotateCw, X, ZoomIn } from "lucide-react";
+import { Check, FlipHorizontal, LoaderCircle, RotateCcw, RotateCw, X } from "lucide-react";
+import { DEFAULT_FOCAL, MIN_WIDTH, RATIOS, sizeHint, type Focal, type RatioName } from "@/lib/media";
 
-export type ImageEditorModalProps = {
-  file: File | null;
-  isOpen: boolean;
-  onClose: () => void;
-  onApplyAndUpload: (editedFile: File, altText: string) => Promise<void>;
-  aspectPreset?: "16:9" | "1:1" | "4:5" | "free";
-};
-
+/**
+ * Upload editor. Deliberately **non-destructive**: the file is uploaded as it
+ * was taken (only rotation and mirroring are applied, because a sideways phone
+ * photo is a mistake, not a crop). Framing happens on the site through the
+ * focal point, so the original can be reframed later without re-uploading.
+ */
 export function ImageEditorModal({
   file,
   isOpen,
   onClose,
   onApplyAndUpload,
-  aspectPreset = "16:9",
-}: ImageEditorModalProps) {
-  const [rotation, setRotation] = useState<number>(0);
-  const [flipped, setFlipped] = useState<boolean>(false);
-  const [zoom, setZoom] = useState<number>(1);
-  const [aspect, setAspect] = useState<"16:9" | "1:1" | "4:5" | "free">(aspectPreset);
-  const [altText, setAltText] = useState<string>("");
-  const [busy, setBusy] = useState<boolean>(false);
+  ratio = "hero",
+}: {
+  file: File | null;
+  isOpen: boolean;
+  onClose: () => void;
+  onApplyAndUpload: (file: File, altText: string, focal: Focal, size: { w: number; h: number }) => Promise<void>;
+  ratio?: RatioName;
+}) {
+  const [rotation, setRotation] = useState(0);
+  const [flipped, setFlipped] = useState(false);
+  const [altText, setAltText] = useState("");
+  const [focal, setFocal] = useState<Focal>(DEFAULT_FOCAL);
+  const [busy, setBusy] = useState(false);
+  const [size, setSize] = useState<{ w: number; h: number }>({ w: 0, h: 0 });
+  const [preview, setPreview] = useState<string>("");
 
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const imageObjRef = useRef<HTMLImageElement | null>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!file) return;
-    const url = URL.createObjectURL(file);
     setAltText(file.name.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " "));
     setRotation(0);
     setFlipped(false);
-    setZoom(1);
-
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.src = url;
-    img.onload = () => {
-      imageObjRef.current = img;
-      redraw(img, 0, false, 1, aspect);
+    setFocal(DEFAULT_FOCAL);
+    const url = URL.createObjectURL(file);
+    setPreview(url);
+    const probe = new Image();
+    probe.onload = () => {
+      const rotated = rotation % 180 !== 0;
+      setSize(rotated ? { w: probe.naturalHeight, h: probe.naturalWidth } : { w: probe.naturalWidth, h: probe.naturalHeight });
     };
-
-    return () => {
-      URL.revokeObjectURL(url);
-    };
+    probe.src = url;
+    return () => URL.revokeObjectURL(url);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [file]);
 
-  function redraw(
-    img: HTMLImageElement | null,
-    rot: number,
-    flip: boolean,
-    scale: number,
-    currentAspect: "16:9" | "1:1" | "4:5" | "free"
-  ) {
-    const canvas = canvasRef.current;
-    if (!canvas || !img) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    // Calculate target aspect ratio dimensions
-    let targetW = img.width;
-    let targetH = img.height;
-
-    if (currentAspect === "16:9") {
-      targetH = Math.round(targetW * (9 / 16));
-    } else if (currentAspect === "1:1") {
-      const minSide = Math.min(targetW, targetH);
-      targetW = minSide;
-      targetH = minSide;
-    } else if (currentAspect === "4:5") {
-      targetH = Math.round(targetW * (5 / 4));
-    }
-
-    // Set max reasonable bounds for performance
-    const maxBound = 1600;
-    if (targetW > maxBound || targetH > maxBound) {
-      const boundRatio = Math.min(maxBound / targetW, maxBound / targetH);
-      targetW = Math.round(targetW * boundRatio);
-      targetH = Math.round(targetH * boundRatio);
-    }
-
-    const isRotated90or270 = rot % 180 !== 0;
-    canvas.width = isRotated90or270 ? targetH : targetW;
-    canvas.height = isRotated90or270 ? targetW : targetH;
-
-    ctx.save();
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    ctx.translate(canvas.width / 2, canvas.height / 2);
-    ctx.rotate((rot * Math.PI) / 180);
-    if (flip) ctx.scale(-1, 1);
-    ctx.scale(scale, scale);
-
-    // Draw centered
-    ctx.drawImage(img, -targetW / 2, -targetH / 2, targetW, targetH);
-    ctx.restore();
-  }
-
-  function handleRotate(delta: number) {
-    const next = (rotation + delta + 360) % 360;
-    setRotation(next);
-    redraw(imageObjRef.current, next, flipped, zoom, aspect);
-  }
-
-  function handleFlip() {
-    const next = !flipped;
-    setFlipped(next);
-    redraw(imageObjRef.current, rotation, next, zoom, aspect);
-  }
-
-  function handleZoom(newZoom: number) {
-    setZoom(newZoom);
-    redraw(imageObjRef.current, rotation, flipped, newZoom, aspect);
-  }
-
-  function handleAspectChange(nextAspect: "16:9" | "1:1" | "4:5" | "free") {
-    setAspect(nextAspect);
-    redraw(imageObjRef.current, rotation, flipped, zoom, nextAspect);
+  function handleStageClick(e: React.MouseEvent<HTMLDivElement>) {
+    const box = stageRef.current?.getBoundingClientRect();
+    if (!box) return;
+    const x = Math.round(((e.clientX - box.left) / box.width) * 100);
+    const y = Math.round(((e.clientY - box.top) / box.height) * 100);
+    setFocal({ x: Math.min(100, Math.max(0, x)), y: Math.min(100, Math.max(0, y)) });
   }
 
   async function handleApply() {
-    const canvas = canvasRef.current;
-    if (!canvas || !file) return;
-
+    if (!file) return;
     setBusy(true);
     try {
-      const blob = await new Promise<Blob | null>((resolve) =>
-        canvas.toBlob(resolve, "image/webp", 0.9)
-      );
-
-      if (!blob) {
-        throw new Error("Canvas export failed");
+      let upload: File = file;
+      if (rotation !== 0 || flipped) {
+        // Rotation only — no cropping, full frame preserved.
+        const bitmap = await createImageBitmap(file);
+        const swap = rotation % 180 !== 0;
+        const canvas = document.createElement("canvas");
+        canvas.width = swap ? bitmap.height : bitmap.width;
+        canvas.height = swap ? bitmap.width : bitmap.height;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.translate(canvas.width / 2, canvas.height / 2);
+          ctx.rotate((rotation * Math.PI) / 180);
+          if (flipped) ctx.scale(-1, 1);
+          ctx.drawImage(bitmap, -bitmap.width / 2, -bitmap.height / 2);
+          const blob = await new Promise<Blob | null>((resolve) =>
+            canvas.toBlob(resolve, "image/webp", 0.92),
+          );
+          if (blob) {
+            upload = new File([blob], file.name.replace(/\.[^.]+$/, "") + ".webp", { type: "image/webp" });
+          }
+        }
       }
 
-      const editedFile = new File(
-        [blob],
-        file.name.replace(/\.[^.]+$/, "") + "-edited.webp",
-        { type: "image/webp" }
-      );
-
-      await onApplyAndUpload(editedFile, altText.trim() || file.name);
+      await onApplyAndUpload(upload, altText.trim() || file.name, focal, size);
       onClose();
-    } catch (err) {
-      console.error("[ImageEditorModal] Error exporting edited image:", err);
     } finally {
       setBusy(false);
     }
@@ -153,141 +96,179 @@ export function ImageEditorModal({
 
   if (!isOpen || !file) return null;
 
+  const tooSmall = size.w > 0 && size.w < MIN_WIDTH[ratio];
+  const extremeRatio = size.w > 0 && size.h > 0 && (size.w / size.h > 3 || size.h / size.w > 3);
+
+  const frames: { label: string; ratio: RatioName; width: string }[] = [
+    { label: "Phone", ratio: "portrait", width: "w-14" },
+    { label: "Tablet", ratio: "card", width: "w-20" },
+    { label: "Desktop", ratio: "hero", width: "w-28" },
+  ];
+
   return (
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-[220] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-150"
+      aria-labelledby="image-editor-title"
+      className="fixed inset-0 z-[220] flex items-end justify-center bg-ink/90 p-0 sm:items-center sm:p-4"
     >
-      <div
-        className="relative w-full max-w-2xl rounded-xl border border-gold/40 bg-[#161411] p-5 sm:p-6 text-parchment shadow-2xl flex flex-col max-h-[92vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button
-          onClick={onClose}
-          disabled={busy}
-          className="absolute right-4 top-4 text-parchment/40 hover:text-parchment transition-colors"
-          aria-label="Close image editor"
-        >
-          <X size={18} />
-        </button>
-
-        <h3 className="font-display text-xl font-semibold text-gold flex items-center gap-2">
-          <Crop size={18} /> Edit Image Before Upload
-        </h3>
-        <p className="mt-1 text-xs opacity-60">
-          Rotate, crop, and describe your image for optimal presentation on the website.
-        </p>
-
-        {/* Canvas Preview Area */}
-        <div className="mt-4 flex items-center justify-center bg-black/50 border border-parchment/10 rounded-lg p-3 overflow-hidden min-h-[240px] max-h-[360px]">
-          <canvas
-            ref={canvasRef}
-            className="max-h-[320px] max-w-full object-contain rounded shadow"
-          />
-        </div>
-
-        {/* Toolbar Controls */}
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 p-3 bg-black/30 rounded-lg border border-parchment/5">
-          {/* Rotation & Flip */}
-          <div className="flex items-center gap-1.5">
-            <button
-              type="button"
-              className="admin-btn admin-btn-ghost !py-1 !px-2.5 text-xs"
-              onClick={() => handleRotate(-90)}
-              title="Rotate 90° Left"
-            >
-              <RotateCcw size={14} className="mr-1" /> -90°
-            </button>
-            <button
-              type="button"
-              className="admin-btn admin-btn-ghost !py-1 !px-2.5 text-xs"
-              onClick={() => handleRotate(90)}
-              title="Rotate 90° Right"
-            >
-              <RotateCw size={14} className="mr-1" /> +90°
-            </button>
-            <button
-              type="button"
-              className="admin-btn admin-btn-ghost !py-1 !px-2.5 text-xs"
-              onClick={handleFlip}
-              title="Flip Horizontally"
-            >
-              <FlipHorizontal size={14} className="mr-1" /> Flip
-            </button>
+      <div className="max-h-[94vh] w-full max-w-3xl overflow-y-auto border border-parchment/15 bg-ink-2 text-parchment">
+        <div className="flex items-start justify-between border-b border-parchment/12 px-4 py-3">
+          <div>
+            <h2 id="image-editor-title" className="font-display text-lg leading-tight">
+              Add an image
+            </h2>
+            <p className="mt-0.5 text-[0.7rem] opacity-60">
+              The full picture is kept. Set where the focus should sit, and the site
+              frames it for each screen.
+            </p>
           </div>
-
-          {/* Aspect Ratios */}
-          <div className="flex items-center gap-1 text-xs">
-            <span className="opacity-60 mr-1">Crop:</span>
-            {(["16:9", "1:1", "4:5", "free"] as const).map((asp) => (
-              <button
-                key={asp}
-                type="button"
-                onClick={() => handleAspectChange(asp)}
-                className={`px-2 py-1 rounded text-[0.7rem] font-semibold border ${
-                  aspect === asp
-                    ? "bg-gold text-ink border-gold"
-                    : "border-parchment/20 text-parchment/70 hover:bg-parchment/10"
-                }`}
-              >
-                {asp === "free" ? "Original" : asp}
-              </button>
-            ))}
-          </div>
-
-          {/* Zoom Slider */}
-          <div className="flex items-center gap-2 text-xs w-full sm:w-auto">
-            <ZoomIn size={13} className="opacity-60" />
-            <span className="opacity-60">Zoom:</span>
-            <input
-              type="range"
-              min="0.8"
-              max="2"
-              step="0.05"
-              value={zoom}
-              onChange={(e) => handleZoom(parseFloat(e.target.value))}
-              className="accent-gold h-1.5 w-24 bg-parchment/20 rounded cursor-pointer"
-            />
-          </div>
-        </div>
-
-        {/* Alt Text Input */}
-        <div className="mt-4">
-          <label className="admin-label">Image Description (Alt Text for Screen Readers & SEO)</label>
-          <input
-            className="admin-input"
-            value={altText}
-            placeholder="e.g. Prophet Lawrence preaching during Convergence Night"
-            onChange={(e) => setAltText(e.target.value)}
-          />
-        </div>
-
-        {/* Action Buttons */}
-        <div className="mt-6 flex justify-end gap-2.5 border-t border-parchment/10 pt-4">
           <button
-            type="button"
-            disabled={busy}
             onClick={onClose}
-            className="admin-btn admin-btn-ghost text-xs"
+            disabled={busy}
+            className="-mr-2 flex h-11 w-11 shrink-0 items-center justify-center text-parchment/50 hover:text-parchment"
+            aria-label="Close"
           >
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="grid gap-4 p-4 sm:grid-cols-[1fr_15rem]">
+          <div>
+            <div
+              ref={stageRef}
+              onClick={handleStageClick}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") e.preventDefault();
+              }}
+              aria-label="Click the picture to set the focus point"
+              className="relative max-h-[46vh] cursor-crosshair overflow-hidden border border-parchment/15 bg-ink"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                ref={imageRef}
+                src={preview}
+                alt=""
+                draggable={false}
+                style={{
+                  transform: `rotate(${rotation}deg) scaleX(${flipped ? -1 : 1})`,
+                  maxHeight: "46vh",
+                }}
+                className="mx-auto block select-none"
+              />
+              <span
+                aria-hidden="true"
+                style={{ left: `${focal.x}%`, top: `${focal.y}%` }}
+                className="pointer-events-none absolute h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-gold-soft shadow-[0_0_0_1px_rgba(0,0,0,0.6)]"
+              />
+            </div>
+
+            <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+              <div className="flex gap-1">
+                <button
+                  type="button"
+                  className="admin-btn admin-btn-ghost !px-2"
+                  onClick={() => setRotation((r) => (r - 90 + 360) % 360)}
+                  title="Rotate left"
+                >
+                  <RotateCcw size={13} />
+                </button>
+                <button
+                  type="button"
+                  className="admin-btn admin-btn-ghost !px-2"
+                  onClick={() => setRotation((r) => (r + 90) % 360)}
+                  title="Rotate right"
+                >
+                  <RotateCw size={13} />
+                </button>
+                <button
+                  type="button"
+                  className="admin-btn admin-btn-ghost !px-2"
+                  onClick={() => setFlipped((f) => !f)}
+                  title="Mirror"
+                >
+                  <FlipHorizontal size={13} />
+                </button>
+              </div>
+              <p className="text-[0.65rem] tabular-nums opacity-55">
+                {size.w > 0 ? `${size.w} × ${size.h} px` : "Reading size…"}
+              </p>
+            </div>
+
+            <p className="mt-1 text-[0.65rem] leading-relaxed opacity-50">
+              Focus: {focal.x}% across, {focal.y}% down. Click the picture to move it.
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            <label className="block">
+              <span className="admin-label">Describe the image</span>
+              <textarea
+                className="admin-textarea !min-h-20 text-xs"
+                value={altText}
+                onChange={(e) => setAltText(e.target.value)}
+                placeholder="e.g. Prophet Lawrence preaching at Convergence Night"
+              />
+              <span className="admin-hint">
+                For people using screen readers. Say what is happening in the picture.
+              </span>
+            </label>
+
+            <div>
+              <p className="admin-label">How it will be framed</p>
+              <div className="flex items-end gap-2">
+                {frames.map((f) => (
+                  <figure key={f.label} className="text-center">
+                    <div
+                      style={{ aspectRatio: RATIOS[f.ratio] }}
+                      className={`${f.width} overflow-hidden border border-parchment/15 bg-ink`}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={preview}
+                        alt=""
+                        className="h-full w-full object-cover"
+                        style={{ objectPosition: `${focal.x}% ${focal.y}%` }}
+                      />
+                    </div>
+                    <figcaption className="mt-1 text-[0.6rem] uppercase tracking-[0.1em] opacity-50">
+                      {f.label}
+                    </figcaption>
+                  </figure>
+                ))}
+              </div>
+            </div>
+
+            <p className="text-[0.65rem] leading-relaxed opacity-55">{sizeHint(ratio, "Main use")}</p>
+            {tooSmall && (
+              <p className="border border-[#e6b566]/40 bg-[#e6b566]/10 px-2 py-1.5 text-[0.65rem] text-[#e6b566]">
+                This file is narrower than {MIN_WIDTH[ratio]}px, so it will look soft
+                on large screens. A larger original is better if you have one.
+              </p>
+            )}
+            {extremeRatio && (
+              <p className="border border-parchment/20 bg-parchment/5 px-2 py-1.5 text-[0.65rem] opacity-70">
+                Very wide or very tall pictures are hard to frame. Check the previews
+                above before saving.
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-2 border-t border-parchment/12 px-4 py-3">
+          <button type="button" disabled={busy} onClick={onClose} className="admin-btn admin-btn-ghost">
             Cancel
           </button>
-          <button
-            type="button"
-            disabled={busy}
-            onClick={handleApply}
-            className="admin-btn admin-btn-gold text-xs"
-          >
+          <button type="button" disabled={busy} onClick={handleApply} className="admin-btn admin-btn-gold">
             {busy ? (
               <>
-                <LoaderCircle size={14} className="animate-spin mr-1" />
-                <span>Processing & Uploading…</span>
+                <LoaderCircle size={14} className="animate-spin" /> Uploading…
               </>
             ) : (
               <>
-                <Check size={14} className="mr-1" />
-                <span>Save & Upload Image</span>
+                <Check size={14} /> Use this image
               </>
             )}
           </button>

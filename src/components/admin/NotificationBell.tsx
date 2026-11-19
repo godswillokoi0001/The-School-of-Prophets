@@ -166,7 +166,7 @@ export function NotificationBell({
             setUnread(0);
           }
         }}
-        className="relative p-2 text-parchment/70 hover:text-parchment transition-colors rounded-lg hover:bg-parchment/5"
+        className="relative p-2 text-parchment/70 transition-colors hover:bg-parchment/5 hover:text-parchment"
         aria-label={`Notifications, ${unread} unread`}
         title="Notifications"
       >
@@ -179,7 +179,7 @@ export function NotificationBell({
       </button>
 
       {open && (
-        <div className="absolute right-0 top-12 z-50 w-84 sm:w-96 rounded-xl border border-gold/30 bg-[#161411] shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+        <div className="absolute right-0 top-12 z-50 w-84 overflow-hidden border border-gold/30 bg-ink-2 sm:w-96">
           {/* Header */}
           <div className="flex items-center justify-between border-b border-parchment/10 bg-black/40 px-4 py-3">
             <div className="flex items-center gap-2">

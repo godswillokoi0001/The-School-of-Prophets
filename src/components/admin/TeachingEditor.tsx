@@ -183,7 +183,7 @@ export function TeachingEditor({
       />
 
       <AdminBack href="/admin/teachings" label="Back to teachings" />
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+      <div className="sticky top-12 z-10 mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-parchment/12 bg-ink pb-2 pt-1">
         <h1 className="font-display text-2xl">
           {form.id ? "Edit teaching" : "New teaching"}
         </h1>
@@ -202,7 +202,7 @@ export function TeachingEditor({
 
       {preview ? (
         /* FAITHFUL PUBLIC SITE TEACHING PREVIEW */
-        <article className="admin-surface p-6 sm:p-8 rounded-xl border border-gold/40 shadow-2xl space-y-6">
+        <article className="admin-surface space-y-6 border border-gold/40 p-6 sm:p-8">
           <div className="flex flex-wrap items-center gap-2 text-xs text-gold">
             <span>Teachings</span>
             <span>/</span>
@@ -238,7 +238,7 @@ export function TeachingEditor({
           </div>
 
           {/* Hero Cover Image Preview */}
-          <div className="relative aspect-[16/9] w-full overflow-hidden rounded-lg bg-ink/80 border border-parchment/10">
+          <div className="relative aspect-[16/9] w-full overflow-hidden border border-parchment/10 bg-ink">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={form.cover_url || "/images/bible-bedside.webp"}
@@ -249,14 +249,14 @@ export function TeachingEditor({
 
           {/* Summary Box */}
           {form.summary && (
-            <div className="rounded-lg bg-black/40 border-l-4 border-gold p-4 text-sm leading-relaxed text-parchment/90">
+            <div className="border-l-2 border-gold bg-parchment/5 p-4 text-sm leading-relaxed text-parchment/90">
               {form.summary}
             </div>
           )}
 
           {/* Video Player Preview */}
           {youtubeId ? (
-            <div className="relative aspect-video w-full rounded-lg overflow-hidden border border-parchment/10 shadow-lg">
+            <div className="relative aspect-video w-full overflow-hidden border border-parchment/10">
               <iframe
                 src={`https://www.youtube-nocookie.com/embed/${youtubeId}`}
                 title={form.title}
@@ -266,7 +266,7 @@ export function TeachingEditor({
               />
             </div>
           ) : form.youtube_url ? (
-            <div className="p-4 rounded-lg bg-black/30 border border-parchment/10 text-xs">
+            <div className="border border-parchment/10 p-4 text-xs">
               <span className="text-gold font-semibold">YouTube URL: </span>
               <a href={form.youtube_url} target="_blank" rel="noreferrer" className="underline">{form.youtube_url}</a>
             </div>
@@ -274,7 +274,7 @@ export function TeachingEditor({
 
           {/* Audio Player Preview */}
           {form.audio_url && (
-            <div className="p-4 rounded-lg bg-gold/10 border border-gold/30">
+            <div className="border border-gold/30 p-4">
               <div className="flex items-center gap-2 mb-2 text-xs font-semibold text-gold uppercase tracking-wider">
                 <Headphones size={15} />
                 <span>Audio Recording Preview</span>
@@ -435,8 +435,8 @@ export function TeachingEditor({
                   Library
                 </button>
                 <UploadButton
-                  label="Upload & Crop"
-                  aspectPreset="16:9"
+                  label="Upload image"
+                  ratio="wide"
                   setBusy={setBusy}
                   onUploaded={(path, alt) => {
                     set("cover_url", path);
@@ -445,9 +445,9 @@ export function TeachingEditor({
                 />
               </div>
               {form.cover_url && (
-                <div className="relative mt-2 h-32 w-full rounded overflow-hidden border border-parchment/20">
+                <div className="relative mt-2 aspect-[16/10] w-full overflow-hidden border border-parchment/20 bg-ink">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={form.cover_url} alt={form.cover_alt} className="h-full w-full object-cover" />
+                  <img src={form.cover_url} alt={form.cover_alt} className="h-full w-full object-contain" />
                 </div>
               )}
               <div>
@@ -475,16 +475,16 @@ export function TeachingEditor({
                   Library
                 </button>
                 <UploadButton
-                  label="Upload & Crop"
-                  aspectPreset="16:9"
+                  label="Upload image"
+                  ratio="og"
                   setBusy={setBusy}
                   onUploaded={(path) => set("share_image_url", path)}
                 />
               </div>
               {form.share_image_url && (
-                <div className="relative mt-2 h-32 w-full rounded overflow-hidden border border-parchment/20">
+                <div className="relative mt-2 aspect-[1.91/1] w-full overflow-hidden border border-parchment/20 bg-ink">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={form.share_image_url} alt="Social share image preview" className="h-full w-full object-cover" />
+                  <img src={form.share_image_url} alt="Social share preview" className="h-full w-full object-contain" />
                 </div>
               )}
               <p className="admin-hint">Optional: Specify a different custom graphic for Twitter/WhatsApp previews.</p>
@@ -502,7 +502,7 @@ export function TeachingEditor({
                 placeholder="https://youtube.com/watch?v=… or https://youtu.be/…"
               />
               {youtubeId && (
-                <p className="admin-hint text-emerald-400">✓ Video ID detected: {youtubeId}</p>
+                <p className="admin-hint status-ok">Video found: {youtubeId}</p>
               )}
             </div>
 

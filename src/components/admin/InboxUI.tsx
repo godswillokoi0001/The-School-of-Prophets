@@ -145,12 +145,12 @@ export function InboxList({ rows, role }: { rows: SubmissionRow[]; role: Role })
       )}
 
       <div className="admin-surface overflow-x-auto">
-        <table className="admin-table min-w-[640px]">
+        <table data-stack className="admin-table min-w-[640px]">
           <thead>
             <tr>
               <th className="w-8"></th>
               <th>From</th>
-              <th>Type</th>
+              <th>Form</th>
               <th>Status</th>
               <th>Received</th>
             </tr>
@@ -158,7 +158,7 @@ export function InboxList({ rows, role }: { rows: SubmissionRow[]; role: Role })
           <tbody>
             {rows.slice((page - 1) * pageSize, page * pageSize).map((r) => (
               <tr key={r.id} className="admin-row hover:bg-parchment/5">
-                <td>
+                <td data-label="">
                   <input
                     type="checkbox"
                     checked={selected.has(r.id)}
@@ -167,30 +167,30 @@ export function InboxList({ rows, role }: { rows: SubmissionRow[]; role: Role })
                     className="accent-gold"
                   />
                 </td>
-                <td>
+                <td data-label="From">
                   <Link href={`/admin/inbox/${r.id}`} className="hover:text-gold-soft">
                     <span className="font-semibold">{r.name || "No name"}</span>
                     <span className="block text-[0.7rem] opacity-60">{r.email}</span>
                   </Link>
                 </td>
-                <td>
-                  <span className="admin-badge">{typeLabels[r.type] ?? r.type}</span>
-                  {r.private && <span className="ml-1 admin-badge admin-badge-bad">Private</span>}
+                <td data-label="Form">
+                  <span>{typeLabels[r.type] ?? r.type}</span>
+                  {r.private && <span className="ml-2 text-[0.7rem] opacity-60">Private</span>}
                   {r.type === "beta_feedback" &&
                     (Number(r.payload.overall_rating ?? 0) <= 2 ||
                       (Array.isArray(r.payload.issues) &&
                         (r.payload.issues as { severity?: string }[]).some(
                           (issue) => issue?.severity === "Something broke",
                         ))) && (
-                      <span className="ml-1 admin-badge admin-badge-bad">Priority</span>
+                      <span className="ml-2 text-[0.7rem] font-semibold text-[#ff9d8f]">Needs attention</span>
                     )}
                 </td>
-                <td>
-                  <span className={`admin-badge ${statusStyles[r.status] ?? ""}`}>
+                <td data-label="Status">
+                  <span className={`status ${statusStyles[r.status] ?? "status-neutral"}`}>
                     {r.status === "wont_fix" ? "Won't fix" : r.status.replace("_", " ")}
                   </span>
                 </td>
-                <td className="whitespace-nowrap text-[0.7rem] opacity-70">
+                <td data-label="Received" className="whitespace-nowrap text-[0.7rem] opacity-70">
                   {new Date(r.created_at).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
                 </td>
               </tr>
@@ -230,6 +230,53 @@ export function InboxList({ rows, role }: { rows: SubmissionRow[]; role: Role })
       />
     </div>
   );
+}
+
+/** Plain-language names for stored fields. Nothing is hidden; it is only labelled. */
+const fieldLabels: Record<string, string> = {
+  name: "Name", fullName: "Full name", email: "Email", whatsapp: "WhatsApp",
+  phone: "Phone", location: "Location", church: "Church", calling: "Calling",
+  subject: "Subject", message: "Message", notes: "Notes", prayerRequest: "Prayer request",
+  body: "Testimony", testimony: "Testimony", guests: "Guests",
+  consent: "Permission to publish", availability: "Availability", slot: "Chosen time",
+  overall_rating: "Overall rating", area_ratings: "Ratings by section", liked: "What worked well",
+  take: "Their impression", issues: "Problems reported", improve: "What to improve",
+  wish: "One wish", story: "Their story", story_consent: "Story permission",
+  display_name: "Name to publish", may_contact: "May we contact them",
+  wants_call: "Would like a call", device: "Device they used", meta: "Technical details",
+  screenshots: "Screenshots", severity: "Severity", page: "Where",
+};
+
+function fieldLabel(key: string): string {
+  return fieldLabels[key] ?? key.replace(/([A-Z])/g, " $1").replace(/_/g, " ").toLowerCase();
+}
+
+function fieldValue(key: string, value: unknown): string {
+  if (value === null || value === undefined || value === "") return "—";
+  if (typeof value === "boolean") return value ? "Yes" : "No";
+  if (typeof value === "number") {
+    return key.includes("rating") ? `${value} of 5` : String(value);
+  }
+  if (Array.isArray(value)) {
+    if (value.length === 0) return "—";
+    return value
+      .map((item) => {
+        if (item && typeof item === "object") {
+          return Object.entries(item as Record<string, unknown>)
+            .map(([k, v]) => `${fieldLabel(k)}: ${String(v)}`)
+            .join(", ");
+        }
+        return String(item);
+      })
+      .join("\n");
+  }
+  if (typeof value === "object") {
+    return Object.entries(value as Record<string, unknown>)
+      .map(([k, v]) => `${fieldLabel(k)}: ${String(v)}`)
+      .join(" · ");
+  }
+  if (/^https?:\/\//.test(String(value))) return String(value);
+  return String(value);
 }
 
 export function SubmissionDetail({
@@ -301,9 +348,9 @@ export function SubmissionDetail({
           {Object.entries(row.payload)
             .filter(([k]) => !["prayedFor", "prayedNotes", "featured"].includes(k))
             .map(([k, v]) => (
-              <div key={k} className="admin-row pb-1">
-                <dt className="admin-label">{k.replace(/([A-Z])/g, " $1").toLowerCase()}</dt>
-                <dd className="break-words">{String(v)}</dd>
+              <div key={k} className="border-b border-parchment/10 pb-1">
+                <dt className="admin-label">{fieldLabel(k)}</dt>
+                <dd className="whitespace-pre-line break-words">{fieldValue(k, v)}</dd>
               </div>
             ))}
         </dl>

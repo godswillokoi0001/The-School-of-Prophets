@@ -339,7 +339,7 @@ export function BetaDashboard({
             </div>
           </div>
 
-          <table className="admin-table mt-3">
+          <table data-stack className="admin-table mt-3">
             <thead>
               <tr>
                 <th>Page</th>
@@ -353,32 +353,32 @@ export function BetaDashboard({
             <tbody>
               {filteredIssues.map((issue, index) => (
                 <tr key={`${issue.submissionId}-${index}`} className="admin-row">
-                  <td className="whitespace-nowrap">{issue.page}</td>
-                  <td>
+                  <td data-label="Where" className="whitespace-nowrap">{issue.page}</td>
+                  <td data-label="Severity">
                     <span
-                      className={`admin-badge ${
+                      className={`status ${
                         issue.severity === "Something broke"
-                          ? "admin-badge-bad"
+                          ? "status-bad"
                           : issue.severity === "Hard to use"
-                            ? "admin-badge-warn"
-                            : ""
+                            ? "status-warn"
+                            : "status-neutral"
                       }`}
                     >
                       {issue.severity}
                     </span>
                   </td>
-                  <td className="max-w-xs">
+                  <td data-label="What happened" className="max-w-xs">
                     <span className="line-clamp-2">{issue.description}</span>
                   </td>
-                  <td className="whitespace-nowrap">
+                  <td data-label="Reporter" className="whitespace-nowrap">
                     <Link href={`/admin/inbox/${issue.submissionId}`} className="admin-link">
                       {issue.name || "A tester"}
                     </Link>
                   </td>
-                  <td>
-                    <span className="admin-badge">{issue.status.replace("_", " ")}</span>
+                  <td data-label="Status">
+                    <span className="status status-neutral">{issue.status.replace("_", " ")}</span>
                   </td>
-                  <td>
+                  <td data-cell="full">
                     <button
                       className="admin-btn admin-btn-ghost !py-1"
                       disabled={busy}
