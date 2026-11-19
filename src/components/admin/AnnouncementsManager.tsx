@@ -107,7 +107,9 @@ export function AnnouncementsManager({
         return;
       }
 
-      setItems(res.items);
+      if (res.items) {
+        setItems(res.items);
+      }
       setFeedback({
         type: "success",
         text: editingId
@@ -130,7 +132,9 @@ export function AnnouncementsManager({
         setFeedback({ type: "error", text: res.error || "Failed to update status." });
         return;
       }
-      setItems(res.items);
+      if (res.items) {
+        setItems(res.items);
+      }
       setFeedback({
         type: "success",
         text: newActiveState
@@ -148,7 +152,9 @@ export function AnnouncementsManager({
         setFeedback({ type: "error", text: res.error || "Failed to duplicate." });
         return;
       }
-      setItems(res.items);
+      if (res.items) {
+        setItems(res.items);
+      }
       setFeedback({ type: "success", text: "Announcement duplicated as a draft." });
     });
   }
@@ -164,7 +170,9 @@ export function AnnouncementsManager({
         setFeedback({ type: "error", text: res.error || "Failed to delete announcement." });
         return;
       }
-      setItems(res.items);
+      if (res.items) {
+        setItems(res.items);
+      }
       setFeedback({ type: "success", text: "Announcement deleted permanently." });
       if (editingId === targetId) resetForm();
     });

@@ -5,6 +5,10 @@ import { getAdminClient } from "@/lib/supabase/server";
 import { requireStaff, audit } from "@/lib/admin";
 import type { AnnouncementItem } from "@/lib/data";
 
+export type AnnouncementActionResult =
+  | { ok: true; items: AnnouncementItem[]; itemId?: string; cloneId?: string }
+  | { ok: false; error: string };
+
 export async function saveAnnouncementAction(input: {
   id?: string;
   headline: string;
@@ -13,7 +17,7 @@ export async function saveAnnouncementAction(input: {
   buttonText?: string;
   variant: "default" | "emergency";
   active: boolean;
-}) {
+}): Promise<AnnouncementActionResult> {
   const staff = await requireStaff("admin");
   const svc = await getAdminClient();
   if (!svc) return { ok: false, error: "Database not connected" };
@@ -149,7 +153,10 @@ export async function saveAnnouncementAction(input: {
   return { ok: true, itemId, items };
 }
 
-export async function toggleAnnouncementActiveAction(id: string, active: boolean) {
+export async function toggleAnnouncementActiveAction(
+  id: string,
+  active: boolean
+): Promise<AnnouncementActionResult> {
   const staff = await requireStaff("admin");
   const svc = await getAdminClient();
   if (!svc) return { ok: false, error: "Database not connected" };
@@ -239,7 +246,9 @@ export async function toggleAnnouncementActiveAction(id: string, active: boolean
   return { ok: true, items };
 }
 
-export async function deleteAnnouncementAction(id: string) {
+export async function deleteAnnouncementAction(
+  id: string
+): Promise<AnnouncementActionResult> {
   const staff = await requireStaff("admin");
   const svc = await getAdminClient();
   if (!svc) return { ok: false, error: "Database not connected" };
@@ -303,7 +312,9 @@ export async function deleteAnnouncementAction(id: string) {
   return { ok: true, items };
 }
 
-export async function duplicateAnnouncementAction(id: string) {
+export async function duplicateAnnouncementAction(
+  id: string
+): Promise<AnnouncementActionResult> {
   const staff = await requireStaff("admin");
   const svc = await getAdminClient();
   if (!svc) return { ok: false, error: "Database not connected" };
