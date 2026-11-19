@@ -7,17 +7,16 @@
    ------------------------------------------------------------------ */
 
 @theme {
-  --color-ink: #0f172a;
-  --color-ink-2: #151f33;
-  --color-ink-3: #24314a;
-  --color-parchment: #f6f7f9;
-  --color-paper: #ffffff;
-  --color-parchment-2: #eef1f5;
-  --color-line: #e3e7ee;
-  --color-gold: #b07a2a;
-  --color-gold-soft: #e6c887;
-  --color-ember: #8a5a1f;
-  --color-quiet: #5b6577;
+  --color-ink: #101317;
+  --color-ink-2: #171b21;
+  --color-ink-3: #222933;
+  --color-parchment: #f2ece0;
+  --color-paper: #faf6ee;
+  --color-parchment-2: #e5dcca;
+  --color-gold: #b0803a;
+  --color-gold-soft: #d9be86;
+  --color-ember: #8a4a22;
+  --color-quiet: #57524a;
 
   /* Semantic status only. Never decoration. */
   --color-ok: #2f7d46;
@@ -27,23 +26,21 @@
   --color-warn-dark: #e6b566;
   --color-danger-dark: #ff9d8f;
 
-  --font-display: var(--font-manrope), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: var(--font-fraunces), "Iowan Old Style", Georgia, serif;
   --font-sans: var(--font-manrope), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 
-  --text-display: clamp(2.5rem, 5.2vw, 4.5rem);
-  --text-display--line-height: 1.02;
-  --text-display--letter-spacing: -0.035em;
-  --text-hero: clamp(2rem, 3.4vw, 3rem);
-  --text-hero--line-height: 1.06;
-  --text-hero--letter-spacing: -0.03em;
-  --text-title: clamp(1.35rem, 1.8vw, 1.7rem);
-  --text-title--line-height: 1.2;
-  --text-lead: clamp(1.05rem, 1.3vw, 1.2rem);
+  --text-display: clamp(2.75rem, 6vw, 5.5rem);
+  --text-display--line-height: 0.95;
+  --text-display--letter-spacing: -0.028em;
+  --text-hero: clamp(2.1rem, 4vw, 3.1rem);
+  --text-hero--line-height: 1.02;
+  --text-hero--letter-spacing: -0.024em;
+  --text-title: clamp(1.5rem, 2.2vw, 2rem);
+  --text-title--line-height: 1.1;
+  --text-lead: clamp(1.0625rem, 1.4vw, 1.25rem);
   --text-lead--line-height: 1.55;
 
-  --radius-sm: 8px;
-  --radius: 12px;
-  --radius-lg: 16px;
+  --radius-none: 0px;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -54,6 +51,10 @@
     --dur-3: 560ms;
     --ease: cubic-bezier(0.22, 1, 0.36, 1);
     --rule: color-mix(in srgb, currentColor 18%, transparent);
+  }
+
+  * {
+    border-radius: 0;
   }
 
   html {
@@ -67,11 +68,22 @@
     background-color: var(--color-parchment);
     color: var(--color-ink);
     font-family: var(--font-sans);
-    font-size: 1rem;
-    line-height: 1.6;
+    font-size: 1.0625rem;
+    line-height: 1.65;
     font-feature-settings: "ss01", "kern";
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
+  }
+
+  /* Paper grain: one tiny SVG, parchment surfaces only, barely there. */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 
   ::selection {
@@ -89,8 +101,8 @@
   h3,
   h4 {
     font-family: var(--font-display);
-    font-weight: 650;
-    letter-spacing: -0.03em;
+    font-weight: 500;
+    letter-spacing: -0.02em;
     text-wrap: balance;
   }
 
@@ -120,18 +132,12 @@
 
 @utility wrap {
   width: 100%;
-  max-width: 78rem;
+  max-width: 75rem;
   margin-inline: auto;
   padding-inline: 1.25rem;
 }
 
 @media (min-width: 768px) {
-  .wrap {
-    padding-inline: 2rem;
-  }
-}
-
-@media (min-width: 1280px) {
   .wrap {
     padding-inline: 2.5rem;
   }
@@ -155,18 +161,18 @@
 }
 
 @utility section-space {
-  padding-block: 4.5rem;
+  padding-block: 5rem;
 }
 
 @media (min-width: 768px) {
   .section-space {
-    padding-block: 6rem;
+    padding-block: 8rem;
   }
 }
 
 @media (min-width: 1280px) {
   .section-space {
-    padding-block: 7rem;
+    padding-block: 10rem;
   }
 }
 
@@ -298,48 +304,24 @@
 }
 
 @layer components {
-  .card {
-    background: var(--color-paper);
-    border: 1px solid var(--color-line);
-    border-radius: var(--radius-lg);
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
-  }
-
-  .card-hover {
-    transition: box-shadow var(--dur-2) var(--ease), border-color var(--dur-2) var(--ease),
-      transform var(--dur-2) var(--ease);
-  }
-  .card-hover:hover {
-    border-color: color-mix(in srgb, var(--color-ink) 18%, transparent);
-    box-shadow: 0 8px 24px -12px rgba(15, 23, 42, 0.22);
-  }
-
-  .eyebrow-card {
-    background: var(--color-paper);
-    border: 1px solid var(--color-line);
-    border-radius: var(--radius-lg);
-  }
-
   .btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
+    gap: 0.6rem;
     min-height: 2.75rem;
-    padding: 0.65rem 1.15rem;
+    padding: 0.8rem 1.3rem;
     font-family: var(--font-sans);
-    font-size: 0.875rem;
+    font-size: 0.6875rem;
     font-weight: 600;
-    letter-spacing: -0.005em;
-    text-transform: none;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
     line-height: 1;
     border: 1px solid transparent;
-    border-radius: var(--radius);
     transition:
       background-color var(--dur-1) var(--ease),
       border-color var(--dur-1) var(--ease),
-      color var(--dur-1) var(--ease),
-      box-shadow var(--dur-1) var(--ease);
+      color var(--dur-1) var(--ease);
     cursor: pointer;
   }
 
@@ -350,20 +332,18 @@
   .btn-gold {
     background: var(--color-gold);
     color: var(--color-ink);
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
   }
   .btn-gold:hover {
-    background: color-mix(in srgb, var(--color-gold) 86%, white);
+    background: var(--color-gold-soft);
   }
 
   .btn-outline {
-    border-color: var(--color-line);
-    background: var(--color-paper);
+    border-color: color-mix(in srgb, currentColor 32%, transparent);
     color: inherit;
   }
   .btn-outline:hover {
-    border-color: color-mix(in srgb, var(--color-ink) 28%, transparent);
-    background: var(--color-parchment);
+    border-color: currentColor;
+    background: color-mix(in srgb, currentColor 6%, transparent);
   }
 
   .btn-ink {
@@ -387,27 +367,26 @@
 
   .field > span,
   .field > label {
-    font-size: 0.75rem;
+    font-size: 0.6875rem;
     font-weight: 600;
-    letter-spacing: 0;
-    text-transform: none;
-    opacity: 0.8;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.7;
   }
 
   .input,
   .textarea,
   .select {
     width: 100%;
-    min-height: 2.875rem;
+    min-height: 2.75rem;
     background: var(--color-paper);
-    border: 1px solid var(--color-line);
-    border-radius: var(--radius);
-    padding: 0.7rem 0.85rem;
+    border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+    padding: 0.75rem 0.9rem;
     font: inherit;
-    font-size: 0.9375rem;
+    font-size: 0.95rem;
     color: inherit;
     appearance: none;
-    transition: border-color var(--dur-1) var(--ease), box-shadow var(--dur-1) var(--ease);
+    transition: border-color var(--dur-1) var(--ease);
   }
 
   .input::placeholder,
@@ -418,15 +397,15 @@
   .input:hover,
   .textarea:hover,
   .select:hover {
-    border-color: color-mix(in srgb, var(--color-ink) 26%, transparent);
+    border-color: color-mix(in srgb, currentColor 40%, transparent);
   }
 
   .input:focus,
   .textarea:focus,
   .select:focus {
-    outline: none;
+    outline: 2px solid var(--color-gold);
+    outline-offset: 0;
     border-color: transparent;
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-gold) 38%, transparent);
   }
 
   .textarea {
@@ -502,7 +481,6 @@
 .admin-surface {
   background: var(--color-ink-2);
   border: 1px solid color-mix(in srgb, var(--color-parchment) 10%, transparent);
-  border-radius: var(--radius-lg);
 }
 
 .admin-light .admin-surface {
@@ -524,7 +502,6 @@
   width: 100%;
   background: color-mix(in srgb, var(--color-ink) 60%, transparent);
   border: 1px solid color-mix(in srgb, var(--color-parchment) 18%, transparent);
-  border-radius: var(--radius-sm);
   padding: 0.55rem 0.7rem;
   font: inherit;
   font-size: 0.875rem;
@@ -575,12 +552,11 @@
   gap: 0.45rem;
   min-height: 2.25rem;
   padding: 0.55rem 0.9rem;
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0;
-  text-transform: none;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   border: 1px solid transparent;
-  border-radius: var(--radius-sm);
   cursor: pointer;
   transition: background-color var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease),
     color var(--dur-1) var(--ease);
@@ -624,7 +600,6 @@
   align-items: center;
   gap: 0.3rem;
   padding: 0.15rem 0.5rem;
-  border-radius: 999px;
   font-size: 0.625rem;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -681,24 +656,20 @@
   display: flex;
   align-items: center;
   gap: 0.7rem;
-  padding: 0.5rem 0.7rem;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  color: color-mix(in srgb, var(--color-parchment) 66%, transparent);
-  border-left: 0;
-  border-radius: var(--radius-sm);
+  padding: 0.55rem 0.9rem;
+  font-size: 0.85rem;
+  color: color-mix(in srgb, var(--color-parchment) 72%, transparent);
+  border-left: 2px solid transparent;
   transition: background-color 120ms ease, color 120ms ease;
 }
 .nav-item:hover {
-  background: color-mix(in srgb, var(--color-parchment) 7%, transparent);
+  background: color-mix(in srgb, var(--color-parchment) 6%, transparent);
   color: var(--color-parchment);
 }
 .nav-item[data-active="true"] {
-  color: var(--color-parchment);
-  background: color-mix(in srgb, var(--color-parchment) 11%, transparent);
-}
-.nav-item[data-active="true"] svg {
   color: var(--color-gold-soft);
+  border-left-color: var(--color-gold);
+  background: color-mix(in srgb, var(--color-parchment) 5%, transparent);
 }
 
 .prose-editor h2 { font-size: 1.15rem; margin: 0.9em 0 0.3em; font-family: var(--font-display); }

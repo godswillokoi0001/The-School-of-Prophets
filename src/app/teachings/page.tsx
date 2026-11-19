@@ -71,7 +71,7 @@ export default async function TeachingsPage() {
               <p className="label text-ember">Teaching of the week</p>
               <p className="text-xs text-quiet">{formatDate(featured.date)}</p>
             </div>
-            <div className="mt-6 grid gap-4 md:grid-cols-2">
+            <div className="mt-4">
               <TeachingCard
                 teaching={featured}
                 featured
@@ -102,7 +102,7 @@ export default async function TeachingsPage() {
               Everything
             </Link>
           </div>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <ul>
             {seriesList.map((series) => {
               const count = teachings.filter((t) => t.series === series.slug).length;
               const cover =
@@ -122,52 +122,55 @@ export default async function TeachingsPage() {
                 .map((word) => word[0])
                 .join("");
               return (
-                <Link
-                  key={series.slug}
-                  href={`/teachings/series/${series.slug}`}
-                  className="card card-hover group overflow-hidden"
-                >
-                  {cover ? (
-                    <span className="relative block aspect-[16/9] overflow-hidden border-b border-line bg-ink-2">
-                      <Cover
-                        src={cover}
-                        alt={coverAlt}
-                        sizes="(max-width: 640px) 100vw, 33vw"
-                        fit="contain"
-                        className="media-zoom"
-                      />
-                    </span>
-                  ) : (
-                    <span className="relative flex aspect-[16/9] items-center justify-center overflow-hidden border-b border-line bg-parchment-2">
-                      <span className="text-3xl font-semibold leading-none text-ember/70">
-                        {initials}
+                <li key={series.slug} className="border-b border-ink/12">
+                  <Link
+                    href={`/teachings/series/${series.slug}`}
+                    className="group grid gap-3 py-5 sm:grid-cols-[9rem_1fr_auto] sm:items-center sm:gap-6"
+                  >
+                    {cover ? (
+                      <span className="relative block aspect-[4/3] overflow-hidden border border-ink/10 bg-ink-2">
+                        <Cover
+                          src={cover}
+                          alt={coverAlt}
+                          sizes="(max-width: 640px) 100vw, 144px"
+                          fit="contain"
+                          className="media-zoom"
+                        />
                       </span>
-                      <span className="label absolute bottom-3 left-4 text-quiet">Series</span>
-                    </span>
-                  )}
-                  <span className="block p-5">
-                    <span className="block text-lg font-semibold leading-snug tracking-tight group-hover:text-ember">
-                      {series.title}
-                    </span>
-                    {blurb && (
-                      <span className="mt-1.5 line-clamp-2 block text-sm leading-relaxed text-quiet">
-                        {blurb}
+                    ) : (
+                      <span className="relative flex aspect-[4/3] items-center justify-center overflow-hidden border border-ink/15 bg-parchment-2">
+                        <span className="font-display text-3xl leading-none text-ember/70">
+                          {initials}
+                        </span>
+                        <span className="label absolute bottom-2 left-2 text-quiet">
+                          Series
+                        </span>
                       </span>
                     )}
-                    <span className="mt-4 flex items-center justify-between border-t border-line pt-3 text-xs text-quiet">
+                    <span>
+                      <span className="font-display text-2xl group-hover:text-ember">
+                        {series.title}
+                      </span>
+                      {blurb && (
+                        <span className="mt-1 block max-w-[62ch] text-sm text-quiet">
+                          {blurb}
+                        </span>
+                      )}
+                    </span>
+                    <span className="flex items-center gap-3 text-xs uppercase tracking-[0.12em] text-quiet">
                       {count === 0
                         ? "In preparation"
                         : `${count} ${count === 1 ? "part" : "parts"}`}
                       <ArrowRight
                         aria-hidden="true"
-                        className="h-4 w-4 transition-transform group-hover:translate-x-1"
+                        className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1"
                       />
                     </span>
-                  </span>
-                </Link>
+                  </Link>
+                </li>
               );
             })}
-          </div>
+          </ul>
         </div>
       </section>
     </>

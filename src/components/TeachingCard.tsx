@@ -6,7 +6,8 @@ import { Cover } from "@/components/Cover";
 import type { Focal } from "@/lib/media";
 
 /**
- * A catalogue entry as a card: cover, series and date, title, one sentence.
+ * A catalogue entry, set like a publisher's list: cover, date, series, title,
+ * one sentence. Hairline rules, no card chrome.
  */
 export function TeachingCard({
   teaching,
@@ -21,22 +22,30 @@ export function TeachingCard({
 }) {
   if (!teaching) return null;
 
+  const hasImage = Boolean(teaching.image);
+  const metaSpan = hasImage ? "md:col-span-2" : "md:col-span-3";
+  const bodySpan = hasImage
+    ? featured
+      ? "md:col-span-5"
+      : "md:col-span-6"
+    : "md:col-span-8";
+
   return (
     <article
-      className={`card card-hover group overflow-hidden ${
-        featured ? "md:col-span-2" : ""
+      className={`group grid gap-4 border-t border-ink/15 py-6 md:grid-cols-12 md:gap-6 ${
+        featured ? "md:py-8" : ""
       }`}
     >
-      {teaching.image && (
+      {hasImage && (
         <div
-          className={`relative overflow-hidden border-b border-line bg-ink-2 ${
-            featured ? "aspect-[16/9]" : "aspect-[16/10]"
+          className={`relative overflow-hidden border border-ink/10 bg-ink-2 ${
+            featured ? "aspect-[3/2] md:col-span-4" : "aspect-[3/2] md:col-span-3"
           }`}
         >
           <Cover
             src={teaching.image}
             alt={teaching.imageAlt}
-            sizes={featured ? "(max-width: 768px) 100vw, 60vw" : "(max-width: 768px) 100vw, 40vw"}
+            sizes={featured ? "(max-width: 768px) 100vw, 33vw" : "(max-width: 768px) 100vw, 25vw"}
             focal={focal}
             fit="contain"
             className="media-zoom"
@@ -44,40 +53,40 @@ export function TeachingCard({
         </div>
       )}
 
-      <div className={featured ? "p-6 sm:p-8" : "p-5"}>
-        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-quiet">
-          <span className="font-medium text-ember">{seriesTitle ?? "Teaching"}</span>
-          <span aria-hidden="true">·</span>
-          <span className="tabular-nums">{formatDate(teaching.date)}</span>
-        </div>
+      <div className={metaSpan}>
+        <p className="label text-ember">{seriesTitle ?? "Teaching"}</p>
+        <p className="mt-1.5 text-xs tabular-nums text-quiet">
+          {formatDate(teaching.date)}
+        </p>
+      </div>
 
+      <div className={bodySpan}>
         <h3
-          className={`mt-2 font-semibold leading-snug tracking-tight ${
-            featured ? "text-2xl sm:text-3xl" : "text-lg"
+          className={`font-display leading-[1.08] ${
+            featured ? "text-3xl sm:text-4xl" : "text-2xl"
           }`}
         >
-          <Link href={`/teachings/${teaching.slug}`} className="transition-colors group-hover:text-ember">
+          <Link href={`/teachings/${teaching.slug}`} className="link-quiet">
             {teaching.title}
           </Link>
         </h3>
-
-        <p className={`mt-2 text-sm leading-relaxed text-quiet ${featured ? "measure" : "line-clamp-3"}`}>
+        <p className={`mt-2 text-sm leading-relaxed text-quiet ${featured ? "measure" : ""}`}>
           {teaching.summary}
         </p>
+        <p className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-quiet">
+          <span className="uppercase tracking-[0.1em] text-ember">{teaching.scripture}</span>
+          {teaching.isSample && <span className="uppercase tracking-[0.1em]">Sample entry</span>}
+        </p>
+      </div>
 
-        <div className="mt-4 flex items-center justify-between gap-3 border-t border-line pt-3 text-xs">
-          <span className="flex flex-wrap items-center gap-2 text-quiet">
-            <span className="font-medium text-ember">{teaching.scripture}</span>
-            {teaching.isSample && <span className="text-quiet/70">· Sample entry</span>}
-          </span>
-          <Link
-            href={`/teachings/${teaching.slug}`}
-            aria-label={`Read ${teaching.title}`}
-            className="text-ink transition-colors group-hover:text-ember"
-          >
-            <ArrowRight aria-hidden="true" className="h-4 w-4" />
-          </Link>
-        </div>
+      <div className="md:col-span-1 md:text-right">
+        <Link
+          href={`/teachings/${teaching.slug}`}
+          aria-label={`Read ${teaching.title}`}
+          className="inline-flex text-quiet transition-colors group-hover:text-ember"
+        >
+          <ArrowRight aria-hidden="true" className="h-4 w-4" />
+        </Link>
       </div>
     </article>
   );

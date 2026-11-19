@@ -2,9 +2,7 @@
 
 Branch `polish-final`, cut from `main` at `0637b10`. Nothing is pushed.
 Commits: `2d81a93` (inventory and audit), `0637b10` (image system and first
-dashboard pass), `72e6913` (public fixes and dashboard cleanup), `1c65b77`
-(docs), `55b7b64` (blurred plates), `7193ddd` (screenshots), and the redesign
-commit that follows this report.
+dashboard pass), `72e6913` (this pass: public fixes and dashboard cleanup).
 
 `git diff --stat cdb38cd...polish-final` — **110 files changed, 2,483
 insertions, 1,372 deletions**. 73 of the 124 UI files under `src/app` and
@@ -18,17 +16,15 @@ insertions, 1,372 deletions**. 73 of the 124 UI files under `src/app` and
 - One token set in `globals.css`: ink, parchment, paper, gold, quiet, ember and
   semantic `ok` / `warn` / `danger` (each with a dark-surface variant). The
   public site and dashboard read the same file.
-- One radius family (8/12/16px), one easing curve, three durations, a 4/8/12/16/24/32/48/64
+- One radius (zero), one easing curve, three durations, a 4/8/12/16/24/32/48/64
   spacing rhythm through the `wrap` / `section-space` utilities, fluid display,
   hero, title and lead sizes, and a gold `:focus-visible` ring on both surfaces.
-- Typography: one sans family (Manrope) for headings and text, semibold
-  headings with tight tracking, small-caps labels, tabular numerals on times
-  and counts, curly quotes throughout. Fraunces was retired in the redesign.
-- Removed from the UI: the announcement-scale pill row, raw Tailwind
-  red/rose/emerald/amber, hover scale-ups and one-off type sizes. Status is a
-  dot plus a word. The redesign then reintroduced one deliberate radius family,
-  card surfaces and a single soft shadow for cards; those are tokens, not
-  one-offs.
+- Typography: Fraunces for headings (`text-wrap: balance`, tight tracking),
+  Manrope for UI and body, small-caps labels, tabular numerals on times and
+  counts, curly quotes throughout.
+- Removed from the UI: pill badges, rounded cards, shadows, pulsing dots, the
+  announcement-scale pill row, raw Tailwind red/rose/emerald/amber, hover
+  scale-ups and one-off type sizes. Status is now a dot plus a word.
 - The seal and crest are the only logo; `favicon.ico`, `icon.png` and
   `apple-icon.png` are generated from the crest.
 
@@ -150,66 +146,3 @@ Screenshots:
 4. Finish the remaining 53 reviewed files where a deeper rewrite is warranted
    (notably `BookingFlow`, `CalendarView`, `AvailabilityEditor`, `EventEditor`
    and the settings sub-pages).
-
-## Second pass: modern product UI (19 November 2026)
-
-The owner was not satisfied with the editorial direction and chose a modern
-product UI, on both the site and the dashboard. The palette and crest stayed;
-the layout language changed.
-
-### Foundation
-
-- Tokens: navy ink, white paper, `#f6f7f9` page, a hairline `line` colour,
-  gold and bronze accents, quiet grey text. Paper grain, the serif display
-  face and the global zero-radius reset were removed.
-- Radius family: 8px controls in the admin, 12px controls and nav, 16px cards,
-  pill badges. One shadow token for cards.
-- Type: Manrope everywhere. Display `clamp(2.5rem, 5.2vw, 4.5rem)` at 650
-  weight, tighter tracking; body back to 16px for a product rhythm.
-- Section rhythm shortened (72/96/112px), `wrap` widened to 78rem.
-
-### Rebuilt screens
-
-- **Header** — white sticky bar, crest and two-line wordmark, grouped menus in
-  a white dropdown card, outline Give and solid ink Join buttons, full-screen
-  mobile menu with expandable groups and both calls to action.
-- **Home** — hero with a badge, large sans headline, two CTAs and a stats row;
-  the next gathering as a card; a full-width photo band with a scripture
-  overlay; three system cards; the timetable inside a card; a featured
-  teaching card with three compact links; a dark training card; the Prophet
-  portrait card; a join card with socials.
-- **Teachings** — featured teaching as a two-column card, catalogue entries as
-  a two-column card grid, series as a three-column card grid with typographic
-  plates for art-less series.
-- **Events** — upcoming gatherings as image cards with a date badge and
-  actions, past gatherings as a three-column record grid.
-- **Contact** — compact header with a founded card, community links as rows,
-  a bordered counsel card, the form in a white card and a card-free FAQ list.
-- **Training** — the enrolment banner now uses the light variant and card
-  styling instead of a dark block on a light page.
-- **Page header** — the wide contained plate became a portrait card beside the
-  title, which suits the ministry's portrait artwork and removes most bars.
-- **Footer** — light colophon: newsletter card, brand and watchword, pages,
-  week, community, credit bar.
-- **Dashboard** — the dark shell was refined rather than inverted: rounded nav
-  items with a filled active state, gold icons, a taller top bar, rounded
-  badges and avatar, wider main padding. Its tokens follow the new palette.
-
-### Checks
-
-- `npx tsc --noEmit` exit 0; `npx eslint src` 0 errors, 7 warnings (all
-  pre-existing); `npm run build` exit 0.
-- Screenshots at 320, 375 and 1440 on `/`, `/about`, `/gatherings`,
-  `/teachings`, `/teachings/series/word-of-knowledge`, `/events`, `/training`,
-  `/testimonies`, `/prayer`, `/give`, `/contact`, `/book`, `/newsletter`,
-  `/beta-testers` and the admin sign-in.
-- No horizontal overflow at 320, 375 or 1440; no console errors beyond the
-  intentional 404 for the nav group's `/community` link.
-- The dashboard behind the sign-in is still untested: no staff credentials.
-
-### Limitations
-
-- Screens reachable only after sign-in were not opened; the shell and shared
-  admin styles changed, and the login screen was checked.
-- `docs/qa/after` now shows the redesign for the eight rebuilt public screens;
-  the other captures in it predate this pass.

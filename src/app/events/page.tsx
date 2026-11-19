@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CalendarDays, MapPin, Clock, ArrowRight } from "lucide-react";
+import { CalendarDays, MapPin, Clock } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { EventCalendarLink } from "@/components/EventCalendarLink";
 import { Cover } from "@/components/Cover";
@@ -34,138 +34,135 @@ export default async function EventsPage() {
         label="Events"
         title="Gatherings that mark the season."
         lead="Beyond the weekly rhythm, the fellowship marks anniversaries, conferences and watch nights together. Every 18 September is our anniversary."
+        image="/images/shofar-sky.webp"
+        imageAlt="A shofar lifted against an evening sky"
       />
 
-      <section className="wrap py-12 md:py-16">
-        <div className="flex flex-wrap items-baseline justify-between gap-3">
-          <div>
-            <p className="label text-ember">On the calendar</p>
-            <h2 className="mt-2 text-2xl font-semibold tracking-tight">Upcoming</h2>
-          </div>
-          <p className="flex items-center gap-2 text-xs text-quiet">
-            <CalendarDays aria-hidden="true" className="h-4 w-4 text-gold" />
+      <section className="wrap py-14 md:py-20">
+        <div className="flex items-baseline justify-between gap-6">
+          <h2 className="font-display text-3xl">Upcoming</h2>
+          <p className="label flex items-center gap-2 text-quiet">
+            <CalendarDays aria-hidden="true" className="h-3.5 w-3.5" />
             Dates in WAT
           </p>
         </div>
 
         {upcoming.length === 0 ? (
-          <div className="card mt-6 p-6">
-            <p className="measure text-sm leading-relaxed text-quiet">
-              Nothing is on the calendar beyond the weekly gatherings just now. The
-              next anniversary is 18 September.
-            </p>
-            <Link href="/gatherings" className="btn btn-outline mt-4">
-              See the weekly timetable
-            </Link>
-          </div>
+          <p className="measure mt-6 text-sm text-quiet">
+            Nothing is on the calendar beyond the weekly gatherings just now. The
+            next anniversary is 18 September.
+          </p>
         ) : (
-          <div className="mt-6 grid gap-4 md:grid-cols-2">
+          <ul className="mt-6">
             {upcoming.map((event) => (
-              <article key={event.slug} className="card card-hover group overflow-hidden">
+              <li
+                key={event.slug}
+                className="grid gap-5 border-t border-ink/15 py-8 md:grid-cols-[7rem_12rem_1fr] md:items-start md:gap-8"
+              >
+                <p className="label text-ember">{formatDate(event.date)}</p>
+
                 {event.image && (
-                  <div className="relative aspect-[16/9] overflow-hidden border-b border-line bg-ink-2">
-                    <Cover
-                      src={event.image}
-                      alt={event.imageAlt}
-                      sizes="(max-width: 768px) 100vw, 50vw"
-                      fit="cover"
-                      focal={focalFor(mediaMeta, event.image)}
-                      className="media-zoom"
-                    />
-                    <span className="absolute left-3 top-3 rounded-full bg-paper/95 px-2.5 py-1 text-[0.7rem] font-semibold text-ink">
-                      {formatDate(event.date)}
-                    </span>
-                  </div>
+                                      <div className="relative aspect-[4/3] overflow-hidden border border-ink/10 bg-ink-2 md:aspect-[4/5]">
+                      <Cover
+                        src={event.image}
+                        alt={event.imageAlt}
+                        sizes="(max-width: 768px) 100vw, 192px"
+                        fit="cover"
+                        focal={focalFor(mediaMeta, event.image)}
+                      />
+                    </div>
                 )}
 
-                <div className="p-5 sm:p-6">
-                  <h3 className="text-xl font-semibold leading-snug tracking-tight">
-                    <Link
-                      href={`/events/${event.slug}`}
-                      className="transition-colors group-hover:text-ember"
-                    >
-                      {event.title}
-                    </Link>
-                  </h3>
-
-                  <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-quiet">
-                    {event.time && (
+                <div>
+                  <div>
+                    <h3 className="font-display text-2xl leading-tight">
+                      <Link href={`/events/${event.slug}`} className="hover:text-ember">
+                        {event.title}
+                      </Link>
+                    </h3>
+                    <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-quiet">
+                      {event.time && (
+                        <span className="flex items-center gap-1.5">
+                          <Clock aria-hidden="true" className="h-3.5 w-3.5 text-ember" />
+                          {event.time} WAT
+                        </span>
+                      )}
                       <span className="flex items-center gap-1.5">
-                        <Clock aria-hidden="true" className="h-3.5 w-3.5 text-gold" />
-                        {event.time} WAT
+                        <MapPin aria-hidden="true" className="h-3.5 w-3.5 text-ember" />
+                        {event.location}
+                        {event.needsConfirmation ? " · awaiting confirmation" : ""}
                       </span>
-                    )}
-                    <span className="flex items-center gap-1.5">
-                      <MapPin aria-hidden="true" className="h-3.5 w-3.5 text-gold" />
-                      {event.location}
-                      {event.needsConfirmation ? " · awaiting confirmation" : ""}
-                    </span>
-                  </p>
-
-                  <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-quiet">
-                    {event.summary}
-                  </p>
-
-                  <div className="mt-5 flex flex-wrap items-center justify-between gap-4 border-t border-line pt-4">
-                    <EventCalendarLink event={event} />
-                    <Link
-                      href={`/events/${event.slug}`}
-                      className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink hover:text-ember"
-                    >
-                      Details
-                      <ArrowRight aria-hidden="true" className="h-4 w-4" />
-                    </Link>
+                    </p>
+                    <p className="mt-3 max-w-[58ch] text-sm leading-relaxed text-quiet">
+                      {event.summary}
+                    </p>
+                    <div className="mt-4 flex flex-wrap items-center gap-5">
+                      <EventCalendarLink event={event} />
+                      <Link
+                        href={`/events/${event.slug}`}
+                        className="link-quiet text-sm font-semibold text-ink"
+                      >
+                        Details and registration
+                      </Link>
+                      {event.isSample && (
+                        <span className="label text-quiet">Sample entry</span>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </article>
+              </li>
             ))}
-          </div>
+          </ul>
         )}
       </section>
 
-      <section className="border-t border-line bg-paper">
-        <div className="wrap py-12 md:py-16">
-          <p className="label text-quiet">The record</p>
-          <h2 className="mt-2 text-2xl font-semibold tracking-tight">Past gatherings</h2>
-
+      <section className="border-t border-ink/15 bg-parchment-2/70">
+        <div className="wrap py-14 md:py-20">
+          <h2 className="font-display text-3xl">Past gatherings</h2>
           {past.length === 0 && (
-            <p className="measure mt-4 text-sm leading-relaxed text-quiet">
-              Recaps from earlier gatherings are being gathered. The weekly timetable
-              is the reliable record until they are published.
+            <p className="measure mt-6 text-sm text-quiet">
+              Recaps from earlier gatherings are being gathered. The weekly
+              timetable is the reliable record until they are published.
             </p>
           )}
-
-          <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <ul className="mt-6">
             {past.map((event) => (
-              <article key={event.slug} className="card overflow-hidden">
-                {event.image && (
-                  <div className="relative aspect-[16/10] overflow-hidden border-b border-line bg-ink-2">
-                    <Cover
-                      src={event.image}
-                      alt={event.imageAlt}
-                      sizes="(max-width: 768px) 100vw, 33vw"
-                      fit="cover"
-                      focal={focalFor(mediaMeta, event.image)}
-                    />
-                  </div>
-                )}
-                <div className="p-5">
-                  <p className="text-xs text-quiet">{formatDate(event.date)}</p>
-                  <h3 className="mt-1.5 text-base font-semibold leading-snug tracking-tight">
-                    {event.title}
-                  </h3>
-                  <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-quiet">
-                    {event.summary}
-                  </p>
-                  {event.detail?.[0] && (
-                    <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-quiet/80">
-                      {event.detail[0]}
-                    </p>
+              <li key={event.slug} className="border-t border-ink/15 py-8">
+                <div className="grid gap-5 md:grid-cols-[7rem_12rem_1fr] md:items-start md:gap-8">
+                  <p className="label text-quiet">{formatDate(event.date)}</p>
+
+                  {event.image && (
+                    <div className="relative aspect-[4/3] overflow-hidden border border-ink/10 bg-ink-2 md:aspect-[4/5]">
+                      <Cover
+                        src={event.image}
+                        alt={event.imageAlt}
+                        sizes="(max-width: 768px) 100vw, 192px"
+                        fit="cover"
+                        focal={focalFor(mediaMeta, event.image)}
+                      />
+                    </div>
                   )}
+
+                  <div>
+                    <div>
+                      <h3 className="font-display text-2xl leading-tight">{event.title}</h3>
+                      <p className="mt-2 max-w-[62ch] text-sm leading-relaxed text-ink/80">
+                        {event.summary}
+                      </p>
+                      {event.detail?.map((paragraph) => (
+                        <p
+                          key={paragraph}
+                          className="mt-3 max-w-[62ch] text-sm leading-relaxed text-quiet"
+                        >
+                          {paragraph}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-              </article>
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
       </section>
     </>
