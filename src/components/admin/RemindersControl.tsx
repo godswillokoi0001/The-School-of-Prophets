@@ -173,7 +173,7 @@ export function RemindersControl({
 
       <div className="mt-4 flex items-center justify-between rounded bg-ink/30 px-3.5 py-2.5 text-xs opacity-75">
         <span>
-          <strong>Cron Endpoint:</strong> <code>/api/cron/reminders</code> (Configured in <code>vercel.json</code> to run every 15 mins).
+          <strong>Cron Endpoint:</strong> <code>/api/cron/reminders</code> (Vercel daily check at 06:00 UTC + automated every 15 mins via GitHub Actions).
         </span>
         <span className="text-[11px] text-gold-soft">Auto-deduplicated via notification log</span>
       </div>
