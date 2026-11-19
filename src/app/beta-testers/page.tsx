@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Seal } from "@/components/Seal";
 import { BetaFeedbackForm } from "@/components/BetaFeedbackForm";
 import { BETA_SITE_URL } from "@/lib/beta";
 import { betaAccepting } from "@/lib/beta-server";
@@ -43,8 +42,8 @@ export default async function BetaTestersPage() {
   return (
     <>
       <header className="border-b border-ink/15">
-        <div className="wrap grid gap-10 pb-12 pt-12 md:grid-cols-12 md:pb-16 md:pt-16">
-          <div className="md:col-span-8">
+        <div className="wrap max-w-4xl pb-12 pt-12 md:pb-16 md:pt-16">
+          <div>
             <p className="label text-ember">Beta · Invited testers</p>
             <h1 className="mt-5 font-display text-hero">You&rsquo;re among the first.</h1>
             <div className="measure mt-6 space-y-4 text-lg leading-relaxed text-quiet">
@@ -59,7 +58,7 @@ export default async function BetaTestersPage() {
               </p>
             </div>
 
-            <div className="mt-8 border-t border-ink/15 pt-5">
+            <div className="mt-8 border-t border-ink/15 pt-5 max-w-2xl">
               <p className="text-sm leading-relaxed text-ink/85">
                 Please test the site first:{" "}
                 <a
@@ -91,10 +90,6 @@ export default async function BetaTestersPage() {
                 </ul>
               </details>
             </div>
-          </div>
-
-          <div className="flex items-start justify-start md:col-span-3 md:col-start-10 md:justify-end">
-            <Seal size={200} idKey="beta-header" priority />
           </div>
         </div>
       </header>

@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { LoaderCircle } from "lucide-react";
-import { Seal } from "@/components/Seal";
 import { postForm } from "@/components/forms/Field";
 import {
   AREAS,
@@ -1053,10 +1052,7 @@ function BetaThankYou({
   const shareText = `I tested the new School of Prophets site and shared a review. If you are part of the fellowship, they are still listening: ${BETA_SHARE_URL}`;
   return (
     <div className="flex min-h-[70vh] flex-col items-start justify-center border-t border-ink/20 py-14">
-      <div className="beta-seal">
-        <Seal size={132} idKey="beta-thanks" />
-      </div>
-      <h2 className="mt-8 font-display text-hero">Thank you, {firstName(name)}.</h2>
+      <h2 className="font-display text-hero">Thank you, {firstName(name)}.</h2>
       <span aria-hidden="true" className="beta-rule mt-6 block h-px w-24 bg-gold" />
       <div className="measure mt-6 space-y-3 text-base leading-relaxed text-ink/85">
         <p>Your review is with the team. It will genuinely shape what this site becomes.</p>
