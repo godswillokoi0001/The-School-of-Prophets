@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowser } from "@/lib/supabase/browser";
+import { requestPasswordResetAction } from "./actions";
 import { Crest } from "@/components/Crest";
 import { ArrowLeft, KeyRound, LoaderCircle, LogIn, MailCheck } from "lucide-react";
 
@@ -54,17 +55,13 @@ export default function AdminLogin() {
     setMessage("");
 
     try {
-      const sb = createSupabaseBrowser();
-      const origin = typeof window !== "undefined" ? window.location.origin : "";
-      const { error: resetErr } = await sb.auth.resetPasswordForEmail(email.trim(), {
-        redirectTo: `${origin}/admin/reset-password`,
-      });
-
-      if (resetErr) {
-        setError(resetErr.message);
+      const res = await requestPasswordResetAction(email.trim());
+      if (!res.success) {
+        setError(res.error || "Failed to dispatch reset link");
       } else {
         setMessage(
-          `A password reset link has been dispatched to ${email.trim()}. Please check your email inbox and spam folder.`
+          res.message ||
+            `A password reset link has been dispatched to ${email.trim()}. Please check your email inbox and spam folder.`
         );
       }
     } catch (err: unknown) {

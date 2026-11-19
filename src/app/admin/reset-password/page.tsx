@@ -1,29 +1,69 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createSupabaseBrowser } from "@/lib/supabase/browser";
 import { Crest } from "@/components/Crest";
-import { CheckCircle2, KeyRound, LoaderCircle } from "lucide-react";
+import { AlertCircle, ArrowLeft, CheckCircle2, KeyRound, LoaderCircle } from "lucide-react";
 
 export default function ResetPasswordPage() {
-  const router = useRouter();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [linkInvalid, setLinkInvalid] = useState(false);
+  const [invalidMessage, setInvalidMessage] = useState("");
 
   useEffect(() => {
-    const sb = createSupabaseBrowser();
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      const code = params.get("code");
-      if (code) {
-        sb.auth.exchangeCodeForSession(code).catch((err) => {
-          console.warn("[reset-password] code exchange notice:", err);
-        });
+    if (typeof window === "undefined") return;
+
+    const params = new URLSearchParams(window.location.search);
+    const hashStr = window.location.hash.startsWith("#")
+      ? window.location.hash.slice(1)
+      : window.location.hash;
+    const hashParams = new URLSearchParams(hashStr);
+
+    const errorDesc = params.get("error_description") || hashParams.get("error_description");
+    const errorCode = params.get("error_code") || hashParams.get("error_code");
+
+    if (errorCode || errorDesc) {
+      setLinkInvalid(true);
+      if (errorCode === "otp_expired") {
+        setInvalidMessage("This password reset link has expired or has already been used. Please request a new one.");
+      } else {
+        setInvalidMessage(
+          errorDesc
+            ? decodeURIComponent(errorDesc.replace(/\+/g, " "))
+            : "This password recovery link is invalid or has expired."
+        );
       }
+      return;
+    }
+
+    const sb = createSupabaseBrowser();
+
+    // 1. If PKCE code is present in query parameters
+    const code = params.get("code");
+    if (code) {
+      sb.auth
+        .exchangeCodeForSession(code)
+        .catch((err) => {
+          console.warn("[reset-password] code exchange notice:", err);
+          setLinkInvalid(true);
+          setInvalidMessage("Unable to verify recovery code. It may have expired or already been used.");
+        });
+    }
+
+    // 2. If access_token and refresh_token are in URL hash
+    const accessToken = hashParams.get("access_token");
+    const refreshToken = hashParams.get("refresh_token");
+    if (accessToken && refreshToken) {
+      sb.auth
+        .setSession({ access_token: accessToken, refresh_token: refreshToken })
+        .catch((err) => {
+          console.warn("[reset-password] setSession notice:", err);
+        });
     }
   }, []);
 
@@ -45,7 +85,15 @@ export default function ResetPasswordPage() {
       const sb = createSupabaseBrowser();
       const { error: updateErr } = await sb.auth.updateUser({ password });
       if (updateErr) {
-        setError(updateErr.message);
+        if (
+          updateErr.message.toLowerCase().includes("session") ||
+          updateErr.message.toLowerCase().includes("auth")
+        ) {
+          setError("Your recovery session has expired. Please request a fresh reset link.");
+          setLinkInvalid(true);
+        } else {
+          setError(updateErr.message);
+        }
       } else {
         setSuccess(true);
         setTimeout(() => {
@@ -76,6 +124,23 @@ export default function ResetPasswordPage() {
               <p className="text-xs opacity-70">
                 Your new password has been saved. Redirecting to the admin dashboard…
               </p>
+            </div>
+          ) : linkInvalid ? (
+            <div className="text-center py-4 space-y-4">
+              <AlertCircle size={36} className="text-red-400 mx-auto" />
+              <div>
+                <h2 className="font-display text-base text-parchment">Link Expired or Invalid</h2>
+                <p className="mt-1 text-xs opacity-70 leading-relaxed">
+                  {invalidMessage || "This recovery link is no longer valid. Password recovery links can only be used once and expire after 60 minutes."}
+                </p>
+              </div>
+              <Link
+                href="/admin/login"
+                className="admin-btn admin-btn-gold w-full text-xs flex items-center justify-center gap-1.5"
+              >
+                <ArrowLeft size={13} />
+                Return to Login & Request New Link
+              </Link>
             </div>
           ) : (
             <form onSubmit={handleReset} className="flex flex-col gap-4">
@@ -119,6 +184,13 @@ export default function ResetPasswordPage() {
                 )}
                 Save New Password & Sign In
               </button>
+
+              <Link
+                href="/admin/login"
+                className="admin-btn admin-btn-ghost text-xs mt-1 text-center flex items-center justify-center gap-1.5"
+              >
+                <ArrowLeft size={13} /> Back to Sign In
+              </Link>
             </form>
           )}
         </div>
@@ -126,4 +198,3 @@ export default function ResetPasswordPage() {
     </div>
   );
 }
-

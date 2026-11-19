@@ -7,6 +7,7 @@ import { Footer } from "@/components/Footer";
 import { AnnouncementBar } from "@/components/AnnouncementBar";
 import { NewsletterModal } from "@/components/NewsletterModal";
 import { PublicOnly } from "@/components/PublicOnly";
+import { AuthRecoveryHandler } from "@/components/AuthRecoveryHandler";
 import { site } from "@/config/site";
 
 const fraunces = Fraunces({
@@ -90,6 +91,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-screen antialiased" suppressHydrationWarning>
+        <AuthRecoveryHandler />
         <PublicOnly>
           <a
             href="#main"
