@@ -74,9 +74,9 @@ export function AdminModal({
 
         <div className="flex items-start gap-3">
           <div className="mt-0.5 shrink-0">
-            {activeVariant === "danger" && <AlertCircle className="text-red-400" size={22} />}
-            {activeVariant === "warning" && <AlertTriangle className="text-amber-400" size={22} />}
-            {activeVariant === "success" && <CheckCircle2 className="text-emerald-400" size={22} />}
+            {activeVariant === "danger" && <AlertCircle className="text-danger-dark" size={22} />}
+            {activeVariant === "warning" && <AlertTriangle className="text-warn-dark" size={22} />}
+            {activeVariant === "success" && <CheckCircle2 className="text-ok-dark" size={22} />}
             {activeVariant === "info" && <Info className="text-gold" size={22} />}
           </div>
           <div className="flex-1">

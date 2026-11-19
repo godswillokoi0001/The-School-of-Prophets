@@ -7,9 +7,9 @@ import { formatDate } from "@/lib/time";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Daily Devotions & Teaching Alerts",
+  title: "The letter",
   description:
-    "Everyday morning devotions, immediate email notifications when new teachings are uploaded, and the weekly letter from The School of Prophets.",
+    "A weekday devotion, a note when a new teaching is published, and the weekly letter from The School of Prophets.",
   alternates: { canonical: "/newsletter" },
 };
 
@@ -51,9 +51,9 @@ export default async function NewsletterPage() {
   return (
     <>
       <PageHeader
-        label="Spiritual Lifeline"
-        title="Daily Devotions & Teaching Alerts."
-        lead="Everyday morning devotions to anchor your spirit, instant email alerts whenever any teaching has been uploaded, and our weekly fellowship letters. Subscribing is essential for every disciple."
+        label="The letter"
+        title="A short word each weekday."
+        lead="A devotion of a few minutes in the morning, a note when a new teaching is published, and the weekly letter. No other email is sent."
       />
 
       <section className="bg-ink text-parchment">
@@ -67,7 +67,7 @@ export default async function NewsletterPage() {
           <div className="md:col-span-3">
             <p className="label text-ember">The archive</p>
             <p className="mt-3 text-sm leading-relaxed text-quiet">
-              Every broadcast, devotional, and letter sent to the fellowship, newest first.
+              Every letter sent to the fellowship, newest first.
             </p>
           </div>
 
@@ -91,9 +91,9 @@ export default async function NewsletterPage() {
               </ul>
             ) : (
               <div className="border-y border-ink/15 py-10">
-                <p className="font-display text-2xl">No dispatches have been archived yet.</p>
+                <p className="font-display text-2xl">The archive is empty for now.</p>
                 <p className="measure mt-2 text-sm leading-relaxed text-quiet">
-                  Dispatches go out regularly to active subscribers. Subscribe above to receive everyday devotions and new teaching alerts directly in your inbox.
+                  Letters sent to the fellowship will be kept here, newest first. Subscribe above and the next one will arrive by email.
                 </p>
               </div>
             )}

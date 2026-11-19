@@ -105,7 +105,7 @@ export function SocialLinks({
   }
 
   return (
-    <ul className={`flex flex-wrap gap-3 ${className}`}>
+    <ul className={`grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:gap-3 ${className}`}>
       {resolved.map((link) => {
         const href = link.href || link.fallbackHref;
         const external = href.startsWith("http");
@@ -115,10 +115,10 @@ export function SocialLinks({
             <a
               href={href}
               {...(external ? { rel: "noopener noreferrer", target: "_blank" } : {})}
-              className="btn btn-outline"
+              className="btn btn-outline w-full justify-center sm:w-auto"
             >
-              <Icon aria-hidden="true" className="h-4 w-4" />
-              {link.label}
+              <Icon aria-hidden="true" className="h-4 w-4 shrink-0" />
+              <span className="truncate">{link.label}</span>
             </a>
           </li>
         );

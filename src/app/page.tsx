@@ -84,24 +84,24 @@ export default async function HomePage() {
           fill
           priority
           sizes="100vw"
-          className="object-cover object-[60%_40%]"
+          className="object-cover object-[65%_45%]"
         />
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-r from-ink via-ink/88 to-ink/10"
+          className="absolute inset-0 bg-gradient-to-r from-ink via-ink/80 to-ink/5"
         />
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-t from-ink via-ink/20 to-ink/45"
+          className="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-ink/30"
         />
 
-        <div className="wrap relative grid gap-12 pb-14 pt-16 md:pb-20 md:pt-24 lg:grid-cols-12 lg:items-center lg:gap-10">
+        <div className="wrap relative grid gap-12 pb-16 pt-16 md:min-h-[38rem] md:content-center md:pb-24 md:pt-24 lg:grid-cols-12 lg:items-center lg:gap-10">
           <div className="lg:col-span-7">
             <p className="label text-gold-soft/85">
               Interdenominational · Founded {site.founded}
             </p>
 
-            <h1 className="mt-7 font-display text-display text-parchment">
+            <h1 className="mt-7 max-w-[13ch] font-display text-display text-parchment">
               A community
               <br />
               of the called.

@@ -4,10 +4,8 @@ import { useState, useTransition } from "react";
 import {
   ArrowDown,
   ArrowUp,
-  CalendarDays,
   CalendarX,
   CheckCircle2,
-  Clock,
   LoaderCircle,
   PlusCircle,
   Save,
@@ -62,7 +60,7 @@ export function ScheduleEditor({
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [exBusy, setExBusy] = useState(false);
-  const [pending, startTransition] = useTransition();
+  const [pending] = useTransition();
 
   // In-app modal state
   const [modalConfig, setModalConfig] = useState<{
@@ -114,18 +112,18 @@ export function ScheduleEditor({
   function requestSave() {
     setModalConfig({
       isOpen: true,
-      title: "Publish Schedule Changes",
+      title: "Publish Changes",
       description:
-        "Are you ready to publish these weekly sessions? Changes will be immediately reflected on the Weekly Gatherings page, Homepage, and calendar feeds.",
+        "This replaces the timetable on the site, the homepage and the calendar feeds.",
       variant: "info",
-      confirmLabel: "Publish Now",
+      confirmLabel: "Publish",
       onConfirm: async () => {
         setModalConfig((m) => ({ ...m, isOpen: false }));
         setBusy(true);
         const res = await saveSessions(rows);
         setBusy(false);
         if (res.ok) {
-          setMessage("Saved and published live to the website.");
+          setMessage("Published.");
           setTimeout(() => setMessage(""), 4000);
         } else {
           setModalConfig({
@@ -148,7 +146,7 @@ export function ScheduleEditor({
       title: "Delete Gathering Session",
       description: `Are you sure you want to delete "${row.title || "this session"}"? It will be removed for all visitors on the website.`,
       variant: "danger",
-      confirmLabel: "Delete Session",
+      confirmLabel: "Delete gathering",
       onConfirm: async () => {
         setModalConfig((m) => ({ ...m, isOpen: false }));
         if (row.id) {
@@ -189,7 +187,7 @@ export function ScheduleEditor({
         ...prev,
       ]);
       setExNote("");
-      setMessage("Exception notice published live to the website.");
+      setMessage("Notice published.");
       setTimeout(() => setMessage(""), 4000);
     } else {
       setModalConfig({
@@ -216,10 +214,10 @@ export function ScheduleEditor({
       />
 
       {/* Top Action Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-gold/30 bg-ink-2 p-4">
+      <div className="flex flex-wrap items-center justify-between gap-4  border border-gold/30 bg-ink-2 p-4">
         <div>
-          <h2 className="font-display text-lg text-parchment">Weekly Gatherings Timetable</h2>
-          <p className="text-xs opacity-60">
+          <h2 className="font-display text-lg text-parchment">The weekly timetable</h2>
+          <p className="admin-hint">
             {rows.length} recurring session{rows.length === 1 ? "" : "s"} scheduled in WAT.
           </p>
         </div>
@@ -234,7 +232,7 @@ export function ScheduleEditor({
             className="admin-btn admin-btn-ghost text-xs"
             onClick={() => addSession(1)}
           >
-            <PlusCircle size={13} /> Add Session
+            <PlusCircle size={13} /> Add a gathering
           </button>
           <button
             type="button"
@@ -243,7 +241,7 @@ export function ScheduleEditor({
             disabled={busy || pending}
           >
             {busy ? <LoaderCircle size={13} className="animate-spin" /> : <Save size={13} />}
-            Publish Schedule
+            Publish
           </button>
         </div>
       </div>
@@ -253,7 +251,7 @@ export function ScheduleEditor({
         {rows.map((r, i) => (
           <div
             key={r.id || `session-${i}`}
-            className={`rounded-lg border p-4 transition-colors ${
+            className={` border p-4 transition-colors ${
               r.active
                 ? "border-parchment/15 bg-ink/70 hover:border-gold/40"
                 : "border-dashed border-parchment/10 bg-ink/30 opacity-70"
@@ -305,7 +303,7 @@ export function ScheduleEditor({
                   <button
                     type="button"
                     onClick={() => requestRemove(i)}
-                    className="p-1 text-red-400 opacity-60 hover:opacity-100 ml-1"
+                    className="p-1 text-danger-dark opacity-60 hover:opacity-100 ml-1"
                     title="Delete session"
                   >
                     <Trash2 size={13} />
@@ -317,7 +315,7 @@ export function ScheduleEditor({
             {/* Inputs Grid */}
             <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-12">
               <div className="md:col-span-4">
-                <label className="admin-label">Session Title</label>
+                <label className="admin-label">Session name</label>
                 <input
                   className="admin-input"
                   value={r.title}
@@ -327,7 +325,7 @@ export function ScheduleEditor({
               </div>
 
               <div className="md:col-span-3">
-                <label className="admin-label">Day of Week</label>
+                <label className="admin-label">Day</label>
                 <select
                   className="admin-select"
                   value={r.day}
@@ -342,7 +340,7 @@ export function ScheduleEditor({
               </div>
 
               <div className="md:col-span-2">
-                <label className="admin-label">Gathering Type</label>
+                <label className="admin-label">Kind</label>
                 <select
                   className="admin-select"
                   value={r.type}
@@ -380,7 +378,7 @@ export function ScheduleEditor({
               </div>
 
               <div className="md:col-span-7">
-                <label className="admin-label">Description / Focus (shown on site)</label>
+                <label className="admin-label">What happens (shown on the site)</label>
                 <input
                   className="admin-input"
                   value={r.description}
@@ -390,7 +388,7 @@ export function ScheduleEditor({
               </div>
 
               <div className="md:col-span-5">
-                <label className="admin-label">Live Gathering Link (Google Meet / Zoom)</label>
+                <label className="admin-label">Meeting link</label>
                 <input
                   className="admin-input"
                   value={r.join_url}
@@ -404,16 +402,16 @@ export function ScheduleEditor({
       </div>
 
       {/* SCHEDULE EXCEPTIONS & NOTICES SECTION */}
-      <section className="rounded-lg border border-gold/30 bg-ink-2 p-5">
+      <section className="border border-gold/30 bg-ink-2 p-5">
         <div className="mb-4 border-b border-parchment/10 pb-3">
           <div className="flex items-center gap-2 text-gold">
             <CalendarX size={18} />
             <h2 className="font-display text-lg text-parchment">
-              Schedule Exceptions & Holiday Cancellations
+              Changes to single dates
             </h2>
           </div>
           <p className="mt-1 text-xs opacity-60">
-            Cancel or reschedule a specific date without modifying your recurring weekly rhythm.
+            Move or cancel one date without touching the weekly rhythm. It appears on the site at once.
             When added, a prominent notice immediately appears on the website Homepage and Gatherings Timetable.
           </p>
         </div>
@@ -495,7 +493,7 @@ export function ScheduleEditor({
         {/* Active Exceptions List */}
         {exceptions.length > 0 && (
           <div className="mt-5 border-t border-parchment/10 pt-4">
-            <h3 className="font-display text-sm text-parchment mb-2">Active Schedule Exceptions:</h3>
+            <h3 className="font-display text-sm text-parchment mb-2">Published changes</h3>
             <div className="space-y-2">
               {exceptions.map((x) => {
                 const session = rows.find((s) => s.id === x.session_id);
@@ -522,7 +520,7 @@ export function ScheduleEditor({
                     </div>
                     <button
                       type="button"
-                      className="admin-btn admin-btn-ghost !py-1 text-xs text-red-400 hover:text-red-300"
+                      className="admin-btn admin-btn-ghost !py-1 text-xs text-danger-dark hover:text-danger-dark"
                       onClick={async () => {
                         await deleteException(x.id);
                         setExceptions((prev) => prev.filter((item) => item.id !== x.id));

@@ -30,6 +30,20 @@ export function AnnouncementPopup({ data }: { data: AnnouncementData }) {
     }
   }, [data]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const previous = document.documentElement.style.overflow;
+    document.documentElement.style.overflow = "hidden";
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") handleClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.documentElement.style.overflow = previous;
+    };
+  }, [isOpen]);
+
   if (!mounted || !isOpen || !data.active || !data.message?.trim()) return null;
 
   function handleClose() {
@@ -53,6 +67,7 @@ export function AnnouncementPopup({ data }: { data: AnnouncementData }) {
       onClick={handleClose}
     >
       <div
+        role="document"
         className="relative w-full max-w-lg border border-parchment/20 border-t-2 border-t-gold bg-ink-2 p-6 text-parchment sm:p-8"
         onClick={(e) => e.stopPropagation()}
       >

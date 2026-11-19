@@ -84,7 +84,7 @@ export default function AboutPage() {
 
         <div className="md:col-span-6">
           <div className="space-y-6 text-[1.0625rem] leading-[1.72]">
-            <p className="dropcap">
+            <p className="opening">
               We began as a small gathering of believers from different churches who
               wanted the same thing: to hear God clearly and to be taught properly.
               What started online in September 2021 has grown into a fellowship that

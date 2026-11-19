@@ -2,7 +2,6 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { Copy, Edit3, ExternalLink, LoaderCircle, Trash2 } from "lucide-react";
 import {
   bulkTeachings,

@@ -14,7 +14,7 @@ export default async function MyNotificationsPage() {
   return (
     <div className="mx-auto max-w-3xl">
       <AdminBack href="/admin/settings" label="Back to settings" />
-      <h1 className="mb-1 font-display text-2xl">My notifications</h1>
+      <h1 className="mb-1 font-display text-title">My notifications</h1>
       <p className="mb-4 text-xs opacity-60">
         Choose what reaches you and how. Push notifications work even when the
         dashboard is closed, once you have allowed them in your browser

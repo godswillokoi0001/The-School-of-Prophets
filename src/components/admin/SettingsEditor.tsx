@@ -48,8 +48,8 @@ export function SettingsEditor({
   return (
     <form onSubmit={submit} className="mx-auto max-w-3xl">
       <AdminBack href={backHref} label={backLabel} />
-      <h1 className="font-display text-2xl">{title}</h1>
-      <p className="mb-4 text-xs opacity-60">{description}</p>
+      <h1 className="font-display text-title">{title}</h1>
+      <p className="mb-4 admin-hint">{description}</p>
       <div className="admin-surface grid gap-4 p-4 md:grid-cols-2">
         {fields.map((f) => (
           <div key={f.key} className={f.type === "textarea" ? "md:col-span-2" : ""}>
@@ -112,7 +112,7 @@ export function SettingsEditor({
           </div>
         ))}
       </div>
-      <div className="mt-3 flex items-center gap-3">
+      <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-parchment/15 pt-4">
         <button className="admin-btn admin-btn-gold" disabled={busy}>
           {busy ? <LoaderCircle size={13} className="animate-spin" /> : <Save size={13} />} Save
         </button>

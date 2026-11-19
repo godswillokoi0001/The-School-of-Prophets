@@ -535,7 +535,7 @@ export function BetaSubmissionDetail({
         <h2 className="font-display text-base">Internal notes</h2>
         <ul className="mb-2 mt-2 text-sm">
           {row.notes.length === 0 && (
-            <li className="text-xs opacity-60">No notes yet. Notes are private to the team.</li>
+            <li className="admin-hint">No notes yet. Notes are private to the team.</li>
           )}
           {row.notes.map((entry, index) => (
             <li key={index} className="admin-row py-1">

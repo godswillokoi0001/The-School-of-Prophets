@@ -15,13 +15,18 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const seriesList = await getSeries();
   const series = seriesList.find((s) => s.slug === slug);
   if (!series) return { title: "Series not found" };
+  const blurb = /^(description|blurb|summary|text|tbd|tba)\.{0,3}$/i.test(
+    (series.blurb ?? "").trim(),
+  )
+    ? `Teachings in the ${series.title} series.`
+    : series.blurb;
   return {
     title: series.title,
-    description: series.blurb,
+    description: blurb,
     alternates: { canonical: `/teachings/series/${series.slug}` },
     openGraph: {
       title: `${series.title} | ${site.name}`,
-      description: series.blurb,
+      description: blurb,
       url: `/teachings/series/${series.slug}`,
     },
   };
@@ -37,22 +42,51 @@ export default async function SeriesPage({ params }: Params) {
     .filter((t) => t.series === slug)
     .sort((a, b) => b.date.localeCompare(a.date));
 
+  const blurb = /^(description|blurb|summary|text|tbd|tba)\.{0,3}$/i.test(
+    (series.blurb ?? "").trim(),
+  )
+    ? ""
+    : series.blurb;
+  const initials = series.title
+    .split(/\s+/)
+    .filter((word) => !/^(the|of|and|a)$/i.test(word))
+    .slice(0, 2)
+    .map((word) => word[0])
+    .join("");
+
   return (
     <>
       <PageHeader
         label="Series"
         title={series.title}
-        lead={series.blurb}
+        lead={blurb || undefined}
         image={series.image ?? items[0]?.image}
         imageAlt={series.imageAlt ?? items[0]?.imageAlt}
         aside={
-          <div className="border-t border-ink/20 pt-4">
-            <p className="label text-quiet">In this series</p>
-            <p className="mt-2 font-display text-3xl">{items.length}</p>
-            <Link href="/teachings" className="link-quiet mt-4 inline-block text-sm font-semibold">
-              All teachings
-            </Link>
-          </div>
+          series.image || items[0]?.image ? (
+            <div className="border-t border-ink/20 pt-4">
+              <p className="label text-quiet">In this series</p>
+              <p className="mt-2 font-display text-3xl tabular-nums">{items.length}</p>
+              <Link href="/teachings" className="link-quiet mt-4 inline-block text-sm font-semibold">
+                All teachings
+              </Link>
+            </div>
+          ) : (
+            <div className="border border-ink/15 bg-parchment-2 p-8">
+              <p className="label text-quiet">Series</p>
+              <p className="mt-6 font-display text-6xl leading-none text-ember/70">
+                {initials}
+              </p>
+              <p className="mt-3 text-sm text-quiet">
+                {items.length === 0
+                  ? "In preparation"
+                  : `${items.length} ${items.length === 1 ? "teaching" : "teachings"}`}
+              </p>
+              <Link href="/teachings" className="link-quiet mt-4 inline-block text-sm font-semibold">
+                All teachings
+              </Link>
+            </div>
+          )
         }
       />
 

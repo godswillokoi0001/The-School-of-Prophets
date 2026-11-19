@@ -125,9 +125,6 @@ export function Footer() {
                 )}
               </span>
             )}
-            <Link href="/demo-notes" className="link-quiet">
-              Re-brand notes
-            </Link>
           </p>
         </div>
       </div>

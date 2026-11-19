@@ -120,14 +120,14 @@ export default function ResetPasswordPage() {
           {success ? (
             <div className="text-center py-4 space-y-3">
               <CheckCircle2 size={36} className="text-gold mx-auto" />
-              <h2 className="font-display text-lg text-parchment">Password Updated!</h2>
+              <h2 className="font-display text-lg text-parchment">Password updated</h2>
               <p className="text-xs opacity-70">
                 Your new password has been saved. Redirecting to the admin dashboard…
               </p>
             </div>
           ) : linkInvalid ? (
             <div className="text-center py-4 space-y-4">
-              <AlertCircle size={36} className="text-red-400 mx-auto" />
+              <AlertCircle size={36} className="text-danger-dark mx-auto" />
               <div>
                 <h2 className="font-display text-base text-parchment">Link Expired or Invalid</h2>
                 <p className="mt-1 text-xs opacity-70 leading-relaxed">

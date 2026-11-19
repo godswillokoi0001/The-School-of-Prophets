@@ -30,7 +30,7 @@ export default async function SettingsIndex() {
               className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 py-3 transition-colors hover:text-gold-soft"
             >
               <span className="font-medium">{l.title}</span>
-              <span className="text-xs opacity-60">{l.desc}</span>
+              <span className="admin-hint">{l.desc}</span>
             </Link>
           </li>
         ))}

@@ -161,7 +161,7 @@ export function ImageEditorModal({
               <span
                 aria-hidden="true"
                 style={{ left: `${focal.x}%`, top: `${focal.y}%` }}
-                className="pointer-events-none absolute h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-gold-soft shadow-[0_0_0_1px_rgba(0,0,0,0.6)]"
+                className="pointer-events-none absolute h-5 w-5 -translate-x-1/2 -translate-y-1/2  border border-gold-soft shadow-[0_0_0_1px_rgba(0,0,0,0.6)]"
               />
             </div>
 

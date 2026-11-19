@@ -126,7 +126,7 @@ export default async function ContactPage() {
         </div>
 
         <div className="lg:col-span-7 lg:pl-6">
-          <div className="border border-ink/15 p-6 sm:p-8">
+          <div className="border-t border-ink/25 pt-5">
             <p className="label text-quiet">Send a message</p>
             <h2 className="mt-3 font-display text-2xl">We would like to hear from you.</h2>
             <div className="mt-6">
@@ -156,20 +156,32 @@ export default async function ContactPage() {
 
           <div className="md:col-span-8">
             <div className="border-t border-ink/20">
-              {faqs.map((faq) => (
-                <details key={faq.id} className="group border-b border-ink/15 py-4">
-                  <summary className="flex cursor-pointer list-none items-start justify-between gap-6">
-                    <span className="font-display text-xl leading-snug">{faq.question}</span>
-                    <Plus
-                      aria-hidden="true"
-                      className="mt-1 h-4 w-4 shrink-0 text-ember transition-transform group-open:rotate-45"
-                    />
-                  </summary>
-                  <p className="measure mt-3 text-sm leading-relaxed text-quiet">
-                    {faq.answer}
+              {faqs.length === 0 ? (
+                <div className="py-8">
+                  <p className="font-display text-xl leading-snug">
+                    Nothing published here yet.
                   </p>
-                </details>
-              ))}
+                  <p className="measure mt-2 text-sm leading-relaxed text-quiet">
+                    The team answers questions as they come in. Write through the
+                    form and the reply will be personal.
+                  </p>
+                </div>
+              ) : (
+                faqs.map((faq) => (
+                  <details key={faq.id} className="group border-b border-ink/15 py-4">
+                    <summary className="flex cursor-pointer list-none items-start justify-between gap-6">
+                      <span className="font-display text-xl leading-snug">{faq.question}</span>
+                      <Plus
+                        aria-hidden="true"
+                        className="mt-1 h-4 w-4 shrink-0 text-ember transition-transform group-open:rotate-45"
+                      />
+                    </summary>
+                    <p className="measure mt-3 text-sm leading-relaxed text-quiet">
+                      {faq.answer}
+                    </p>
+                  </details>
+                ))
+              )}
             </div>
           </div>
         </div>

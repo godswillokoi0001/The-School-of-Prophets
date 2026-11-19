@@ -257,7 +257,7 @@ export function AdminShell({
                       {!isMini && <span className="flex-1">{item.label}</span>}
                       {item.badge && item.badge > 0 ? (
                         isMini ? (
-                          <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-gold" />
+                          <span className="absolute right-1 top-1 h-2 w-2  bg-gold" />
                         ) : (
                           <span className="admin-badge admin-badge-new">{item.badge}</span>
                         )
@@ -278,7 +278,7 @@ export function AdminShell({
             </>
           ) : (
             <div
-              className="mx-auto flex h-7 w-7 items-center justify-center rounded-full bg-gold/15 text-xs font-bold text-gold"
+              className="mx-auto flex h-7 w-7 items-center justify-center  bg-gold/15 text-xs font-bold text-gold"
               title={`${fullName || email} (${role})`}
             >
               {(fullName || email || "A")[0].toUpperCase()}
@@ -392,7 +392,7 @@ export function AdminShell({
               <tab.icon size={17} />
               {tab.label}
               {tab.href === "/admin/inbox" && unread > 0 && (
-                <span className="absolute right-[28%] top-1.5 h-1.5 w-1.5 rounded-full bg-gold" />
+                <span className="absolute right-[28%] top-1.5 h-1.5 w-1.5  bg-gold" />
               )}
             </Link>
           );

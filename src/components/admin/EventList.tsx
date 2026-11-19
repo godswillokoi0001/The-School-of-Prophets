@@ -27,7 +27,7 @@ export function EventList({ rows }: { rows: EventRow[] }) {
       <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="font-display text-2xl">Events</h1>
-          <p className="text-xs opacity-60">
+          <p className="admin-hint">
             Conferences, anniversary services and special gatherings. Click any event to edit details and cover image.
           </p>
         </div>

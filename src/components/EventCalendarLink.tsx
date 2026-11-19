@@ -41,7 +41,7 @@ export function EventCalendarLink({ event }: { event: EventItem }) {
         href={googleUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-1.5 rounded-md bg-gold px-3.5 py-2 text-xs font-semibold text-ink shadow-sm hover:bg-gold/90 transition-colors"
+        className="inline-flex items-center gap-1.5  bg-gold px-3.5 py-2 text-xs font-semibold text-ink  hover:bg-gold/90 transition-colors"
       >
         <Calendar size={14} />
         <span>Add to Google Calendar</span>
@@ -50,7 +50,7 @@ export function EventCalendarLink({ event }: { event: EventItem }) {
       <a
         href={icsUri}
         download={`${event.slug}.ics`}
-        className="inline-flex items-center gap-1.5 rounded-md border border-ink/20 px-3.5 py-2 text-xs font-semibold text-ink hover:bg-ink/5 transition-colors"
+        className="inline-flex items-center gap-1.5  border border-ink/20 px-3.5 py-2 text-xs font-semibold text-ink hover:bg-ink/5 transition-colors"
       >
         <Download size={14} />
         <span>Apple / Outlook (.ics)</span>

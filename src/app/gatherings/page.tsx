@@ -56,8 +56,8 @@ export default async function GatheringsPage() {
       </header>
 
       <section id="timetable" className="wrap py-16 md:py-24">
-        <div className="grid gap-8 md:grid-cols-12">
-          <div className="md:col-span-3">
+        <div className="grid gap-8 lg:grid-cols-12">
+          <div className="lg:col-span-3">
             <p className="label text-ember">The timetable</p>
             <p className="mt-3 text-sm leading-relaxed text-quiet">
               Monday carries the fullest teaching. Wednesday is Bible study. Prayer
@@ -73,7 +73,7 @@ export default async function GatheringsPage() {
             </a>
           </div>
 
-          <div className="md:col-span-9">
+          <div className="lg:col-span-9">
             <Timetable sessions={schedule} exceptions={exceptions} />
             <p className="mt-5 max-w-[70ch] text-xs leading-relaxed text-quiet">
               {scheduleNote}{" "}

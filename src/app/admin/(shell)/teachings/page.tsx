@@ -49,8 +49,8 @@ export default async function TeachingsPage({
     <div className="mx-auto max-w-5xl">
       <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl">Teachings</h1>
-          <p className="text-xs opacity-60">
+          <h1 className="font-display text-title">Teachings</h1>
+          <p className="admin-hint">
             Every teaching written here appears on the public Teachings page once
             published.
           </p>
@@ -64,7 +64,7 @@ export default async function TeachingsPage({
           <label className="admin-label">Status</label>
           <select name="status" defaultValue={status} className="admin-select">
             {["all", "published", "scheduled", "draft"].map((s) => (
-              <option key={s} value={s}>{s}</option>
+              <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
             ))}
           </select>
         </div>
@@ -72,7 +72,7 @@ export default async function TeachingsPage({
           <label className="admin-label">Search</label>
           <input name="q" defaultValue={q} placeholder="Search by title…" className="admin-input" />
         </div>
-        <button className="admin-btn admin-btn-gold">Apply</button>
+        <button className="admin-btn admin-btn-gold">Filter</button>
         <Link href="/admin/teachings" className="admin-btn admin-btn-ghost">Reset</Link>
       </form>
 

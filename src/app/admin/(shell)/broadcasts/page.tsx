@@ -2,7 +2,7 @@ import { requireStaff } from "@/lib/admin";
 import { getAdminClient } from "@/lib/supabase/server";
 import { BroadcastComposer, type BroadcastRecord } from "@/components/admin/BroadcastComposer";
 import Link from "next/link";
-import { Mail, Users } from "lucide-react";
+import { Users } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -46,17 +46,14 @@ export default async function BroadcastsPage() {
   }
   return (
     <div className="mx-auto max-w-5xl">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-border pb-4">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-parchment/15 pb-4">
         <div>
-          <h1 className="font-display text-2xl">Newsletters & Broadcasts</h1>
-          <p className="text-xs opacity-60">
-            Compose, preview, schedule, and view sent newsletters, or modify and reuse past epistles.
+          <h1 className="font-display text-title">Broadcasts</h1>
+          <p className="admin-hint">
+            One letter to the whole list. Draft it, schedule it, or reuse one already sent.
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Link href="/admin/broadcasts" className="admin-btn admin-btn-gold">
-            <Mail size={13} /> Newsletters & Broadcasts
-          </Link>
           <Link href="/admin/subscribers" className="admin-btn admin-btn-ghost">
             <Users size={13} /> Subscribers ({subscriberCount})
           </Link>

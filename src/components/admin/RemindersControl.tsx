@@ -4,7 +4,6 @@ import { useState, useTransition } from "react";
 import {
   Bell,
   Clock,
-  Send,
   LoaderCircle,
   CheckCircle2,
   AlertCircle,
@@ -84,7 +83,7 @@ export function RemindersControl({
 
   return (
     <div className="admin-surface mt-8 p-6">
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-4">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-parchment/15 pb-4">
         <div>
           <div className="flex items-center gap-2">
             <Bell size={18} className="text-gold" />
@@ -106,7 +105,7 @@ export function RemindersControl({
       </div>
 
       <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded border border-border bg-ink-2/40 p-3.5">
+        <div className="rounded border border-parchment/15 bg-ink-2/40 p-3.5">
           <div className="flex items-center gap-1.5 text-xs font-semibold text-gold-soft">
             <Calendar size={13} /> 24 Hours to Time
           </div>
@@ -118,11 +117,11 @@ export function RemindersControl({
             disabled={pending}
             className="mt-3 text-[10px] font-semibold uppercase tracking-wider text-gold hover:underline"
           >
-            Send test to me &rarr;
+            Send a test
           </button>
         </div>
 
-        <div className="rounded border border-border bg-ink-2/40 p-3.5">
+        <div className="rounded border border-parchment/15 bg-ink-2/40 p-3.5">
           <div className="flex items-center gap-1.5 text-xs font-semibold text-gold-soft">
             <Clock size={13} /> 12 Hours to Time
           </div>
@@ -134,11 +133,11 @@ export function RemindersControl({
             disabled={pending}
             className="mt-3 text-[10px] font-semibold uppercase tracking-wider text-gold hover:underline"
           >
-            Send test to me &rarr;
+            Send a test
           </button>
         </div>
 
-        <div className="rounded border border-border bg-ink-2/40 p-3.5">
+        <div className="rounded border border-parchment/15 bg-ink-2/40 p-3.5">
           <div className="flex items-center gap-1.5 text-xs font-semibold text-gold-soft">
             <Clock size={13} /> 1 Hour to Time
           </div>
@@ -150,12 +149,12 @@ export function RemindersControl({
             disabled={pending}
             className="mt-3 text-[10px] font-semibold uppercase tracking-wider text-gold hover:underline"
           >
-            Send test to me &rarr;
+            Send a test
           </button>
         </div>
 
-        <div className="rounded border border-border bg-ink-2/40 p-3.5">
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-400">
+        <div className="rounded border border-parchment/15 bg-ink-2/40 p-3.5">
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-ok-dark">
             <Radio size={13} /> We Are Live Now
           </div>
           <p className="mt-1.5 text-[11px] leading-relaxed opacity-70">
@@ -164,9 +163,9 @@ export function RemindersControl({
           <button
             onClick={() => handleTestSend("live")}
             disabled={pending}
-            className="mt-3 text-[10px] font-semibold uppercase tracking-wider text-emerald-400 hover:underline"
+            className="mt-3 text-[10px] font-semibold uppercase tracking-wider text-ok-dark hover:underline"
           >
-            Send test to me &rarr;
+            Send a test
           </button>
         </div>
       </div>
@@ -183,8 +182,8 @@ export function RemindersControl({
           role="status"
           className={`mt-4 rounded border p-4 text-xs ${
             feedback.type === "success"
-              ? "border-emerald-500/30 bg-emerald-950/20 text-emerald-200"
-              : "border-rose-500/30 bg-rose-950/20 text-rose-200"
+              ? "border-ok-dark/30 bg-ok-dark/10 text-ok-dark"
+              : "border-danger-dark/40 bg-danger-dark/10 text-danger-dark"
           }`}
         >
           <div className="flex items-center gap-2 font-medium">

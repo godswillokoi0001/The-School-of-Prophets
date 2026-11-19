@@ -47,7 +47,7 @@ export function AdminSearch({ onClose }: { onClose: () => void }) {
       onClick={onClose}
     >
       <div
-        className="admin-surface w-full max-w-lg shadow-2xl"
+        className="admin-surface w-full max-w-lg "
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-label="Global search"

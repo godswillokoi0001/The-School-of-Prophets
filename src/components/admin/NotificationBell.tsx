@@ -2,14 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
   Bell,
-  Check,
-  Clock,
   ExternalLink,
   Inbox,
-  MessageSquare,
   Volume2,
   VolumeX,
 } from "lucide-react";
@@ -63,7 +59,6 @@ export function NotificationBell({
   initialNotifications?: NotificationItem[];
   userRole?: string;
 }) {
-  const router = useRouter();
   const [items, setItems] = useState<NotificationItem[]>(initialNotifications);
   const [unread, setUnread] = useState(initialUnread);
   const [open, setOpen] = useState(false);
@@ -172,7 +167,7 @@ export function NotificationBell({
       >
         <Bell size={17} />
         {unread > 0 && (
-          <span className="absolute 0 top-0.5 right-0.5 min-w-[1.1rem] h-[1.1rem] bg-gold px-1 flex items-center justify-center text-[0.6rem] font-bold text-ink rounded-full shadow-sm animate-pulse">
+          <span className="absolute top-0.5 right-0.5 min-w-[1.1rem] h-[1.1rem] bg-gold px-1 flex items-center justify-center text-[0.6rem] font-bold text-ink   ">
             {unread > 9 ? "9+" : unread}
           </span>
         )}
@@ -265,7 +260,7 @@ export function NotificationBell({
                           {label}
                         </span>
                         {isNew && (
-                          <span className="h-1.5 w-1.5 rounded-full bg-gold" />
+                          <span className="h-1.5 w-1.5  bg-gold" />
                         )}
                       </div>
                       <span className="text-[0.65rem] opacity-50 shrink-0">

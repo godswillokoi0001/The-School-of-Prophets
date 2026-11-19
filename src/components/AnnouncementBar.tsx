@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Megaphone, TriangleAlert } from "lucide-react";
+import { ArrowRight, Megaphone, TriangleAlert } from "lucide-react";
 import { getAnnouncement } from "@/lib/data";
 import { AnnouncementPopup } from "@/components/AnnouncementPopup";
 
@@ -16,7 +16,7 @@ export async function AnnouncementBar() {
         <Megaphone aria-hidden="true" className="h-3.5 w-3.5" />
       )}
       <span>{a.message}</span>
-      {a.link && <span aria-hidden="true">→</span>}
+      {a.link && <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />}
     </span>
   );
 

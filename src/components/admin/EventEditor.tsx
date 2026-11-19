@@ -105,7 +105,7 @@ export function EventEditor({
       <div className="mb-3 flex items-center justify-between">
         <div>
           <h1 className="font-display text-2xl">{form.id ? "Edit event" : "New event"}</h1>
-          <p className="text-xs opacity-60">Full access to modify title, dates, recurrence and cover image.</p>
+          <p className="admin-hint">Full access to modify title, dates, recurrence and cover image.</p>
         </div>
         <div className="flex items-center gap-2">
           {form.slug && (

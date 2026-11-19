@@ -27,8 +27,8 @@ export default async function SchedulePage() {
   return (
     <div className="mx-auto max-w-5xl space-y-6">
       <div className="mb-3">
-        <h1 className="font-display text-2xl">Weekly schedule</h1>
-        <p className="text-xs opacity-60">
+        <h1 className="font-display text-title">Weekly schedule</h1>
+        <p className="admin-hint">
           Times are stored and edited in WAT (Lagos). Visitors see them in their
           own timezone, with WAT always shown too. Saving publishes instantly to
           the Weekly Gatherings page, the home page and calendar feeds.

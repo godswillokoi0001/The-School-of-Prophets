@@ -16,10 +16,10 @@ export default async function SubscribersPage() {
   }
   return (
     <div className="mx-auto max-w-4xl">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-border pb-4">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-parchment/15 pb-4">
         <div>
-          <h1 className="font-display text-2xl">Subscriber List</h1>
-          <p className="text-xs opacity-60">
+          <h1 className="font-display text-title">Subscriber List</h1>
+          <p className="admin-hint">
             People who signed up from the site form. Anyone who unsubscribed is excluded from sends.
           </p>
         </div>

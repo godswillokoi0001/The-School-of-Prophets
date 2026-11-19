@@ -12,9 +12,9 @@ export default async function UsersPage() {
     : [];
   return (
     <div className="mx-auto max-w-4xl">
-      <h1 className="mb-1 font-display text-2xl">Team & roles</h1>
+      <h1 className="mb-1 font-display text-title">Team & roles</h1>
       <p className="mb-4 text-xs opacity-60">
-        Team roster and permissions. Deactivated accounts keep the audit history but cannot sign in.
+        Everyone with access, and what each may do. A deactivated account keeps its history and cannot sign in.
       </p>
       <UsersManager members={members} selfId={staff.id} isOwner={staff.role === "owner"} />
     </div>

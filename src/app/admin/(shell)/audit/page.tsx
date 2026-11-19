@@ -21,7 +21,7 @@ export default async function AuditPage({
   }
   return (
     <div className="mx-auto max-w-5xl">
-      <h1 className="mb-1 font-display text-2xl">Audit log</h1>
+      <h1 className="mb-1 font-display text-title">Audit log</h1>
       <p className="mb-4 text-xs opacity-60">
         Who did what and when: creations, edits, publishes, deletions, exports
         and privacy erasures. Entries cannot be edited or removed.

@@ -165,7 +165,7 @@ export function TeachingEditor({
     <form onSubmit={submit} className="mx-auto max-w-4xl">
       <AdminModal
         isOpen={savedModal.isOpen}
-        title="Teaching Saved Successfully!"
+        title="Teaching saved"
         description={`"${form.title}" is saved with status: ${savedModal.status.toUpperCase()}.\n\nIt is now accessible in the teaching library.`}
         variant="success"
         confirmLabel={savedModal.status === "published" ? "View Live on Website →" : "Close"}
@@ -364,7 +364,7 @@ export function TeachingEditor({
                   )}
                 </div>
                 {seriesOpen && (
-                  <ul className="admin-surface absolute z-20 mt-1 max-h-48 w-full overflow-y-auto p-1 shadow-xl">
+                  <ul className="admin-surface absolute z-20 mt-1 max-h-48 w-full overflow-y-auto p-1 ">
                     <li>
                       <button type="button" className="block w-full px-3 py-2 text-left text-xs hover:bg-parchment/5" onClick={() => { set("series_id", null); setSeriesOpen(false); }}>
                         No series (Standalone teaching)

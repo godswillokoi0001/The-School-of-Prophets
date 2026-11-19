@@ -157,7 +157,7 @@ export function UsersManager({
                       setTimeout(() => setCopied(false), 2000);
                     }}
                   >
-                    {copied ? "Copied!" : "Copy Invite Link"}
+                    {copied ? "Copied" : "Copy invite link"}
                   </button>
                 </div>
               )}
@@ -168,7 +168,7 @@ export function UsersManager({
         <div className="admin-surface p-4 flex items-center justify-between">
           <div>
             <h2 className="font-display text-lg">Ministry Team Roster</h2>
-            <p className="text-xs opacity-60">
+            <p className="admin-hint">
               Viewing team roles in read-only mode. Only ministry owners can invite members or change roles.
             </p>
           </div>
@@ -245,8 +245,8 @@ export function UsersManager({
                           type="button"
                           className={`inline-flex items-center justify-center p-1.5 rounded border transition-colors ${
                             m.status === "active"
-                              ? "border-amber-500/30 text-amber-400 hover:bg-amber-500/10"
-                              : "border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10"
+                              ? "border-amber-500/30 text-warn-dark hover:bg-amber-500/10"
+                              : "border-ok-dark/30 text-ok-dark hover:bg-ok-dark/10"
                           }`}
                           disabled={busy}
                           title={m.status === "active" ? `Deactivate ${m.email}` : `Reactivate ${m.email}`}
@@ -280,7 +280,7 @@ export function UsersManager({
                         {/* Delete Icon Button */}
                         <button
                           type="button"
-                          className="inline-flex items-center justify-center p-1.5 rounded border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-colors"
+                          className="inline-flex items-center justify-center p-1.5 rounded border border-red-500/30 text-danger-dark hover:bg-danger-dark/10 transition-colors"
                           disabled={busy}
                           title={`Delete ${m.email}`}
                           aria-label="Delete user"

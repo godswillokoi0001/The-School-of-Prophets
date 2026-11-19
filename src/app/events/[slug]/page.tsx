@@ -123,7 +123,7 @@ export default async function EventDetailPage({ params }: Params) {
 
         <aside className="md:col-span-5">
           {upcoming ? (
-            <div className="border border-ink/15 p-6">
+            <div className="border-t border-ink/25 pt-5">
               <p className="label text-ember">Registration</p>
               <p className="mt-2 text-sm leading-relaxed text-quiet">
                 Register so we can plan and send you the joining details.
@@ -133,7 +133,7 @@ export default async function EventDetailPage({ params }: Params) {
               </div>
             </div>
           ) : (
-            <div className="border border-ink/15 p-6">
+            <div className="border-t border-ink/25 pt-5">
               <p className="label text-quiet">This gathering has passed</p>
               <p className="mt-2 text-sm leading-relaxed text-quiet">
                 The teaching from this gathering is kept in the library.
@@ -146,7 +146,7 @@ export default async function EventDetailPage({ params }: Params) {
 
           <div className="mt-8 border-t border-ink/20 pt-5 text-sm">
             <Link href="/events" className="link-underline">
-              ← All events
+              All events
             </Link>
           </div>
         </aside>

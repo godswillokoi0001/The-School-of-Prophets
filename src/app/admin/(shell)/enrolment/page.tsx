@@ -20,11 +20,11 @@ export default async function EnrolmentPage() {
 
   return (
     <div>
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-4 admin-surface p-4 border border-gold/30">
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-4 admin-surface p-4 border border-parchment/15">
         <div>
-          <h2 className="font-display text-base text-parchment">Enrolment Status Switch</h2>
-          <p className="text-xs opacity-60">
-            Instantly switch between accepting applications (Open) and waitlist mode (Closed) across the website.
+          <h2 className="font-display text-base text-parchment">Enrolment switch</h2>
+          <p className="admin-hint">
+            Open takes applications; closed collects a waitlist. The change is live at once.
           </p>
         </div>
         <EnrolmentSwitch initialStatus={currentStatus} />
@@ -32,15 +32,15 @@ export default async function EnrolmentPage() {
 
       <SettingsEditor
         settingKey="enrolment"
-        title="Enrolment Details"
-        description="Controls the public Training page form: cohort names, notes, deadline, and waitlist settings."
+        title="Enrolment details"
+        description="Cohort name, deadline, fee note and the waitlist setting shown on the Training page."
         initial={initial}
         backHref="/admin/settings"
         backLabel="Back to settings"
         fields={[
           {
             key: "status",
-            label: "Default Status",
+            label: "Status",
             type: "select",
             options: [
               { value: "closed", label: "Closed (waitlist only)" },

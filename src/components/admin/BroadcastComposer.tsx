@@ -360,7 +360,7 @@ export function BroadcastComposer({
             <h2 className="font-display text-lg">
               Sent Newsletters & Past Broadcasts
             </h2>
-            <p className="text-xs opacity-60">
+            <p className="admin-hint">
               Access previously sent messages below with pagination. Click &ldquo;Load & Modify&rdquo;
               to reuse, edit, and resend.
             </p>
@@ -452,7 +452,7 @@ export function BroadcastComposer({
                       </td>
                       <td className="text-xs opacity-75">
                         {sentCount !== undefined && recCount !== undefined ? (
-                          <span className="inline-flex items-center gap-1 text-emerald-400">
+                          <span className="inline-flex items-center gap-1 text-ok-dark">
                             <CheckCircle2 size={12} /> {sentCount} /{" "}
                             {recCount}
                           </span>
@@ -482,7 +482,7 @@ export function BroadcastComposer({
                           {isOwner && (
                             <button
                               type="button"
-                              className="inline-flex items-center justify-center p-1.5 rounded border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-colors"
+                              className="inline-flex items-center justify-center p-1.5 rounded border border-red-500/30 text-danger-dark hover:bg-danger-dark/10 transition-colors"
                               title="Delete newsletter record"
                               aria-label={`Delete ${b.subject}`}
                               onClick={() => handleDeleteBroadcast(b)}
@@ -520,7 +520,7 @@ export function BroadcastComposer({
                 <h3 className="font-display text-lg text-parchment">
                   {previewContent.subject}
                 </h3>
-                <p className="text-xs opacity-60">
+                <p className="admin-hint">
                   Sent to: {previewContent.segment}
                 </p>
               </div>

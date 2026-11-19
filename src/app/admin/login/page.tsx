@@ -216,13 +216,13 @@ export default function AdminLogin() {
               <X size={16} />
             </button>
 
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gold/15 text-gold border border-gold/30">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center  bg-gold/15 text-gold border border-gold/30">
               <MailCheck size={28} />
             </div>
 
             <div>
               <h3 className="font-display text-lg text-parchment">
-                Reset Link Dispatched!
+                Reset link sent
               </h3>
               <p className="mt-2 text-xs text-parchment/80 leading-relaxed">
                 A password recovery email has been sent to:

@@ -501,7 +501,7 @@ export function SubmissionDetail({
       <section className="admin-surface mt-3 p-4">
         <h2 className="mb-2 font-display text-base">Internal notes</h2>
         <ul className="mb-2 text-sm">
-          {row.notes.length === 0 && <li className="text-xs opacity-60">No notes yet. Notes are private to the team.</li>}
+          {row.notes.length === 0 && <li className="admin-hint">No notes yet. Notes are private to the team.</li>}
           {row.notes.map((n, i) => (
             <li key={i} className="admin-row py-1">
               {n.body}

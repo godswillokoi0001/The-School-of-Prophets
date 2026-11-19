@@ -120,27 +120,24 @@ export function NextGathering({
         ))}
       </div>
 
-      <div className="mt-5 sm:mt-6 grid grid-cols-2 gap-1.5 sm:gap-2.5 items-stretch">
+      <div className="mt-6 flex flex-col gap-2 sm:flex-row">
         <a
           href={joinHref}
           {...(external ? { rel: "noopener noreferrer", target: "_blank" } : {})}
-          className={`btn w-full min-w-0 !px-1 sm:!px-2 !text-[0.55rem] sm:!text-[0.625rem] md:!text-[0.6875rem] !tracking-normal sm:!tracking-wider !min-h-[2.35rem] sm:!min-h-[2.6rem] text-center whitespace-nowrap overflow-visible ${
-            light ? "btn-ink" : "btn-gold"
-          }`}
-          title={joinLabel}
+          className={`btn w-full sm:flex-1 ${light ? "btn-ink" : "btn-gold"}`}
         >
-          <span className="whitespace-nowrap">{joinLabel}</span>
+          {joinLabel}
         </a>
-        <Link
-          href="/gatherings"
-          className="btn btn-outline w-full min-w-0 !px-1 sm:!px-2 !text-[0.55rem] sm:!text-[0.625rem] md:!text-[0.6875rem] !tracking-normal sm:!tracking-wider !min-h-[2.35rem] sm:!min-h-[2.6rem] text-center whitespace-nowrap overflow-visible"
-          title="How we meet"
-        >
-          <span className="whitespace-nowrap">How we meet</span>
+        <Link href="/gatherings" className="btn btn-outline w-full sm:flex-1">
+          How we meet
         </Link>
       </div>
 
-      <p className={`mt-4 text-xs ${light ? "text-quiet" : "text-parchment/60"} flex flex-wrap items-center gap-x-1.5 gap-y-1`}>
+      <p
+        className={`mt-4 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs ${
+          light ? "text-quiet" : "text-parchment/60"
+        }`}
+      >
         <span>Add to calendar:</span>{" "}
         <a
           className="link-underline"
@@ -155,8 +152,8 @@ export function NextGathering({
           suppressHydrationWarning
         >
           Google
-        </a>{" "}
-        ·{" "}
+        </a>
+        <span aria-hidden="true">·</span>
         <a className="link-underline" href="/schedule.ics" download>
           Apple / Outlook (.ics)
         </a>

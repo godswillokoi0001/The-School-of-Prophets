@@ -122,7 +122,7 @@ export default function MediaLibraryPage() {
     <div className="mx-auto max-w-5xl">
       <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl">Media library</h1>
+          <h1 className="font-display text-title">Media library</h1>
           <p className="mt-1 max-w-[62ch] text-xs leading-relaxed opacity-60">
             Originals are kept whole: nothing is cropped when it is uploaded. Click
             any picture to move its focus point — the crosshair marks what stays in
@@ -178,7 +178,7 @@ export default function MediaLibraryPage() {
                         left: `${m.focal?.x ?? 50}%`,
                         top: `${m.focal?.y ?? 30}%`,
                       }}
-                      className="pointer-events-none absolute h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border border-gold-soft"
+                      className="pointer-events-none absolute h-4 w-4 -translate-x-1/2 -translate-y-1/2  border border-gold-soft"
                     />
                   </div>
                   <p className="mt-1 flex items-center justify-between gap-2 text-[0.62rem] opacity-55">

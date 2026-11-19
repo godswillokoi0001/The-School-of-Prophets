@@ -10,7 +10,7 @@ export function WeekChart({
   const max = Math.max(1, ...data.map((d) => d.count));
   if (data.length === 0)
     return (
-      <p className="text-xs opacity-60">
+      <p className="admin-hint">
         No submissions in the last 7 days. When they arrive you will see a
         simple chart here, by form type.
       </p>

@@ -62,12 +62,12 @@ export default async function EventsPage() {
                 <p className="label text-ember">{formatDate(event.date)}</p>
 
                 {event.image && (
-                                      <div className="relative aspect-[3/2] overflow-hidden border border-ink/10 bg-ink-2">
+                                      <div className="relative aspect-[4/3] overflow-hidden border border-ink/10 bg-ink-2 md:aspect-[4/5]">
                       <Cover
                         src={event.image}
                         alt={event.imageAlt}
                         sizes="(max-width: 768px) 100vw, 192px"
-                        fit="contain"
+                        fit="cover"
                         focal={focalFor(mediaMeta, event.image)}
                       />
                     </div>
@@ -132,12 +132,12 @@ export default async function EventsPage() {
                   <p className="label text-quiet">{formatDate(event.date)}</p>
 
                   {event.image && (
-                    <div className="relative aspect-[3/2] overflow-hidden border border-ink/10 bg-ink-2">
+                    <div className="relative aspect-[4/3] overflow-hidden border border-ink/10 bg-ink-2 md:aspect-[4/5]">
                       <Cover
                         src={event.image}
                         alt={event.imageAlt}
                         sizes="(max-width: 768px) 100vw, 192px"
-                        fit="contain"
+                        fit="cover"
                         focal={focalFor(mediaMeta, event.image)}
                       />
                     </div>

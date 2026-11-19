@@ -23,12 +23,9 @@ export default async function AvailabilityPage() {
   return (
     <div className="mx-auto max-w-4xl">
       <div className="mb-3">
-        <h1 className="font-display text-2xl">Call availability</h1>
-        <p className="text-xs opacity-60">
-          When people can book calls with the ministry, and how long each type
-          of call lasts. Minimum notice is 12 hours and bookings open up to 30
-          days ahead (change these with BOOKING_MIN_NOTICE_HOURS and
-          BOOKING_MAX_DAYS_AHEAD in the environment).
+        <h1 className="font-display text-title">Call availability</h1>
+        <p className="admin-hint">
+          When people can book a call, and how long each kind of call lasts. Bookings need twelve hours notice and open thirty days ahead.
         </p>
       </div>
       <AvailabilityEditor rules={rules} callTypes={callTypes} blocks={blocks} />

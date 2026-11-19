@@ -68,8 +68,8 @@ export default async function InboxPage({
     <div className="mx-auto max-w-5xl">
       <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl">Inbox</h1>
-          <p className="text-xs opacity-60">
+          <h1 className="font-display text-title">Inbox</h1>
+          <p className="admin-hint">
             Every form on the site lands here: applications, prayer requests,
             testimonies, messages, registrations and call bookings.
           </p>
@@ -96,7 +96,7 @@ export default async function InboxPage({
           <select id="f-status" name="status" defaultValue={status} className="admin-select">
             {statuses.map((s) => (
               <option key={s} value={s}>
-                {s === "wont_fix" ? "Won't fix" : s.replace("_", " ")}
+                {s === "wont_fix" ? "Won't fix" : s.replaceAll("_", " ")}
               </option>
             ))}
           </select>
@@ -113,7 +113,7 @@ export default async function InboxPage({
           <label className="admin-label" htmlFor="f-to">To</label>
           <input id="f-to" name="to" type="date" defaultValue={to} className="admin-input" />
         </div>
-        <button className="admin-btn admin-btn-gold">Apply</button>
+        <button className="admin-btn admin-btn-gold">Filter</button>
         <Link href="/admin/inbox" className="admin-btn admin-btn-ghost">Reset</Link>
       </form>
 

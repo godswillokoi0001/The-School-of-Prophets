@@ -98,7 +98,7 @@ export function BetaDashboard({
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="font-display text-2xl">Beta feedback</h1>
-          <p className="text-xs opacity-60">
+          <p className="admin-hint">
             Reviews from the fellowship, in their own words. Every one also lands in the
             Inbox and the notification bell.
           </p>
@@ -254,7 +254,7 @@ export function BetaDashboard({
             <h2 className="font-display text-lg">Themes</h2>
             <p className="admin-hint">Counted words and tags. No interpretation, no claims.</p>
             <div className="mt-3 flex flex-wrap gap-2">
-              {stats.words.length === 0 && <span className="text-xs opacity-60">No words yet.</span>}
+              {stats.words.length === 0 && <span className="admin-hint">No words yet.</span>}
               {stats.words.map((entry) => (
                 <span key={entry.word} className="admin-badge">
                   {entry.word} <span className="opacity-60">×{entry.count}</span>

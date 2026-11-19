@@ -64,7 +64,7 @@ export function AdminPagination({
 
         {getPageNumbers().map((p, idx) =>
           p === "..." ? (
-            <span key={`ellipsis-${idx}`} className="px-2 text-xs opacity-40">
+            <span key={`ellipsis-${idx}`} className="px-2 text-xs opacity-40" aria-hidden="true">
               …
             </span>
           ) : (
@@ -72,9 +72,9 @@ export function AdminPagination({
               key={p}
               type="button"
               onClick={() => onPageChange(p as number)}
-              className={`min-w-[1.8rem] h-[1.8rem] rounded text-xs font-medium transition-colors ${
+              className={`min-w-8 h-8 tabular-nums text-xs font-medium transition-colors ${
                 currentPage === p
-                  ? "bg-gold text-ink font-bold shadow-xs"
+                  ? "bg-gold text-ink font-bold"
                   : "hover:bg-parchment/10 opacity-70 hover:opacity-100"
               }`}
             >

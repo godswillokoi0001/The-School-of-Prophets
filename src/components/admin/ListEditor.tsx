@@ -72,8 +72,8 @@ export function ListEditor<Row extends Record<string, unknown>>({
   return (
     <div className="mx-auto max-w-3xl">
       <AdminBack href="/admin/settings" label="Back to settings" />
-      <h1 className="font-display text-2xl">{title}</h1>
-      <p className="mb-4 text-xs opacity-60">{description}</p>
+      <h1 className="font-display text-title">{title}</h1>
+      <p className="mb-4 admin-hint">{description}</p>
       <div className="admin-surface p-3">
         {rows.map((row, i) => (
           <div key={i} className="admin-row py-3">

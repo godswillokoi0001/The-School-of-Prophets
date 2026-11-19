@@ -18,6 +18,14 @@
   --color-ember: #8a4a22;
   --color-quiet: #57524a;
 
+  /* Semantic status only. Never decoration. */
+  --color-ok: #2f7d46;
+  --color-warn: #8a5a00;
+  --color-danger: #a33424;
+  --color-ok-dark: #8fd0a0;
+  --color-warn-dark: #e6b566;
+  --color-danger-dark: #ff9d8f;
+
   --font-display: var(--font-fraunces), "Iowan Old Style", Georgia, serif;
   --font-sans: var(--font-manrope), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 
@@ -84,7 +92,7 @@
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-ember);
+    outline: 2px solid var(--color-gold);
     outline-offset: 3px;
   }
 
@@ -215,14 +223,12 @@
 
 /* Editorial details -------------------------------------------------- */
 
-.dropcap::first-letter {
+/* A long-read opening: larger serif, no decorative drop cap. */
+.opening {
   font-family: var(--font-display);
-  float: left;
-  font-size: 3.6em;
-  line-height: 0.82;
-  padding-right: 0.09em;
-  padding-top: 0.06em;
-  color: var(--color-ember);
+  font-size: 1.3rem;
+  line-height: 1.5;
+  letter-spacing: -0.006em;
 }
 
 .pullquote {
@@ -243,9 +249,9 @@
   background-image: linear-gradient(currentColor, currentColor);
   background-position: 0 100%;
   background-repeat: no-repeat;
-  background-size: 100% 1px;
+  background-size: 0 1px;
   padding-bottom: 2px;
-  transition: background-size var(--dur-1) var(--ease);
+  transition: background-size var(--dur-2) var(--ease);
 }
 .link:hover {
   background-size: 100% 1px;

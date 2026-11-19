@@ -28,7 +28,7 @@ const defaultTemplates = [
     key: "acceptance",
     label: "Enrolment accepted",
     subject: "Welcome to The School of Prophets — Application Accepted",
-    body: "Hello {{name}},\n\nWe are joyful to inform you that your enrolment application has been accepted! Please check your portal for orientation details.\n\nThe School of Prophets",
+    body: "Hello {{name}},\n\nWe are joyful to inform you that your enrolment application has been accepted. Please check your portal for orientation details.\n\nThe School of Prophets",
   },
   {
     key: "decline",
@@ -40,7 +40,7 @@ const defaultTemplates = [
     key: "waitlist_open",
     label: "Waitlist notification",
     subject: "Applications are now open — The School of Prophets",
-    body: "Hello {{name}},\n\nApplications have just opened for the upcoming intake! As you joined our waitlist, you have priority access:\n\n{{link}}\n\nThe School of Prophets",
+    body: "Hello {{name}},\n\nApplications have just opened for the upcoming intake. As you joined our waitlist, you have priority access:\n\n{{link}}\n\nThe School of Prophets",
   },
 ];
 
@@ -56,7 +56,7 @@ export default async function EmailSettings() {
   return (
     <div className="mx-auto max-w-4xl">
       <AdminBack href="/admin/settings" label="Back to settings" />
-      <h1 className="mb-1 font-display text-2xl">Email templates</h1>
+      <h1 className="mb-1 font-display text-title">Email templates</h1>
       <p className="mb-4 text-xs opacity-60">
         The automatic emails the ministry sends: confirmations, acceptance,
         decline, waitlist-open, reminders and cancellation. Test before saving

@@ -15,16 +15,14 @@ export default async function AdminCalendarPage() {
   return (
     <div className="mx-auto max-w-5xl">
       <div className="mb-3">
-        <h1 className="font-display text-2xl">Calendar</h1>
-        <p className="text-xs opacity-60">
-          Calls (green/blue), weekly gatherings (gold) and events (gold) side by
-          side. Click any day or booking for details and actions.
+        <h1 className="font-display text-title">Calendar</h1>
+        <p className="admin-hint">
+          Calls, weekly gatherings and events on one grid. Open a day or a booking for its details.
         </p>
       </div>
       <CalendarView initialMonth={new Date().toISOString().slice(0, 7)} sessions={sessions} />
       <p className="mt-4 text-xs opacity-60">
-        Subscribe to a private feed in any calendar app: set your token in
-        CALENDAR_FEED_TOKEN and use /api/calendar-feed?token=…
+        A private feed is available for any calendar app. Ask the developer to set it up if you need it.
       </p>
     </div>
   );

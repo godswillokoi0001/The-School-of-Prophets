@@ -109,32 +109,58 @@ export default async function TeachingsPage() {
                 series.image ?? teachings.find((t) => t.series === series.slug)?.image;
               const coverAlt =
                 series.imageAlt ?? teachings.find((t) => t.series === series.slug)?.imageAlt;
+              // A stored stub ("Description...") is not a blurb; print nothing.
+              const blurb = /^(description|blurb|summary|text|tbd|tba)\.{0,3}$/i.test(
+                (series.blurb ?? "").trim(),
+              )
+                ? ""
+                : series.blurb;
+              const initials = series.title
+                .split(/\s+/)
+                .filter((word) => !/^(the|of|and|a)$/i.test(word))
+                .slice(0, 2)
+                .map((word) => word[0])
+                .join("");
               return (
                 <li key={series.slug} className="border-b border-ink/12">
                   <Link
                     href={`/teachings/series/${series.slug}`}
-                    className="group grid gap-3 py-5 sm:grid-cols-[8rem_1fr_auto] sm:items-center sm:gap-6"
+                    className="group grid gap-3 py-5 sm:grid-cols-[9rem_1fr_auto] sm:items-center sm:gap-6"
                   >
-                    {cover && (
-                      <span className="relative block aspect-[16/10] overflow-hidden bg-ink">
+                    {cover ? (
+                      <span className="relative block aspect-[4/3] overflow-hidden border border-ink/10 bg-ink-2">
                         <Cover
                           src={cover}
                           alt={coverAlt}
-                          sizes="(max-width: 640px) 100vw, 128px"
+                          sizes="(max-width: 640px) 100vw, 144px"
+                          fit="contain"
                           className="media-zoom"
                         />
+                      </span>
+                    ) : (
+                      <span className="relative flex aspect-[4/3] items-center justify-center overflow-hidden border border-ink/15 bg-parchment-2">
+                        <span className="font-display text-3xl leading-none text-ember/70">
+                          {initials}
+                        </span>
+                        <span className="label absolute bottom-2 left-2 text-quiet">
+                          Series
+                        </span>
                       </span>
                     )}
                     <span>
                       <span className="font-display text-2xl group-hover:text-ember">
                         {series.title}
                       </span>
-                      <span className="mt-1 block max-w-[62ch] text-sm text-quiet">
-                        {series.blurb}
-                      </span>
+                      {blurb && (
+                        <span className="mt-1 block max-w-[62ch] text-sm text-quiet">
+                          {blurb}
+                        </span>
+                      )}
                     </span>
                     <span className="flex items-center gap-3 text-xs uppercase tracking-[0.12em] text-quiet">
-                      {count} {count === 1 ? "part" : "parts"}
+                      {count === 0
+                        ? "In preparation"
+                        : `${count} ${count === 1 ? "part" : "parts"}`}
                       <ArrowRight
                         aria-hidden="true"
                         className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1"

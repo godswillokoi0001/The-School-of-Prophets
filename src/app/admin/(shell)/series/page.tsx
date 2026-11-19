@@ -31,8 +31,8 @@ export default async function SeriesPage() {
     <div className="mx-auto max-w-4xl">
       <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl">Series</h1>
-          <p className="text-xs opacity-60">
+          <h1 className="font-display text-title">Series</h1>
+          <p className="admin-hint">
             Order teachings into series such as &ldquo;Faith Series&rdquo; or &ldquo;Word of
             Knowledge&rdquo;. The order here is the order visitors see.
           </p>

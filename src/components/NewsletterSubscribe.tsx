@@ -3,6 +3,10 @@
 import { useState } from "react";
 import { ArrowRight } from "lucide-react";
 
+/**
+ * The newsletter form, in three contexts: a footer band, a card on the
+ * newsletter page, and a banner. One field set, one voice, no urgency.
+ */
 export function NewsletterSubscribe({
   variant = "banner",
 }: {
@@ -22,15 +26,15 @@ export function NewsletterSubscribe({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!firstName.trim()) {
-      setError("Please provide your first name.");
+      setError("Please give your first name.");
       return;
     }
     if (!lastName.trim()) {
-      setError("Please provide your last name.");
+      setError("Please give your last name.");
       return;
     }
     if (!email.trim()) {
-      setError("Add an email address so we know where to send it.");
+      setError("Add an email address so we know where to send the letter.");
       return;
     }
     setBusy(true);
@@ -74,21 +78,25 @@ export function NewsletterSubscribe({
   }
 
   const onDark = variant !== "card";
+  const fieldClass = `min-h-11 w-full border bg-transparent px-3 text-sm outline-none focus:border-gold ${
+    onDark
+      ? "border-parchment/25 text-parchment placeholder:text-parchment/40"
+      : "border-ink/25 text-ink placeholder:text-quiet/70"
+  }`;
 
   const form = success ? (
     <div
       role="status"
-      className={`p-4 border text-sm leading-relaxed ${
-        onDark
-          ? "border-gold/40 bg-gold/10 text-parchment"
-          : "border-ember/30 bg-ember/10 text-ink"
+      className={`border-t py-4 text-sm leading-relaxed ${
+        onDark ? "border-gold/50 text-parchment" : "border-ember/40 text-ink"
       }`}
     >
-      <p className={`font-semibold ${onDark ? "text-gold-soft" : "text-ember"}`}>
-        You are now subscribed to the fellowship!
+      <p className={`label ${onDark ? "text-gold-soft" : "text-ember"}`}>
+        You are on the list
       </p>
-      <p className="mt-1 text-xs opacity-90">
-        Look out for everyday morning devotions and immediate notifications whenever new teachings are uploaded. <strong>Please check your email daily</strong>.
+      <p className="mt-2">
+        The first letter arrives tomorrow morning. Every email carries an
+        unsubscribe link at the foot of it.
       </p>
     </div>
   ) : (
@@ -103,6 +111,7 @@ export function NewsletterSubscribe({
         autoComplete="off"
         aria-hidden="true"
       />
+
       <div className="grid gap-2 sm:grid-cols-2">
         <label>
           <span className="sr-only">First name</span>
@@ -112,12 +121,8 @@ export function NewsletterSubscribe({
             autoComplete="given-name"
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
-            placeholder="First name *"
-            className={`min-h-11 w-full border bg-transparent px-3 text-sm focus:border-gold ${
-              onDark
-                ? "border-parchment/25 text-parchment placeholder:text-parchment/35"
-                : "border-ink/25 text-ink placeholder:text-quiet/60"
-            }`}
+            placeholder="First name"
+            className={fieldClass}
           />
         </label>
         <label>
@@ -128,17 +133,14 @@ export function NewsletterSubscribe({
             autoComplete="family-name"
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
-            placeholder="Last name *"
-            className={`min-h-11 w-full border bg-transparent px-3 text-sm focus:border-gold ${
-              onDark
-                ? "border-parchment/25 text-parchment placeholder:text-parchment/35"
-                : "border-ink/25 text-ink placeholder:text-quiet/60"
-            }`}
+            placeholder="Last name"
+            className={fieldClass}
           />
         </label>
       </div>
-      <div className="mt-2 grid gap-2 sm:grid-cols-2">
-        <label>
+
+      <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+        <label className="flex-1">
           <span className="sr-only">Email address</span>
           <input
             type="email"
@@ -147,39 +149,40 @@ export function NewsletterSubscribe({
             inputMode="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email address *"
+            placeholder="Email address"
             aria-invalid={Boolean(error)}
             aria-describedby={error ? "newsletter-error" : undefined}
-            className={`min-h-11 w-full border bg-transparent px-3 text-sm focus:border-gold ${
-              onDark
-                ? "border-parchment/25 text-parchment placeholder:text-parchment/35"
-                : "border-ink/25 text-ink placeholder:text-quiet/60"
-            }`}
+            className={fieldClass}
           />
         </label>
-        <label>
-          <span className="sr-only">Phone / WhatsApp (optional)</span>
+        <button
+          type="submit"
+          disabled={busy}
+          className="btn btn-gold shrink-0 sm:w-auto"
+        >
+          {busy ? "Sending…" : "Subscribe"}
+          {!busy && <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />}
+        </button>
+      </div>
+
+      <details className="mt-2.5">
+        <summary className="inline cursor-pointer text-xs opacity-60 hover:opacity-100">
+          Add a phone number (optional)
+        </summary>
+        <label className="mt-2 block">
+          <span className="sr-only">Phone or WhatsApp</span>
           <input
             type="tel"
             autoComplete="tel"
             inputMode="tel"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            placeholder="Phone / WhatsApp (optional)"
-            className={`min-h-11 w-full border bg-transparent px-3 text-sm focus:border-gold ${
-              onDark
-                ? "border-parchment/25 text-parchment placeholder:text-parchment/35"
-                : "border-ink/25 text-ink placeholder:text-quiet/60"
-            }`}
+            placeholder="+234…"
+            className={fieldClass}
           />
         </label>
-      </div>
-      <div className="mt-2.5">
-        <button type="submit" disabled={busy} className="btn btn-gold w-full sm:w-auto">
-          {busy ? "Subscribing…" : "Subscribe"}
-          {!busy && <ArrowRight aria-hidden="true" className="h-3.5 w-3.5 ml-1" />}
-        </button>
-      </div>
+      </details>
+
       {error && (
         <p
           id="newsletter-error"
@@ -194,17 +197,18 @@ export function NewsletterSubscribe({
 
   if (variant === "inline") {
     return (
-      <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-        <div className="max-w-[48ch]">
-          <p className="label text-gold-soft/85">Essential for Every Disciple</p>
-          <h2 className="mt-1 font-display text-2xl md:text-3xl text-parchment">
-            Daily Devotions & Teaching Alerts
+      <div className="grid gap-6 md:grid-cols-12 md:items-start">
+        <div className="md:col-span-5">
+          <p className="label text-gold-soft/80">The letter</p>
+          <h2 className="mt-2 max-w-[20ch] font-display text-2xl leading-tight text-parchment md:text-3xl">
+            A short word each weekday.
           </h2>
-          <p className="mt-2 text-xs sm:text-sm leading-relaxed text-parchment/70">
-            Receive everyday morning devotions directly in your inbox, instant alerts whenever new teachings and audios are uploaded, and our weekly fellowship letters. Subscribing is essential for every disciple to stay spiritually nourished daily.
+          <p className="mt-2 max-w-[42ch] text-sm leading-relaxed text-parchment/60">
+            A devotion of a few minutes, and a note when a new teaching is
+            published. Nothing else is sent.
           </p>
         </div>
-        <div className="w-full md:max-w-md">{form}</div>
+        <div className="md:col-span-6 md:col-start-7">{form}</div>
       </div>
     );
   }
@@ -213,22 +217,23 @@ export function NewsletterSubscribe({
     <div
       className={
         variant === "card"
-          ? "border border-ink/20 bg-paper p-6 sm:p-8"
-          : "border-y border-parchment/15 bg-ink-2 p-6 sm:p-8 text-parchment"
+          ? "border-t border-ink/25 pt-6"
+          : "border-y border-parchment/15 bg-ink-2 p-6 text-parchment sm:p-8"
       }
     >
-      <p className={`label ${variant === "card" ? "text-ember" : "text-gold-soft/85"}`}>
-        Essential Spiritual Lifeline
+      <p className={`label ${variant === "card" ? "text-ember" : "text-gold-soft/80"}`}>
+        The letter
       </p>
-      <h2 className="mt-3 font-display text-2xl sm:text-3xl">
-        Daily Devotions & Teaching Alerts
+      <h2 className="mt-2 font-display text-2xl sm:text-3xl">
+        A short word each weekday.
       </h2>
       <p
         className={`measure mt-2 text-sm leading-relaxed ${
-          variant === "card" ? "text-quiet" : "text-parchment/70"
+          variant === "card" ? "text-quiet" : "text-parchment/65"
         }`}
       >
-        Subscribing is essential for everyone in our fellowship. You will receive everyday morning devotions to anchor your walk, instant email alerts whenever any teaching has been uploaded, and our weekly prophetic letters. Check your email daily to stay nourished.
+        A devotion of a few minutes, and a note when a new teaching is
+        published. Nothing else is sent.
       </p>
       <div className="mt-5">{form}</div>
     </div>

@@ -1,9 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { X } from "lucide-react";
 
+/**
+ * The letter invitation.
+ *
+ * It is never thrown over the page on arrival: it waits until the reader has
+ * scrolled most of an article, or moves to leave the site. Dismissal is kept
+ * for a week, subscription forever, and the card fits a 320px screen.
+ */
 export function NewsletterModal() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
@@ -15,53 +22,105 @@ export function NewsletterModal() {
   const [busy, setBusy] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
+  const panelRef = useRef<HTMLDivElement>(null);
+  const returnFocus = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
-    if (pathname.startsWith("/admin") || pathname === "/newsletter") {
-      return;
-    }
+    if (pathname.startsWith("/admin") || pathname === "/newsletter") return;
 
     try {
-      const isSubscribed = localStorage.getItem("tsop_newsletter_subscribed");
-      if (isSubscribed === "true") return;
-
+      if (localStorage.getItem("tsop_newsletter_subscribed") === "true") return;
       const dismissedAt = localStorage.getItem("tsop_newsletter_dismissed");
       if (dismissedAt) {
-        const elapsedDays = (Date.now() - parseInt(dismissedAt, 10)) / (1000 * 60 * 60 * 24);
-        if (elapsedDays < 7) {
-          return;
-        }
+        const elapsedDays =
+          (Date.now() - parseInt(dismissedAt, 10)) / (1000 * 60 * 60 * 24);
+        if (elapsedDays < 7) return;
       }
     } catch {
-      // LocalStorage unavailable
+      // Storage is unavailable; the reader can still dismiss the card.
     }
 
-    const delay = pathname.startsWith("/teachings/") ? 3500 : 7000;
-    const timer = setTimeout(() => {
-      setIsOpen(true);
-    }, delay);
+    let fired = false;
+    let timer = 0;
 
-    return () => clearTimeout(timer);
+    const open = () => {
+      if (fired) return;
+      fired = true;
+      returnFocus.current = document.activeElement as HTMLElement | null;
+      setIsOpen(true);
+      window.removeEventListener("scroll", onScroll);
+      document.removeEventListener("mouseout", onLeave);
+      window.clearTimeout(timer);
+    };
+
+    const onScroll = () => {
+      const scrollable =
+        document.documentElement.scrollHeight - window.innerHeight;
+      if (scrollable > 600 && window.scrollY / scrollable > 0.6) open();
+    };
+
+    const onLeave = (event: MouseEvent) => {
+      if (event.clientY <= 0) open();
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    document.addEventListener("mouseout", onLeave);
+    // Long-form pages still get one quiet offer, well after the first screen.
+    timer = window.setTimeout(open, pathname.startsWith("/teachings/") ? 45000 : 60000);
+
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      document.removeEventListener("mouseout", onLeave);
+      window.clearTimeout(timer);
+    };
   }, [pathname]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const previousOverflow = document.documentElement.style.overflow;
+    document.documentElement.style.overflow = "hidden";
+    const focusTarget =
+      panelRef.current?.querySelector<HTMLElement>("[data-autofocus]") ??
+      panelRef.current;
+    focusTarget?.focus();
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        handleDismiss();
+        return;
+      }
+      if (event.key !== "Tab" || !panelRef.current) return;
+      const focusable = panelRef.current.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([type="hidden"]), select, textarea',
+      );
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      document.documentElement.style.overflow = previousOverflow;
+    };
+  }, [isOpen]);
 
   function handleDismiss() {
     setIsOpen(false);
+    returnFocus.current?.focus?.();
     try {
       localStorage.setItem("tsop_newsletter_dismissed", Date.now().toString());
     } catch {
       // ignore
     }
   }
-
-  useEffect(() => {
-    function onKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape" && isOpen) {
-        handleDismiss();
-      }
-    }
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [isOpen]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -104,9 +163,6 @@ export function NewsletterModal() {
         } catch {
           // ignore
         }
-        setTimeout(() => {
-          setIsOpen(false);
-        }, 2500);
       } else {
         if (res.status === 409) {
           try {
@@ -115,7 +171,11 @@ export function NewsletterModal() {
             // ignore
           }
         }
-        setError(data.error || data.message || "Could not complete subscription. Please try again.");
+        setError(
+          data.error ||
+            data.message ||
+            "Could not complete the subscription. Please try again.",
+        );
       }
     } catch {
       setError("Connection error. Please try again in a moment.");
@@ -128,29 +188,32 @@ export function NewsletterModal() {
 
   return (
     <div
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="letter-title"
-      className="fixed inset-0 z-[120] flex items-end justify-center bg-ink/85 p-3 sm:items-center sm:p-6"
+      className="fixed inset-0 z-[120] flex items-end justify-center overflow-y-auto bg-ink/85 p-3 sm:items-center sm:p-6"
       onClick={handleDismiss}
     >
       <div
-        className="relative w-full max-w-[26rem] border border-ink/25 bg-parchment text-ink"
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="letter-title"
+        tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
+        className="relative my-auto w-full max-w-[26rem] border border-ink/25 bg-parchment text-ink shadow-none"
       >
-        <div className="flex items-center justify-between border-b border-ink/15 px-4 py-2">
+        <div className="flex items-center justify-between gap-3 border-b border-ink/15 px-4 py-2">
           <p className="label text-ember">A letter each morning</p>
           <button
             type="button"
             onClick={handleDismiss}
-            className="-mr-2 flex h-11 w-11 items-center justify-center text-ink/55 transition-colors hover:text-ink"
+            autoFocus
+            className="-mr-2 flex h-11 w-11 shrink-0 items-center justify-center text-ink/55 transition-colors hover:text-ink"
             aria-label="Close"
           >
-            <X className="h-4 w-4" />
+            <X aria-hidden="true" className="h-4 w-4" />
           </button>
         </div>
 
-        <div className="px-5 py-5 sm:px-6">
+        <div className="px-4 py-5 sm:px-6">
           {success ? (
             <div>
               <p className="label text-ember">You are on the list</p>
@@ -158,9 +221,16 @@ export function NewsletterModal() {
                 Thank you, {firstName}.
               </h2>
               <p className="mt-2 text-sm text-quiet">
-                Look for the first letter tomorrow morning. Every email has an
+                The first letter arrives tomorrow morning. Every email carries an
                 unsubscribe link at the foot of it.
               </p>
+              <button
+                type="button"
+                onClick={handleDismiss}
+                className="btn btn-outline mt-5 w-full"
+              >
+                Close
+              </button>
             </div>
           ) : (
             <>
@@ -168,8 +238,8 @@ export function NewsletterModal() {
                 A short word before the day begins.
               </h2>
               <p className="mt-2 text-sm leading-relaxed text-quiet">
-                Every weekday morning a devotion of a few minutes, and a note
-                whenever a new teaching is published. Nothing else.
+                A weekday devotion of a few minutes, and a note when a new
+                teaching is published. Nothing else.
               </p>
 
               <form onSubmit={handleSubmit} className="mt-4 space-y-3">
@@ -193,7 +263,7 @@ export function NewsletterModal() {
                       autoComplete="given-name"
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
-                      className="input !min-h-11 text-sm"
+                      className="input text-sm"
                     />
                   </label>
                   <label className="field">
@@ -204,7 +274,7 @@ export function NewsletterModal() {
                       autoComplete="family-name"
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
-                      className="input !min-h-11 text-sm"
+                      className="input text-sm"
                     />
                   </label>
                 </div>
@@ -218,7 +288,7 @@ export function NewsletterModal() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@example.com"
-                    className="input !min-h-11 text-sm"
+                    className="input text-sm"
                   />
                 </label>
 
@@ -231,12 +301,12 @@ export function NewsletterModal() {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="+234…"
-                    className="input !min-h-11 text-sm"
+                    className="input text-sm"
                   />
                 </label>
 
                 {error && (
-                  <p role="alert" className="text-xs text-[#8c2f24]">
+                  <p role="alert" className="text-xs text-ember">
                     {error}
                   </p>
                 )}

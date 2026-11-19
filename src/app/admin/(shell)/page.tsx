@@ -227,7 +227,7 @@ export default async function AdminHome() {
             <section>
               <h3 className="mb-2 font-display text-base">Inbox by form</h3>
               {newByType.length === 0 ? (
-                <p className="text-xs opacity-60">Nothing unread.</p>
+                <p className="admin-hint">Nothing unread.</p>
               ) : (
                 <ul className="border-t border-parchment/12">
                   {newByType.map((t) => (
@@ -293,7 +293,7 @@ export default async function AdminHome() {
           <section className="flex flex-wrap items-center justify-between gap-3 border-t border-parchment/12 pt-4">
             <div>
               <h3 className="font-display text-base">Enrolment</h3>
-              <p className="text-xs opacity-60">{enrolment.cohortName}</p>
+              <p className="admin-hint">{enrolment.cohortName}</p>
             </div>
             <EnrolmentSwitch initialStatus={enrolment.status} compact />
           </section>

@@ -91,7 +91,7 @@ export default function AcceptInvitePage() {
           <p className="label mt-1 text-gold-soft">Ministry Team Invitation</p>
         </div>
 
-        <div className="admin-surface p-6 shadow-xl border border-gold/30">
+        <div className="admin-surface p-6  border border-gold/30">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-10 gap-3 text-sm opacity-70">
               <LoaderCircle size={24} className="animate-spin text-gold" />
@@ -111,7 +111,7 @@ export default function AcceptInvitePage() {
           ) : success ? (
             <div className="py-4 text-center">
               <CheckCircle2 size={40} className="mx-auto text-gold mb-3" />
-              <h2 className="font-display text-xl font-semibold">Account Activated!</h2>
+              <h2 className="font-display text-xl font-semibold">Account activated</h2>
               <p className="mt-2 text-xs opacity-80 leading-relaxed">
                 Your password has been successfully configured. You can now use your email (
                 <strong className="text-parchment">{inviteData?.email}</strong>) and chosen password to access the
@@ -123,7 +123,7 @@ export default function AcceptInvitePage() {
                   onClick={() => router.push("/admin")}
                   className="admin-btn admin-btn-gold w-full justify-center"
                 >
-                  Enter Admin Dashboard &rarr;
+                  Open the dashboard
                 </button>
                 <Link href="/admin/login" className="admin-btn admin-btn-ghost w-full justify-center text-xs">
                   Go to Sign In page
@@ -141,7 +141,7 @@ export default function AcceptInvitePage() {
                   <span className="admin-badge admin-badge-gold text-xs uppercase tracking-wide">
                     {inviteData?.role}
                   </span>
-                  <span className="text-xs opacity-60">{inviteData?.email}</span>
+                  <span className="admin-hint">{inviteData?.email}</span>
                 </div>
               </div>
 
