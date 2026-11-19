@@ -40,8 +40,17 @@ export const getStaff = cache(async (): Promise<Staff | null> => {
       } catch {
         // non-fatal
       }
-    } else if (cleanEmail === "censusokoi515@gmail.com" || cleanEmail === "lawrenceiwara1@gmail.com") {
-      const ownerName = cleanEmail === "lawrenceiwara1@gmail.com" ? "Prophet Lawrence Iwara" : "Owner";
+    } else if (
+      cleanEmail === "censusokoi515@gmail.com" ||
+      cleanEmail === "lawrenceiwara1@gmail.com" ||
+      cleanEmail === "godswillokoi0001@gmail.com"
+    ) {
+      const ownerName =
+        cleanEmail === "lawrenceiwara1@gmail.com"
+          ? "Prophet Lawrence Iwara"
+          : cleanEmail === "godswillokoi0001@gmail.com"
+            ? "Godswill Okoi (Owner)"
+            : "Owner";
       try {
         await client.from("profiles").upsert({
           id: userData.user.id,

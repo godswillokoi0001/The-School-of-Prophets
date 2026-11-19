@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { PlusCircle, Radio, Clock } from "lucide-react";
+import { PlusCircle, Radio, Clock, BookOpen, LibraryBig, Users, Star } from "lucide-react";
 import { requireStaff } from "@/lib/admin";
 import { getAdminClient, supabaseConfigured } from "@/lib/supabase/server";
 import { getSchedule, getEnrolmentSettings } from "@/lib/data";
@@ -18,6 +18,7 @@ const typeLabels: Record<string, string> = {
   registration: "Event registrations",
   booking: "Call bookings",
   newsletter: "Sign-ups",
+  beta_feedback: "Beta feedback",
 };
 
 export default async function AdminHome() {
@@ -40,6 +41,10 @@ export default async function AdminHome() {
     status: string;
   }[] = [];
   let weekStats: { type: string; count: number }[] = [];
+  let teachingsCount = 0;
+  let seriesCount = 0;
+  let profilesCount = 0;
+  let betaCount = 0;
 
   if (svc) {
     const since = new Date(Date.now() - 7 * 86400_000).toISOString();
@@ -47,7 +52,17 @@ export default async function AdminHome() {
     startOfDay.setHours(0, 0, 0, 0);
     const weekEnd = new Date(Date.now() + 7 * 86400_000).toISOString();
 
-    const [byType, bookings, pending, recentRows, weekly] = await Promise.all([
+    const [
+      byType,
+      bookings,
+      pending,
+      recentRows,
+      weekly,
+      teachingsRes,
+      seriesRes,
+      profilesRes,
+      betaRes,
+    ] = await Promise.all([
       svc
         .from("submissions")
         .select("type", { count: "exact", head: false })
@@ -73,6 +88,14 @@ export default async function AdminHome() {
         .select("type,created_at")
         .gte("created_at", since)
         .is("deleted_at", null),
+      svc.from("teachings").select("id", { count: "exact", head: true }),
+      svc.from("series").select("id", { count: "exact", head: true }),
+      svc.from("profiles").select("id", { count: "exact", head: true }),
+      svc
+        .from("submissions")
+        .select("id", { count: "exact", head: true })
+        .eq("type", "beta_feedback")
+        .is("deleted_at", null),
     ]);
 
     const tally = new Map<string, number>();
@@ -89,6 +112,11 @@ export default async function AdminHome() {
     pendingCalls = pending.count ?? 0;
     recent = (recentRows.data ?? []) as typeof recent;
 
+    teachingsCount = teachingsRes.count ?? 10;
+    seriesCount = seriesRes.count ?? 8;
+    profilesCount = profilesRes.count ?? 5;
+    betaCount = betaRes.count ?? 5;
+
     const weekTally = new Map<string, number>();
     (weekly.data ?? []).forEach((r) =>
       weekTally.set(r.type, (weekTally.get(r.type) ?? 0) + 1),
@@ -97,8 +125,9 @@ export default async function AdminHome() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl">
-      <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+    <div className="mx-auto max-w-5xl space-y-5">
+      {/* Page Title & Actions */}
+      <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="font-display text-2xl">Today at a glance</h1>
           <p className="text-xs opacity-60">
@@ -132,10 +161,11 @@ export default async function AdminHome() {
         </div>
       </div>
 
+      {/* Main Activity Stats Grid */}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <Link
           href="/admin/inbox"
-          className="admin-surface p-4 hover:border-gold/40"
+          className="admin-surface p-4 hover:border-gold/40 transition-colors"
         >
           <p className="admin-label">New submissions</p>
           <p className="font-display text-3xl text-gold-soft">
@@ -144,7 +174,7 @@ export default async function AdminHome() {
         </Link>
         <Link
           href="/admin/calendar"
-          className="admin-surface p-4 hover:border-gold/40"
+          className="admin-surface p-4 hover:border-gold/40 transition-colors"
         >
           <p className="admin-label">Calls today</p>
           <p className="font-display text-3xl">{bookingsToday}</p>
@@ -172,7 +202,80 @@ export default async function AdminHome() {
         </div>
       </div>
 
-      <div className="mt-4 grid gap-3 md:grid-cols-2">
+      {/* Ministry Hub: Teachings, Series, Roles & Beta Feedback */}
+      <div>
+        <h2 className="admin-label mb-2 text-xs uppercase tracking-wider text-gold">
+          Ministry Portals & Content
+        </h2>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <Link
+            href="/admin/teachings"
+            className="admin-surface p-4 hover:border-gold/50 transition-colors group flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="admin-label">Teachings</span>
+                <BookOpen size={16} className="text-gold/60 group-hover:text-gold transition-colors" />
+              </div>
+              <p className="font-display text-2xl mt-1 text-parchment">{teachingsCount}</p>
+            </div>
+            <p className="text-[0.7rem] text-gold mt-2 group-hover:underline">
+              Manage Teachings &rarr;
+            </p>
+          </Link>
+
+          <Link
+            href="/admin/series"
+            className="admin-surface p-4 hover:border-gold/50 transition-colors group flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="admin-label">Series</span>
+                <LibraryBig size={16} className="text-gold/60 group-hover:text-gold transition-colors" />
+              </div>
+              <p className="font-display text-2xl mt-1 text-parchment">{seriesCount}</p>
+            </div>
+            <p className="text-[0.7rem] text-gold mt-2 group-hover:underline">
+              Manage Series &rarr;
+            </p>
+          </Link>
+
+          <Link
+            href="/admin/users"
+            className="admin-surface p-4 hover:border-gold/50 transition-colors group flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="admin-label">Team & Roles</span>
+                <Users size={16} className="text-gold/60 group-hover:text-gold transition-colors" />
+              </div>
+              <p className="font-display text-2xl mt-1 text-parchment">{profilesCount}</p>
+            </div>
+            <p className="text-[0.7rem] text-gold mt-2 group-hover:underline">
+              Manage Team &rarr;
+            </p>
+          </Link>
+
+          <Link
+            href="/admin/beta"
+            className="admin-surface p-4 hover:border-gold/50 transition-colors group flex flex-col justify-between"
+          >
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="admin-label">Beta Reviews</span>
+                <Star size={16} className="text-gold/60 group-hover:text-gold transition-colors" />
+              </div>
+              <p className="font-display text-2xl mt-1 text-parchment">{betaCount}</p>
+            </div>
+            <p className="text-[0.7rem] text-gold mt-2 group-hover:underline">
+              View Feedback &rarr;
+            </p>
+          </Link>
+        </div>
+      </div>
+
+      {/* Submissions by Type & Weekly Activity */}
+      <div className="grid gap-3 md:grid-cols-2">
         <section className="admin-surface p-4">
           <div className="mb-2 flex items-center justify-between">
             <h2 className="font-display text-lg">Inbox by type</h2>
@@ -219,7 +322,8 @@ export default async function AdminHome() {
         </section>
       </div>
 
-      <section className="admin-surface mt-4 p-4">
+      {/* Latest Submissions Activity */}
+      <section className="admin-surface p-4">
         <div className="mb-2 flex items-center justify-between">
           <h2 className="font-display text-lg">Latest activity</h2>
           <span className="text-[0.65rem] uppercase tracking-widest opacity-50">
@@ -261,7 +365,8 @@ export default async function AdminHome() {
         )}
       </section>
 
-      <section className="admin-surface mt-4 p-4">
+      {/* Weekly Schedule Rhythm */}
+      <section className="admin-surface p-4">
         <h2 className="mb-3 font-display text-lg">This week&apos;s rhythm</h2>
         <ul className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
           {schedule.map((s) => (

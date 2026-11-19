@@ -21,16 +21,28 @@ export default async function TeachingsPage({
   let seriesOptions: { id: string; title: string }[] = [];
 
   if (svc) {
-    const [teachings, series] = await Promise.all([
+    const [teachingsRes, seriesRes] = await Promise.all([
       svc
         .from("teachings")
-        .select("id,title,slug,status,date_taught,featured,series_id,series:series_id(title)")
+        .select("id,title,slug,status,date_taught,featured,series_id")
         .order("date_taught", { ascending: false }),
       svc.from("series").select("id,title").order("sort_order"),
     ]);
-    const seriesMap = new Map((series.data ?? []).map((s) => [s.id, s.title]));
-    seriesOptions = (series.data ?? []).map((s) => ({ id: s.id, title: s.title }));
-    rows = (teachings.data ?? [])
+
+    const seriesMap = new Map((seriesRes.data ?? []).map((s) => [s.id, s.title]));
+    seriesOptions = (seriesRes.data ?? []).map((s) => ({ id: s.id, title: s.title }));
+    rows = (teachingsRes.data ?? [])
+      .map((t) => ({
+        id: t.id,
+        title: t.title,
+        slug: t.slug,
+        status: t.status,
+        series_title: seriesMap.get(t.series_id ?? "") ?? null,
+        date_taught: t.date_taught,
+        featured: t.featured,
+      }))
+      .filter((t) => status === "all" || t.status === status)
+      .filter((t) => !q || t.title.toLowerCase().includes(q.toLowerCase()));
       .map((t) => ({
         id: t.id,
         title: t.title,

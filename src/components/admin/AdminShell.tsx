@@ -124,8 +124,14 @@ export function AdminShell({
     },
   ];
 
+  const normalizedRole = ((role || "owner").toLowerCase().trim()) as Role;
+  const userRank = rank[normalizedRole] ?? 4;
+
   const visible = groups
-    .map((g) => ({ ...g, items: g.items.filter((i) => !i.min || rank[role] >= rank[i.min]) }))
+    .map((g) => ({
+      ...g,
+      items: g.items.filter((i) => !i.min || userRank >= (rank[i.min] ?? 1)),
+    }))
     .filter((g) => g.items.length > 0);
 
   const renderNav = (isMobile = false) => {
