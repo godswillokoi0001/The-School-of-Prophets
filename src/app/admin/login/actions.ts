@@ -1,8 +1,9 @@
 "use server";
 
-import { getServiceClient } from "@/lib/supabase/server";
+import { getServiceRoleKey } from "@/lib/supabase/server";
 import { sendEmail } from "@/lib/notify";
-import { buildHtmlEmail } from "@/lib/email-templates";
+import { renderPasswordResetEmail } from "@/lib/email-templates";
+import { createClient } from "@supabase/supabase-js";
 
 export async function requestPasswordResetAction(email: string): Promise<{
   success: boolean;
@@ -14,87 +15,89 @@ export async function requestPasswordResetAction(email: string): Promise<{
   }
 
   const cleanEmail = email.trim().toLowerCase();
-  const svc = getServiceClient();
-  if (!svc) {
-    return { success: false, error: "Authentication service is currently unavailable. Please check your Supabase configuration." };
-  }
-
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://theschoolofprophets.site";
   const redirectTo = `${siteUrl.replace(/\/$/, "")}/admin/reset-password`;
 
-  try {
-    const { data, error } = await svc.auth.admin.generateLink({
-      type: "recovery",
-      email: cleanEmail,
-      options: {
-        redirectTo,
-      },
-    });
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const serviceKey = getServiceRoleKey();
 
-    if (error) {
-      console.warn("[requestPasswordResetAction] generateLink notice:", error.message);
-      // For security, don't reveal if the email is not registered to prevent email enumeration
+  if (!supabaseUrl) {
+    return { success: false, error: "Supabase URL is not configured." };
+  }
+
+  // --- Attempt 1: Branded Liturgical Email via Service Role + Resend ---
+  if (serviceKey) {
+    try {
+      const adminSb = createClient(supabaseUrl, serviceKey, {
+        auth: { persistSession: false, autoRefreshToken: false },
+      });
+
+      const { data, error } = await adminSb.auth.admin.generateLink({
+        type: "recovery",
+        email: cleanEmail,
+        options: {
+          redirectTo,
+        },
+      });
+
+      if (!error && data?.properties?.action_link) {
+        const actionLink = data.properties.action_link;
+        const rendered = renderPasswordResetEmail({
+          email: cleanEmail,
+          resetUrl: actionLink,
+        });
+
+        const status = await sendEmail(
+          cleanEmail,
+          rendered.subject,
+          rendered.text,
+          undefined,
+          rendered.html
+        );
+
+        if (!status.startsWith("failed")) {
+          return {
+            success: true,
+            message: `A password reset link has been dispatched to ${cleanEmail}. Please check your inbox and spam folder.`,
+          };
+        }
+      } else if (error) {
+        console.warn("[requestPasswordResetAction] generateLink notice:", error.message);
+      }
+    } catch (adminErr) {
+      console.warn("[requestPasswordResetAction] admin.generateLink error:", adminErr);
+    }
+  }
+
+  // --- Attempt 2: Direct Supabase Password Reset Fallback ---
+  // Guaranteed to dispatch even if service role key is not yet added in Vercel
+  if (anonKey) {
+    try {
+      const sb = createClient(supabaseUrl, anonKey, {
+        auth: { persistSession: false },
+      });
+
+      const { error: resetErr } = await sb.auth.resetPasswordForEmail(cleanEmail, {
+        redirectTo,
+      });
+
+      if (resetErr) {
+        return { success: false, error: resetErr.message };
+      }
+
       return {
         success: true,
-        message: `If ${cleanEmail} is registered in our admin records, a password reset link has been dispatched. Please check your inbox and spam folder.`,
+        message: `A password reset link has been dispatched to ${cleanEmail}. Please check your inbox and spam folder.`,
       };
-    }
-
-    const actionLink = data?.properties?.action_link;
-    if (!actionLink) {
-      return { success: false, error: "Failed to generate recovery link. Please try again." };
-    }
-
-    const html = buildHtmlEmail({
-      badge: "Account Security",
-      title: "Reset Your Admin Password",
-      preheader: "Password recovery link for The School of Prophets administrator portal",
-      paragraphs: [
-        "A password reset request was initiated for your administrator account at <strong>The School of Prophets</strong>.",
-        "Click the button below to establish a new password for your account. For your protection, this secure link is valid for 1 hour.",
-      ],
-      cta: {
-        label: "Reset My Password",
-        url: actionLink,
-      },
-      highlightBox: {
-        label: "Security Details",
-        items: [
-          { label: "Account Email", value: cleanEmail },
-          { label: "Link Validity", value: "60 minutes" },
-          { label: "Portal", value: "The School of Prophets Admin" },
-        ],
-      },
-      closing:
-        "If you did not request this password reset, please disregard this email or notify the owner immediately.<br /><br />Ministry Administration,<br /><strong>The School of Prophets</strong>",
-    });
-
-    const plainText = `Reset Your Admin Password — The School of Prophets\n\nA password reset was requested for ${cleanEmail}.\n\nClick the link below to set a new password:\n${actionLink}\n\nThis link is valid for 60 minutes.\nIf you did not request this, you can safely ignore this email.`;
-
-    const dispatchStatus = await sendEmail(
-      cleanEmail,
-      "Reset Your Password — The School of Prophets",
-      plainText,
-      undefined,
-      html
-    );
-
-    if (dispatchStatus.startsWith("failed")) {
+    } catch (err: unknown) {
+      console.error("[requestPasswordResetAction] Supabase fallback error:", err);
       return {
         success: false,
-        error: "Unable to send the email at this time. Please verify email delivery settings.",
+        error: err instanceof Error ? err.message : "Failed to dispatch reset email",
       };
     }
-
-    return {
-      success: true,
-      message: `A password reset link has been dispatched to ${cleanEmail}. Please check your email inbox and spam folder.`,
-    };
-  } catch (err: unknown) {
-    console.error("[requestPasswordResetAction] Unexpected failure:", err);
-    return {
-      success: false,
-      error: err instanceof Error ? err.message : "Failed to dispatch reset email",
-    };
   }
+
+  return { success: false, error: "No available method to dispatch reset email." };
 }

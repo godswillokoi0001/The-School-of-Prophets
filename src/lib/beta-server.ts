@@ -1,5 +1,5 @@
 import sharp from "sharp";
-import { getServiceClient } from "@/lib/supabase/server";
+import { getAdminClient, getServiceClient } from "@/lib/supabase/server";
 import {
   BETA_BUCKET,
   BETA_SETTING_KEY,
@@ -14,7 +14,7 @@ const MAX_BYTES = 5 * 1024 * 1024;
 const ALLOWED = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 
 export async function betaAccepting(): Promise<boolean> {
-  const svc = getServiceClient();
+  const svc = (await getAdminClient()) || getServiceClient();
   if (!svc) return true;
   try {
     const { data } = await svc
@@ -157,7 +157,7 @@ export type BetaRow = {
 };
 
 export async function getBetaRows(limit = 500): Promise<BetaRow[]> {
-  const svc = getServiceClient();
+  const svc = (await getAdminClient()) || getServiceClient();
   if (!svc) return [];
   try {
     const { data } = await svc

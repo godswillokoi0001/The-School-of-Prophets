@@ -591,3 +591,41 @@ export function renderGenericEmail(params: {
 
   return { html, text: params.bodyText };
 }
+
+/**
+ * 11. Password Recovery Email
+ */
+export function renderPasswordResetEmail(params: {
+  resetUrl: string;
+  email: string;
+}): { html: string; text: string; subject: string } {
+  const { resetUrl, email } = params;
+  const subject = "Reset Your Administrator Password — The School of Prophets";
+  const html = buildHtmlEmail({
+    badge: "Security & Recovery",
+    title: "Password Recovery Request",
+    preheader: "Secure link to choose a new password for The School of Prophets portal",
+    paragraphs: [
+      `A request has been made to reset the password for your administrator account (<strong>${email}</strong>) at The School of Prophets.`,
+      "Click the gold button below to create your new password. For your protection, this secure link is valid for 60 minutes and can only be used once.",
+    ],
+    highlightBox: {
+      label: "Account Details",
+      items: [
+        { label: "Account Email", value: email },
+        { label: "Link Validity", value: "60 minutes" },
+        { label: "Destination", value: "The School of Prophets Admin" },
+      ],
+    },
+    cta: {
+      label: "Reset My Password",
+      url: resetUrl,
+    },
+    closing:
+      "If you did not request this password recovery, you can safely ignore this message. Your password will remain unchanged.<br /><br />Ministry Administrative Security,<br /><strong>The School of Prophets</strong>",
+  });
+
+  const text = `The School of Prophets — Password Recovery\n\nA request was made to reset the password for your administrator account (${email}).\n\nTo choose a new password, click the secure link below:\n${resetUrl}\n\nThis link is valid for 60 minutes.\nIf you did not request this change, please ignore this email.`;
+
+  return { html, text, subject };
+}

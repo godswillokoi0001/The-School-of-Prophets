@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { createSupabaseBrowser } from "@/lib/supabase/browser";
 import { requestPasswordResetAction } from "./actions";
 import { Crest } from "@/components/Crest";
-import { ArrowLeft, KeyRound, LoaderCircle, LogIn, MailCheck } from "lucide-react";
+import { ArrowLeft, CheckCircle2, KeyRound, LoaderCircle, LogIn, MailCheck, X } from "lucide-react";
 
 export default function AdminLogin() {
   const router = useRouter();
@@ -15,6 +15,8 @@ export default function AdminLogin() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [sentToEmail, setSentToEmail] = useState("");
 
   async function signIn(e: React.FormEvent) {
     e.preventDefault();
@@ -55,13 +57,16 @@ export default function AdminLogin() {
     setMessage("");
 
     try {
-      const res = await requestPasswordResetAction(email.trim());
+      const targetEmail = email.trim();
+      const res = await requestPasswordResetAction(targetEmail);
       if (!res.success) {
         setError(res.error || "Failed to dispatch reset link");
       } else {
+        setSentToEmail(targetEmail);
+        setShowSuccessModal(true);
         setMessage(
           res.message ||
-            `A password reset link has been dispatched to ${email.trim()}. Please check your email inbox and spam folder.`
+            `A password reset link has been dispatched to ${targetEmail}. Please check your email inbox and spam folder.`
         );
       }
     } catch (err: unknown) {
@@ -193,6 +198,67 @@ export default function AdminLogin() {
           Access is by invitation only. Contact the Owner for a dashboard account.
         </p>
       </div>
+
+      {/* Confirmation Pop-up Box */}
+      {showSuccessModal && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
+        >
+          <div className="admin-surface max-w-sm w-full p-6 text-center border border-gold/50 shadow-2xl rounded-lg space-y-4 relative">
+            <button
+              type="button"
+              onClick={() => setShowSuccessModal(false)}
+              className="absolute top-3 right-3 text-parchment/50 hover:text-parchment transition-colors"
+              aria-label="Close dialog"
+            >
+              <X size={16} />
+            </button>
+
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gold/15 text-gold border border-gold/30">
+              <MailCheck size={28} />
+            </div>
+
+            <div>
+              <h3 className="font-display text-lg text-parchment">
+                Reset Link Dispatched!
+              </h3>
+              <p className="mt-2 text-xs text-parchment/80 leading-relaxed">
+                A password recovery email has been sent to:
+              </p>
+              <p className="mt-1 text-sm font-semibold text-gold break-all">
+                {sentToEmail}
+              </p>
+              <p className="mt-2.5 text-[0.72rem] text-parchment/60 leading-relaxed">
+                Please check your inbox and your spam folder. Follow the secure link inside to establish your new password.
+              </p>
+            </div>
+
+            <div className="pt-2 flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowSuccessModal(false);
+                  setView("login");
+                  setError("");
+                  setMessage("");
+                }}
+                className="admin-btn admin-btn-gold w-full text-xs"
+              >
+                Return to Sign In
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowSuccessModal(false)}
+                className="admin-btn admin-btn-ghost w-full text-xs"
+              >
+                Dismiss
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
