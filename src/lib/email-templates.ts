@@ -417,6 +417,184 @@ export function renderTeachingPublishedEmail(params: {
 }
 
 /**
+ * Gathering Reminder Email (24h, 12h, 1h, Live)
+ */
+export function renderGatheringReminderEmail(params: {
+  name: string;
+  sessionTitle: string;
+  focus: string;
+  timeWAT: string;
+  dateFormatted: string;
+  stage: "24h" | "12h" | "1h" | "live";
+  joinUrl: string;
+}): { subject: string; html: string; text: string } {
+  const firstName = params.name ? params.name.split(" ")[0] : "Beloved";
+
+  let badge = "Gathering Reminder";
+  let title = params.sessionTitle;
+  let subject = `${params.sessionTitle} Reminder — The School of Prophets`;
+  let preheader = `Reminder for ${params.sessionTitle} at ${params.timeWAT} WAT.`;
+  let ctaLabel = "Join on WhatsApp";
+  let stageDescription = `We look forward to seeking the Lord together in ${params.sessionTitle}.`;
+
+  if (params.stage === "24h") {
+    badge = "Tomorrow · 24h Reminder";
+    title = `${params.sessionTitle} is Tomorrow`;
+    subject = `Tomorrow: ${params.sessionTitle} (${params.timeWAT} WAT) — The School of Prophets`;
+    preheader = `We gather tomorrow for ${params.sessionTitle} at ${params.timeWAT} WAT. Prepare your heart.`;
+    stageDescription = `This is a reminder that we gather tomorrow, <strong>${params.dateFormatted}</strong> at <strong>${params.timeWAT} (WAT)</strong> for our weekly <strong>${params.sessionTitle}</strong> session.`;
+    ctaLabel = "Save WhatsApp Room Link";
+  } else if (params.stage === "12h") {
+    badge = "Today · 12h Reminder";
+    title = `We Gather Today: ${params.sessionTitle}`;
+    subject = `Today at ${params.timeWAT} WAT: ${params.sessionTitle} — The School of Prophets`;
+    preheader = `${params.sessionTitle} takes place today at ${params.timeWAT} WAT. We look forward to gathering with you.`;
+    stageDescription = `Today is our scheduled gathering for <strong>${params.sessionTitle}</strong>. We meet tonight at <strong>${params.timeWAT} (WAT)</strong>. Prepare your spirit and set aside this sacred hour.`;
+    ctaLabel = "Prepare to Join on WhatsApp";
+  } else if (params.stage === "1h") {
+    badge = "Starting in 1 Hour";
+    title = `Starting in 60 Minutes`;
+    subject = `Starting in 1 Hour: ${params.sessionTitle} (${params.timeWAT} WAT) — The School of Prophets`;
+    preheader = `We begin in 1 hour! Doors are opening on WhatsApp for ${params.sessionTitle}.`;
+    stageDescription = `We begin in exactly <strong>one hour</strong> at <strong>${params.timeWAT} (WAT)</strong>. Set aside all distractions, prepare your Bible, and enter into prayer as we prepare to meet.`;
+    ctaLabel = "Enter WhatsApp Room";
+  } else if (params.stage === "live") {
+    badge = "We Are LIVE Now";
+    title = `The Gathering Has Begun`;
+    subject = `We are LIVE Now: ${params.sessionTitle} — The School of Prophets`;
+    preheader = `We are live now for ${params.sessionTitle}! Click to join the room immediately.`;
+    stageDescription = `Our gathering for <strong>${params.sessionTitle}</strong> has officially begun! The room is open and ministering is underway. Tap the link below to enter right now.`;
+    ctaLabel = "Join The Live Room Now";
+  }
+
+  const paragraphs = [
+    `Grace and peace to you, ${firstName}.`,
+    stageDescription,
+    params.focus ? `<strong>Session Focus:</strong> ${params.focus}` : "",
+  ].filter(Boolean);
+
+  const html = buildHtmlEmail({
+    badge,
+    title,
+    preheader,
+    paragraphs,
+    highlightBox: {
+      label: "Gathering Details",
+      items: [
+        { label: "Activity", value: params.sessionTitle },
+        { label: "Time", value: `${params.timeWAT} (West Africa Time / UTC+1)` },
+        { label: "Date", value: params.dateFormatted },
+        { label: "Platform", value: "WhatsApp Community Gathering" },
+      ],
+    },
+    cta: {
+      label: ctaLabel,
+      url: params.joinUrl,
+    },
+    closing: `Planted in the Word. Moved by the Spirit. Built on prayer.<br /><br />Grace and peace,<br /><strong>The School of Prophets</strong>`,
+    footerNote: `You are receiving this automated activity reminder because you are subscribed to The School of Prophets notifications.`,
+  });
+
+  const text =
+    `Hello ${firstName},\n\n` +
+    `${title}\n\n` +
+    `Activity: ${params.sessionTitle}\n` +
+    `Time: ${params.timeWAT} (WAT)\n` +
+    `Date: ${params.dateFormatted}\n\n` +
+    (params.focus ? `Focus: ${params.focus}\n\n` : "") +
+    `Join here:\n${params.joinUrl}\n\n` +
+    `Planted in the Word. Moved by the Spirit. Built on prayer.\n\n` +
+    `The School of Prophets`;
+
+  return { subject, html, text };
+}
+
+/**
+ * Special Event Reminder Email
+ */
+export function renderEventReminderEmail(params: {
+  name: string;
+  eventTitle: string;
+  summary?: string | null;
+  location?: string | null;
+  startsAtFormatted: string;
+  stage: "24h" | "1h" | "live";
+  joinUrl: string;
+}): { subject: string; html: string; text: string } {
+  const firstName = params.name ? params.name.split(" ")[0] : "Beloved";
+
+  let badge = "Event Reminder";
+  let title = params.eventTitle;
+  let subject = `Upcoming Event: ${params.eventTitle} — The School of Prophets`;
+  let preheader = `Reminder for ${params.eventTitle} on ${params.startsAtFormatted}.`;
+  let ctaLabel = "View Event & Join";
+
+  if (params.stage === "24h") {
+    badge = "Tomorrow · Event Reminder";
+    title = `${params.eventTitle} is Tomorrow`;
+    subject = `Tomorrow: ${params.eventTitle} — The School of Prophets`;
+    preheader = `Reminder: ${params.eventTitle} begins tomorrow, ${params.startsAtFormatted}.`;
+    ctaLabel = "View Event Details";
+  } else if (params.stage === "1h") {
+    badge = "Starting in 1 Hour";
+    title = `Starting in 60 Minutes`;
+    subject = `Starting in 1 Hour: ${params.eventTitle} — The School of Prophets`;
+    preheader = `${params.eventTitle} begins in 1 hour! Doors are opening.`;
+    ctaLabel = "Join Event Now";
+  } else if (params.stage === "live") {
+    badge = "Event Live Now";
+    title = `We Have Begun`;
+    subject = `Live Now: ${params.eventTitle} — The School of Prophets`;
+    preheader = `We are live now for ${params.eventTitle}. Join immediately.`;
+    ctaLabel = "Enter Live Event";
+  }
+
+  const paragraphs = [
+    `Grace and peace to you, ${firstName}.`,
+    `This is a reminder for our upcoming special event: <strong>${params.eventTitle}</strong>.`,
+    params.summary ? `<em>"${params.summary}"</em>` : "",
+  ].filter(Boolean);
+
+  const items = [
+    { label: "Event", value: params.eventTitle },
+    { label: "Date & Time", value: params.startsAtFormatted },
+  ];
+  if (params.location) {
+    items.push({ label: "Location", value: params.location });
+  }
+
+  const html = buildHtmlEmail({
+    badge,
+    title,
+    preheader,
+    paragraphs,
+    highlightBox: {
+      label: "Event Information",
+      items,
+    },
+    cta: {
+      label: ctaLabel,
+      url: params.joinUrl,
+    },
+    closing: `Planted in the Word. Moved by the Spirit. Built on prayer.<br /><br />Grace and peace,<br /><strong>The School of Prophets</strong>`,
+    footerNote: `You are receiving this event reminder because you subscribed to The School of Prophets notifications.`,
+  });
+
+  const text =
+    `Hello ${firstName},\n\n` +
+    `${title}\n\n` +
+    `Event: ${params.eventTitle}\n` +
+    `Date & Time: ${params.startsAtFormatted}\n` +
+    (params.location ? `Location: ${params.location}\n` : "") +
+    (params.summary ? `Summary: ${params.summary}\n\n` : "\n") +
+    `Join / Details:\n${params.joinUrl}\n\n` +
+    `Planted in the Word. Moved by the Spirit. Built on prayer.\n\n` +
+    `The School of Prophets`;
+
+  return { subject, html, text };
+}
+
+/**
  * 3. Call Booking Confirmed Email
  */
 export function renderBookingConfirmedEmail(params: {

@@ -7,6 +7,7 @@ import { generateInviteToken } from "@/lib/invites";
 import { getPublicSiteUrl } from "@/lib/site-url";
 import { renderInviteEmail, buildHtmlEmail } from "@/lib/email-templates";
 import { sendEmail, getFromAddress } from "@/lib/notify";
+import { processReminders, type ReminderStage } from "@/lib/reminders";
 
 /* FAQ */
 export async function saveFaqs(rows: { id?: string; question: string; answer: string; sort_order: number; active: boolean }[]) {
@@ -447,4 +448,37 @@ export async function deleteBroadcast(id: string) {
   await audit(staff, "delete-broadcast", "broadcasts", id, {});
   revalidatePath("/admin/broadcasts");
   return { ok: true, message: "Newsletter record deleted." };
+}
+
+/* Automated Activity & Gathering Reminders */
+export async function runRemindersCheckAction() {
+  const staff = await requireStaff("admin");
+  const result = await processReminders({ dryRun: false });
+  await audit(staff, "run-reminders-check", "system", "reminders", {
+    processed: result.results.length,
+    sent: result.results.filter((r) => r.status === "sent").length,
+  });
+  revalidatePath("/admin/schedule");
+  return { ok: true, result };
+}
+
+export async function testSendReminderAction(stage: ReminderStage) {
+  const staff = await requireStaff("admin");
+  if (!staff.email) {
+    return { ok: false, error: "Staff account has no email address configured." };
+  }
+  const result = await processReminders({
+    dryRun: false,
+    forceStage: stage,
+    recipientOverride: staff.email,
+  });
+  await audit(staff, "test-send-reminder", "system", "reminders", {
+    stage,
+    target: staff.email,
+  });
+  return {
+    ok: true,
+    message: `Test ${stage} reminder sent directly to ${staff.email}.`,
+    result,
+  };
 }
