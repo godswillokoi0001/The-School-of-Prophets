@@ -297,6 +297,126 @@ export function renderConfirmationEmail(params: {
 }
 
 /**
+ * Newsletter Welcome Email (Daily Devotions, Teaching Alerts, Weekly Letter)
+ */
+export function renderNewsletterWelcomeEmail(params: {
+  name: string;
+}): { subject: string; html: string; text: string } {
+  const firstName = params.name ? params.name.split(" ")[0] : "Beloved";
+  const subject = `Welcome to the Fellowship: Daily Devotions & Teaching Alerts — The School of Prophets`;
+  const paragraphs = [
+    `Grace, peace, and spiritual illumination be multiplied to you, ${firstName}.`,
+    `You are now connected to the spiritual lifeline of <strong>The School of Prophets</strong>. This subscription is essential for every disciple and believer in our fellowship to remain continually fed, anchored, and aligned with what God is speaking in this hour.`,
+    `<strong>Please make checking your email a daily habit.</strong> We deliver everyday spiritual nourishment directly to your inbox so you never miss a prophetic impartation or timely Word.`,
+  ];
+
+  const html = buildHtmlEmail({
+    badge: "Daily Devotions & Dispatches",
+    title: "Welcome to The Fellowship",
+    preheader: `Your daily devotions and teaching alerts are active. Please check your email every day to stay spiritually fed.`,
+    paragraphs,
+    highlightBox: {
+      label: "What You Will Receive in Your Inbox",
+      items: [
+        {
+          label: "Everyday Morning Devotions",
+          value: "Scripture, prophetic exhortation, and prayer delivered every morning to anchor your day.",
+        },
+        {
+          label: "Instant Teaching Alerts",
+          value: "Immediate notifications whenever a new sermon, audio recording, or study is uploaded.",
+        },
+        {
+          label: "Weekly Fellowship Letter",
+          value: "Prophetic outlines, gathering times, and fellowship notices sent each week.",
+        },
+        {
+          label: "Daily Action",
+          value: "Check your email daily. Add our address to your contacts or VIP list so you never miss a devotion.",
+        },
+      ],
+    },
+    cta: {
+      label: "Explore Recent Teachings",
+      url: `${SITE_URL}/teachings`,
+    },
+    closing: `Planted in the Word. Moved by the Spirit. Built on prayer.<br /><br />Grace and peace,<br /><strong>The School of Prophets</strong>`,
+    footerNote: `You are receiving this because you subscribed to daily devotions and teaching alerts at The School of Prophets.`,
+  });
+
+  const text =
+    `Hello ${firstName},\n\n` +
+    `Grace, peace, and spiritual illumination be multiplied to you. Welcome to The School of Prophets.\n\n` +
+    `You are now connected to our spiritual dispatch. This subscription is essential for every disciple and believer in our fellowship to stay fed and aligned:\n\n` +
+    `1. EVERYDAY MORNING DEVOTIONS:\n` +
+    `Scripture, prophetic exhortation, and prayer delivered every morning to anchor your walk.\n\n` +
+    `2. INSTANT TEACHING ALERTS:\n` +
+    `Immediate notification whenever a new sermon or audio recording is uploaded to the library.\n\n` +
+    `3. WEEKLY FELLOWSHIP LETTER:\n` +
+    `Prophetic outlines, gathering times, and notices from the fellowship.\n\n` +
+    `IMPORTANT: PLEASE CHECK YOUR EMAIL DAILY.\n` +
+    `Make checking your email a daily habit. Please add our email address to your contacts or VIP list, or move this message to your Primary inbox so you never miss a devotion.\n\n` +
+    `Explore recent teachings: ${SITE_URL}/teachings\n\n` +
+    `Planted in the Word. Moved by the Spirit. Built on prayer.\n\n` +
+    `The School of Prophets`;
+
+  return { subject, html, text };
+}
+
+/**
+ * New Teaching Uploaded Notification Email
+ */
+export function renderTeachingPublishedEmail(params: {
+  name: string;
+  title: string;
+  slug: string;
+  summary?: string | null;
+}): { subject: string; html: string; text: string } {
+  const firstName = params.name ? params.name.split(" ")[0] : "Beloved";
+  const subject = `New Teaching Uploaded: "${params.title}" — The School of Prophets`;
+  const paragraphs = [
+    `Grace and peace to you, ${firstName}.`,
+    `A fresh teaching has just been uploaded to <strong>The School of Prophets</strong> library. We encourage you to listen, meditate on the Word, and let the Holy Spirit speak to your heart.`,
+  ];
+
+  if (params.summary) {
+    paragraphs.push(`<em>"${params.summary}"</em>`);
+  }
+
+  const teachingUrl = `${SITE_URL}/teachings/${params.slug}`;
+
+  const html = buildHtmlEmail({
+    badge: "New Teaching Alert",
+    title: params.title,
+    preheader: `A new teaching has been uploaded: "${params.title}". Watch or listen now.`,
+    paragraphs,
+    highlightBox: {
+      label: "Teaching Details",
+      items: [
+        { label: "Title", value: params.title },
+        { label: "Access Link", value: teachingUrl },
+      ],
+    },
+    cta: {
+      label: "Watch & Listen Now",
+      url: teachingUrl,
+    },
+    closing: `Planted in the Word. Moved by the Spirit. Built on prayer.<br /><br />Grace and peace,<br /><strong>The School of Prophets</strong>`,
+    footerNote: `You are receiving this teaching alert because you subscribed to The School of Prophets updates.`,
+  });
+
+  const text =
+    `Hello ${firstName},\n\n` +
+    `A new teaching has just been uploaded to The School of Prophets: "${params.title}".\n\n` +
+    (params.summary ? `Summary: ${params.summary}\n\n` : "") +
+    `Watch or listen here:\n${teachingUrl}\n\n` +
+    `Planted in the Word. Moved by the Spirit. Built on prayer.\n\n` +
+    `The School of Prophets`;
+
+  return { subject, html, text };
+}
+
+/**
  * 3. Call Booking Confirmed Email
  */
 export function renderBookingConfirmedEmail(params: {

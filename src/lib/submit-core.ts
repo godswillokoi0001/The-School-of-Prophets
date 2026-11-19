@@ -163,9 +163,18 @@ export async function handleFormSubmission(
         .from("subscribers")
         .update({ unsubscribed_at: null, name: name || undefined })
         .eq("id", existingSub.id);
+      sendConfirmation(
+        {
+          id: existingSub.id,
+          type: "newsletter",
+          payload: { name, email },
+          created_at: new Date().toISOString(),
+        },
+        email,
+      ).catch(() => {});
       return json({
         ok: true,
-        message: "Welcome back! Your newsletter subscription has been reactivated.",
+        message: "Welcome back! Your daily devotionals and teaching alerts have been reactivated.",
       });
     }
 

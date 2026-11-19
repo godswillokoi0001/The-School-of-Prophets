@@ -4,6 +4,7 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { getAdminClient } from "@/lib/supabase/server";
 import { audit, requireStaff } from "@/lib/admin";
 import { extractYouTubeId } from "@/lib/youtube";
+import { notifySubscribersTeachingPublished } from "@/lib/notify";
 
 export type TeachingInput = {
   id?: string;
@@ -61,7 +62,7 @@ export async function saveTeaching(input: TeachingInput) {
   }
 
   const { data: existing } = input.id
-    ? await svc.from("teachings").select("slug,title").eq("id", input.id).single()
+    ? await svc.from("teachings").select("slug,title,status").eq("id", input.id).single()
     : { data: null };
 
   if (existing && existing.slug !== input.slug) {
@@ -92,6 +93,15 @@ export async function saveTeaching(input: TeachingInput) {
   }
 
   await audit(staff, input.id ? "update" : "create", "teachings", data.id, { title: input.title, status: input.status });
+
+  if (input.status === "published" && (!existing || existing.status !== "published")) {
+    notifySubscribersTeachingPublished({
+      title: input.title,
+      slug: input.slug,
+      summary: input.summary,
+    }).catch((err) => console.error("[teachings] Failed to notify subscribers:", err));
+  }
+
   revalidateSite();
   return { ok: true, id: data.id };
 }

@@ -3,6 +3,8 @@ import { getServiceClient } from "@/lib/supabase/server";
 import {
   buildHtmlEmail,
   renderConfirmationEmail,
+  renderNewsletterWelcomeEmail,
+  renderTeachingPublishedEmail,
   renderBookingConfirmedEmail,
   renderBookingCancelledEmail,
   renderEnrolmentAcceptedEmail,
@@ -429,8 +431,65 @@ export async function sendBetaFixedEmail(to: string, name: string, count = 1, no
 export async function sendConfirmation(s: SubmissionRow, to: string) {
   const name = String(s.payload.name ?? s.payload.fullName ?? "");
   const typeLabel = (typeLabels[s.type] ?? s.type).toLowerCase();
+
+  if (s.type === "newsletter") {
+    const rendered = renderNewsletterWelcomeEmail({ name });
+    return sendEmail(to, rendered.subject, rendered.text, undefined, rendered.html);
+  }
+
   const rendered = renderConfirmationEmail({ name, type: typeLabel });
   return sendEmail(to, rendered.subject, rendered.text, undefined, rendered.html);
+}
+
+export async function notifySubscribersTeachingPublished(teaching: {
+  title: string;
+  slug: string;
+  summary?: string | null;
+}) {
+  const svc = getServiceClient();
+  if (!svc) return;
+
+  const map = new Map<string, string>();
+  const { data: subData } = await svc
+    .from("subscribers")
+    .select("email, name")
+    .is("unsubscribed_at", null);
+  for (const s of subData ?? []) {
+    const em = String(s.email ?? "").trim().toLowerCase();
+    if (em) map.set(em, String(s.name ?? "").trim());
+  }
+
+  const { data: subSubmissions } = await svc
+    .from("submissions")
+    .select("payload")
+    .eq("type", "newsletter")
+    .is("deleted_at", null);
+  for (const sub of subSubmissions ?? []) {
+    const p = (sub.payload as Record<string, unknown>) ?? {};
+    const em = String(p.email ?? "").trim().toLowerCase();
+    if (em && !map.has(em)) {
+      map.set(em, String(p.firstName ?? p.name ?? "").trim());
+    }
+  }
+
+  const recipients = [...map.entries()].map(([email, name]) => ({ email, name }));
+  if (recipients.length === 0) return;
+
+  const BATCH_SIZE = 5;
+  for (let i = 0; i < recipients.length; i += BATCH_SIZE) {
+    const batch = recipients.slice(i, i + BATCH_SIZE);
+    await Promise.allSettled(
+      batch.map((recip) => {
+        const rendered = renderTeachingPublishedEmail({
+          name: recip.name,
+          title: teaching.title,
+          slug: teaching.slug,
+          summary: teaching.summary,
+        });
+        return sendEmail(recip.email, rendered.subject, rendered.text, undefined, rendered.html);
+      })
+    );
+  }
 }
 
 const defaultTemplates: Record<string, { subject: string; body: string }> = {

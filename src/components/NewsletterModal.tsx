@@ -154,9 +154,12 @@ export function NewsletterModal() {
               <Check className="h-6 w-6" />
             </div>
             <h3 className="font-serif text-2xl text-gold-soft">Welcome to the Fellowship</h3>
-            <p className="mt-2 text-sm text-parchment/75 leading-relaxed">
-              Grace and peace to you, {firstName}. You are now subscribed to the weekly prophetic dispatch.
+            <p className="mt-2 text-sm text-parchment/80 leading-relaxed">
+              Grace and peace to you, {firstName}. You are now subscribed to receive <strong>everyday morning devotions</strong> and <strong>instant alerts whenever new teachings are uploaded</strong>.
             </p>
+            <div className="mt-4 inline-block rounded border border-gold/30 bg-gold/10 px-4 py-2 text-xs text-gold-soft">
+              Please check your email daily to receive your spiritual nourishment.
+            </div>
           </div>
         ) : (
           <div>
@@ -165,19 +168,38 @@ export function NewsletterModal() {
                 <Mail className="h-4 w-4" />
               </div>
               <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-gold-soft">
-                Prophetic Dispatches
+                Essential For Every Believer
               </span>
             </div>
 
             <h3 className="font-serif text-2xl sm:text-3xl font-medium tracking-tight text-parchment mt-2">
-              Stay Rooted in the Word
+              Daily Devotions & Teaching Alerts
             </h3>
 
-            <p className="mt-2.5 text-xs sm:text-sm text-parchment/70 leading-relaxed">
-              Receive weekly prophetic teachings, gatherings notices, and spiritual wisdom delivered straight to your inbox every week.
+            <p className="mt-2.5 text-xs sm:text-sm text-parchment/75 leading-relaxed">
+              Stay spiritually anchored and continually fed. Subscribing is essential for every disciple in our fellowship:
             </p>
 
-            <form onSubmit={handleSubmit} className="mt-6 space-y-3.5">
+            <ul className="mt-3.5 space-y-2 text-xs text-parchment/85">
+              <li className="flex items-start gap-2">
+                <span className="text-gold mt-0.5">✦</span>
+                <span><strong>Everyday Morning Devotions:</strong> Fresh scripture, prophetic charge, and prayer delivered daily to your inbox.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-gold mt-0.5">✦</span>
+                <span><strong>Instant Teaching Alerts:</strong> Immediate email notification whenever a new sermon or audio is uploaded.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-gold mt-0.5">✦</span>
+                <span><strong>Weekly Fellowship Letters:</strong> Prophetic outlines, times, and notices from the fellowship.</span>
+              </li>
+            </ul>
+
+            <div className="mt-3 text-[11px] text-gold-soft/90 italic bg-gold/10 border border-gold/25 px-3 py-1.5 rounded">
+              Remember to check your email daily to feed your spirit.
+            </div>
+
+            <form onSubmit={handleSubmit} className="mt-5 space-y-3.5">
               <input
                 type="text"
                 name="website"
@@ -244,13 +266,13 @@ export function NewsletterModal() {
                   disabled={busy}
                   className="btn btn-gold w-full py-3 justify-center text-sm font-medium tracking-wide shadow-md"
                 >
-                  {busy ? "Subscribing..." : "Subscribe to Weekly Dispatch"}
+                  {busy ? "Subscribing..." : "Subscribe for Daily Devotions & Alerts"}
                   {!busy && <ArrowRight className="w-4 h-4 ml-1.5" />}
                 </button>
               </div>
 
               <div className="flex items-center justify-between text-[11px] text-parchment/40 pt-2">
-                <span>Free forever · No spam</span>
+                <span>Free forever · Essential spiritual lifeline</span>
                 <button
                   type="button"
                   onClick={handleDismiss}

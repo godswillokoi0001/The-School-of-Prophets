@@ -7,9 +7,9 @@ import { formatDate } from "@/lib/time";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "The letter",
+  title: "Daily Devotions & Teaching Alerts",
   description:
-    "The weekly letter from The School of Prophets: the teaching outline, the times for the week, and notices from the fellowship.",
+    "Everyday morning devotions, immediate email notifications when new teachings are uploaded, and the weekly letter from The School of Prophets.",
   alternates: { canonical: "/newsletter" },
 };
 
@@ -51,9 +51,9 @@ export default async function NewsletterPage() {
   return (
     <>
       <PageHeader
-        label="The letter"
-        title="One letter a week."
-        lead="The teaching outline, the times for the week, and anything the fellowship needs to say. Nothing else, and no forwarding of your address."
+        label="Spiritual Lifeline"
+        title="Daily Devotions & Teaching Alerts."
+        lead="Everyday morning devotions to anchor your spirit, instant email alerts whenever any teaching has been uploaded, and our weekly fellowship letters. Subscribing is essential for every disciple."
       />
 
       <section className="bg-ink text-parchment">
@@ -67,7 +67,7 @@ export default async function NewsletterPage() {
           <div className="md:col-span-3">
             <p className="label text-ember">The archive</p>
             <p className="mt-3 text-sm leading-relaxed text-quiet">
-              Every letter that has gone out, newest first.
+              Every broadcast, devotional, and letter sent to the fellowship, newest first.
             </p>
           </div>
 
@@ -91,10 +91,9 @@ export default async function NewsletterPage() {
               </ul>
             ) : (
               <div className="border-y border-ink/15 py-10">
-                <p className="font-display text-2xl">No letters have been archived yet.</p>
+                <p className="font-display text-2xl">No dispatches have been archived yet.</p>
                 <p className="measure mt-2 text-sm leading-relaxed text-quiet">
-                  The first one goes out after Sunday. Subscribe above and it will
-                  arrive without anything else attached.
+                  Dispatches go out regularly to active subscribers. Subscribe above to receive everyday devotions and new teaching alerts directly in your inbox.
                 </p>
               </div>
             )}
