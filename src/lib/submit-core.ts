@@ -101,7 +101,9 @@ export async function handleFormSubmission(
   }
 
   let payload = parsed.data as Record<string, unknown>;
-  const email = String(payload.email ?? "") || null;
+  const rawEmail = String(payload.email ?? "").trim();
+  const email = rawEmail ? rawEmail.toLowerCase() : null;
+  if (email) payload.email = email;
   const fullNameCalculated = (payload.firstName || payload.lastName)
     ? `${payload.firstName ?? ""} ${payload.lastName ?? ""}`.trim()
     : String(payload.name ?? payload.fullName ?? "");
@@ -135,6 +137,64 @@ export async function handleFormSubmission(
   if (!db) {
     console.info(`[forms] ${type} ${name}\n${JSON.stringify(payload, null, 2)}`);
     return json({ ok: true, message: "Thank you. Your message has been received." });
+  }
+
+  // Prevent duplicate newsletter subscriptions
+  if (type === "newsletter" && email) {
+    // 1. Check if email already exists in subscribers table
+    const { data: existingSub } = await db
+      .from("subscribers")
+      .select("id, unsubscribed_at")
+      .ilike("email", email)
+      .maybeSingle();
+
+    if (existingSub) {
+      if (!existingSub.unsubscribed_at) {
+        return json(
+          {
+            ok: false,
+            message: "This email address is already subscribed to our newsletter.",
+          },
+          409,
+        );
+      }
+      // If previously unsubscribed, reactivate their subscription
+      await db
+        .from("subscribers")
+        .update({ unsubscribed_at: null, name: name || undefined })
+        .eq("id", existingSub.id);
+      return json({
+        ok: true,
+        message: "Welcome back! Your newsletter subscription has been reactivated.",
+      });
+    }
+
+    // 2. Also check if already recorded in submissions table
+    const { data: existingSubmissions } = await db
+      .from("submissions")
+      .select("id")
+      .eq("type", "newsletter")
+      .ilike("payload->>email", email)
+      .is("deleted_at", null)
+      .limit(1);
+
+    if (existingSubmissions && existingSubmissions.length > 0) {
+      // Sync into subscribers table
+      try {
+        await db
+          .from("subscribers")
+          .upsert({ email, name, source: "site" }, { onConflict: "email" });
+      } catch {
+        // ignore
+      }
+      return json(
+        {
+          ok: false,
+          message: "This email address is already subscribed to our newsletter.",
+        },
+        409,
+      );
+    }
   }
 
   const isPrivate = privateTypes.has(type) || payload.isPrivate === true;
@@ -178,7 +238,9 @@ export async function handleFormSubmission(
       await sendConfirmation(submission, email);
     }
     if (type === "newsletter") {
-      await db.from("subscribers").upsert({ email, name, source: "site" });
+      await db
+        .from("subscribers")
+        .upsert({ email, name, source: "site" }, { onConflict: "email" });
     }
   }
 

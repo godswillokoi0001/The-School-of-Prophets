@@ -105,6 +105,13 @@ export function NewsletterModal() {
           setIsOpen(false);
         }, 2500);
       } else {
+        if (res.status === 409) {
+          try {
+            localStorage.setItem("tsop_newsletter_subscribed", "true");
+          } catch {
+            // ignore
+          }
+        }
         setError(data.error || data.message || "Could not complete subscription. Please try again.");
       }
     } catch {
