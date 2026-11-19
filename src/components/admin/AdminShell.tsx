@@ -119,7 +119,7 @@ export function AdminShell({
         { href: "/admin/enrolment", label: "Enrolment", icon: ShieldCheck, min: "admin", group: "Site" },
         { href: "/admin/announcements", label: "Announcements", icon: Radio, min: "admin", group: "Site" },
         { href: "/admin/broadcasts", label: "Newsletters", icon: Mail, min: "admin", group: "Site" },
-        { href: "/admin/users", label: "Team & roles", icon: Users, min: "owner", group: "Site" },
+        { href: "/admin/users", label: "Team & roles", icon: Users, min: "admin", group: "Site" },
       ],
     },
   ];
