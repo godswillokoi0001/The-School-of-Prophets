@@ -7,7 +7,7 @@ import { Mail, Users } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 export default async function BroadcastsPage() {
-  await requireStaff("admin");
+  const staff = await requireStaff("admin");
   const svc = await getAdminClient();
   let options: { kind: "teaching" | "event"; id: string; label: string }[] = [];
   let pastBroadcasts: BroadcastRecord[] = [];
@@ -62,7 +62,11 @@ export default async function BroadcastsPage() {
           </Link>
         </div>
       </div>
-      <BroadcastComposer options={options} pastBroadcasts={pastBroadcasts} />
+      <BroadcastComposer
+        options={options}
+        pastBroadcasts={pastBroadcasts}
+        isOwner={staff.role === "owner"}
+      />
     </div>
   );
 }

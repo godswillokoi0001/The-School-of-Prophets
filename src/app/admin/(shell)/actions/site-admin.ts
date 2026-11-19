@@ -398,3 +398,53 @@ export async function saveNotificationSettings(userId: string, values: Record<st
   if (error) return { ok: false, error: error.message };
   return { ok: true };
 }
+
+/* Subscribers */
+export async function deleteSubscriber(id: string) {
+  const staff = await requireStaff("owner");
+  const svc = await getAdminClient();
+  if (!svc) return { ok: false, error: "Database not available" };
+
+  const { data: sub } = await svc
+    .from("subscribers")
+    .select("id,email")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (!sub) return { ok: false, error: "Subscriber not found" };
+  const cleanEmail = String(sub.email ?? "").trim().toLowerCase();
+
+  const { error } = await svc.from("subscribers").delete().eq("id", id);
+  if (error) return { ok: false, error: error.message };
+
+  if (cleanEmail) {
+    try {
+      await svc
+        .from("submissions")
+        .delete()
+        .eq("type", "newsletter")
+        .ilike("payload->>email", cleanEmail);
+    } catch {
+      // non-fatal
+    }
+  }
+
+  await audit(staff, "delete-subscriber", "subscribers", id, { email: cleanEmail });
+  revalidatePath("/admin/subscribers");
+  revalidatePath("/admin/broadcasts");
+  return { ok: true, message: "Subscriber removed successfully." };
+}
+
+/* Broadcasts */
+export async function deleteBroadcast(id: string) {
+  const staff = await requireStaff("owner");
+  const svc = await getAdminClient();
+  if (!svc) return { ok: false, error: "Database not available" };
+
+  const { error } = await svc.from("broadcasts").delete().eq("id", id);
+  if (error) return { ok: false, error: error.message };
+
+  await audit(staff, "delete-broadcast", "broadcasts", id, {});
+  revalidatePath("/admin/broadcasts");
+  return { ok: true, message: "Newsletter record deleted." };
+}

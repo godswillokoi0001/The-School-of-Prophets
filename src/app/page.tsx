@@ -105,7 +105,7 @@ export default async function HomePage() {
             </h1>
 
             <p className="mt-8 max-w-[34ch] font-display text-lead leading-snug text-parchment/75">
-              Taught in the Word. Moved by the Spirit. Built on prayer.
+              Planted in the word. Moved by the Spirit. Built on prayer.
             </p>
 
             <p className="measure mt-6 text-parchment/55">

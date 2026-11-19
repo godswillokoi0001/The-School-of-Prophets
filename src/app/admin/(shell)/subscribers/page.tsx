@@ -7,7 +7,7 @@ import { SubscribersTable } from "@/components/admin/SubscribersTable";
 export const dynamic = "force-dynamic";
 
 export default async function SubscribersPage() {
-  await requireStaff("admin");
+  const staff = await requireStaff("admin");
   const svc = await getAdminClient();
   let rows: { id: string; email: string; name: string; consent_at: string; unsubscribed_at: string | null }[] = [];
   if (svc) {
@@ -32,7 +32,7 @@ export default async function SubscribersPage() {
           </Link>
         </div>
       </div>
-      <SubscribersTable rows={rows} />
+      <SubscribersTable rows={rows} isOwner={staff.role === "owner"} />
     </div>
   );
 }

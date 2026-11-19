@@ -9,10 +9,14 @@ import {
   RotateCcw,
   Eye,
   CheckCircle2,
+  Trash2,
+  Search,
+  Mail,
 } from "lucide-react";
 import {
   sendBroadcast,
   snippetFor,
+  deleteBroadcast,
 } from "@/app/admin/(shell)/actions/site-admin";
 import { AdminModal } from "@/components/admin/AdminModal";
 import { AdminPagination } from "@/components/admin/AdminPagination";
@@ -35,15 +39,18 @@ export type BroadcastRecord = {
 export function BroadcastComposer({
   options,
   pastBroadcasts = [],
+  isOwner = false,
 }: {
   options: RefOption[];
   pastBroadcasts?: BroadcastRecord[];
+  isOwner?: boolean;
 }) {
   const router = useRouter();
   const composerRef = useRef<HTMLFormElement>(null);
   const [broadcastList, setBroadcastList] =
     useState<BroadcastRecord[]>(pastBroadcasts);
   const [page, setPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
   const [segment, setSegment] = useState("all");
@@ -176,6 +183,33 @@ export function BroadcastComposer({
     );
     composerRef.current?.scrollIntoView({ behavior: "smooth" });
   }
+
+  function handleDeleteBroadcast(b: BroadcastRecord) {
+    openConfirm({
+      title: "Delete Newsletter",
+      message: `Are you sure you want to delete "${b.subject}"? This will permanently remove it from sent history.`,
+      mode: "danger",
+      confirmLabel: "Delete Newsletter",
+      onConfirm: async () => {
+        setBusy(true);
+        const res = await deleteBroadcast(b.id);
+        setBusy(false);
+        if (res.ok) {
+          setBroadcastList((prev) => prev.filter((item) => item.id !== b.id));
+          setMessage(`Newsletter "${b.subject}" deleted.`);
+          router.refresh();
+        } else {
+          setMessage(res.error || "Failed to delete newsletter.");
+        }
+      },
+    });
+  }
+
+  const filteredBroadcasts = broadcastList.filter((b) => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    return b.subject.toLowerCase().includes(q) || b.segment.toLowerCase().includes(q);
+  });
 
   return (
     <div className="space-y-6">
@@ -321,124 +355,157 @@ export function BroadcastComposer({
 
       {/* Past Sent Newsletters & Broadcasts */}
       <section className="admin-surface p-4">
-        <div className="mb-3 flex items-center justify-between">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="font-display text-lg">
               Sent Newsletters & Past Broadcasts
             </h2>
             <p className="text-xs opacity-60">
-              Access previously sent messages. Click &ldquo;Load & Modify&rdquo;
+              Access previously sent messages below with pagination. Click &ldquo;Load & Modify&rdquo;
               to reuse, edit, and resend.
             </p>
           </div>
+          {broadcastList.length > 0 && (
+            <div className="relative min-w-48 max-w-xs">
+              <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50" />
+              <input
+                className="admin-input !pl-8 !py-1 text-xs"
+                placeholder="Search sent newsletters…"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setPage(1);
+                }}
+              />
+            </div>
+          )}
         </div>
 
-        {broadcastList.length === 0 ? (
-          <p className="p-6 text-center text-xs opacity-60">
-            No previous broadcasts recorded. Sent newsletters will appear here.
-          </p>
-        ) : (
-          <>
-            <div className="overflow-x-auto">
-              <table className="admin-table min-w-[600px]">
-                <thead>
-                  <tr>
-                    <th>Subject</th>
-                    <th>Audience</th>
-                    <th>Status</th>
-                    <th>Date (WAT)</th>
-                    <th>Delivery</th>
-                    <th className="text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {broadcastList.slice((page - 1) * 10, page * 10).map((b) => {
-                    const sentCount = (b.stats as { sent?: number })?.sent;
-                    const recCount = (b.stats as { recipients?: number })
-                      ?.recipients;
-                    return (
-                      <tr key={b.id} className="admin-row hover:bg-parchment/5">
-                        <td className="max-w-[220px]">
-                          <span className="font-medium text-parchment line-clamp-1">
-                            {b.subject}
+        <div className="overflow-x-auto">
+          <table className="admin-table min-w-[600px]">
+            <thead>
+              <tr>
+                <th>Subject</th>
+                <th>Audience</th>
+                <th>Status</th>
+                <th>Date (WAT)</th>
+                <th>Delivery</th>
+                <th className="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredBroadcasts.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="p-8 text-center text-xs opacity-60">
+                    <div className="flex flex-col items-center gap-2">
+                      <Mail size={22} className="opacity-40" />
+                      <p>
+                        {searchQuery
+                          ? `No sent newsletters match "${searchQuery}".`
+                          : "No previous broadcasts recorded yet. Sent newsletters will appear here below."}
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                filteredBroadcasts.slice((page - 1) * 10, page * 10).map((b) => {
+                  const sentCount = (b.stats as { sent?: number })?.sent;
+                  const recCount = (b.stats as { recipients?: number })
+                    ?.recipients;
+                  return (
+                    <tr key={b.id} className="admin-row hover:bg-parchment/5">
+                      <td className="max-w-[220px]">
+                        <span className="font-medium text-parchment line-clamp-1">
+                          {b.subject}
+                        </span>
+                        <span className="text-[0.7rem] opacity-60 line-clamp-1">
+                          {b.body.replace(/<[^>]+>/g, " ").slice(0, 100)}
+                        </span>
+                      </td>
+                      <td className="text-xs opacity-75 capitalize">
+                        {b.segment}
+                      </td>
+                      <td>
+                        <span
+                          className={`admin-badge ${
+                            b.status === "sent"
+                              ? "admin-badge-ok"
+                              : b.status === "scheduled"
+                                ? "admin-badge-warn"
+                                : ""
+                          }`}
+                        >
+                          {b.status}
+                        </span>
+                      </td>
+                      <td className="text-xs whitespace-nowrap opacity-70">
+                        {new Date(
+                          b.sent_at || b.scheduled_at || b.created_at,
+                        ).toLocaleString("en-GB", {
+                          timeZone: "Africa/Lagos",
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </td>
+                      <td className="text-xs opacity-75">
+                        {sentCount !== undefined && recCount !== undefined ? (
+                          <span className="inline-flex items-center gap-1 text-emerald-400">
+                            <CheckCircle2 size={12} /> {sentCount} /{" "}
+                            {recCount}
                           </span>
-                          <span className="text-[0.7rem] opacity-60 line-clamp-1">
-                            {b.body}
-                          </span>
-                        </td>
-                        <td className="text-xs opacity-75 capitalize">
-                          {b.segment}
-                        </td>
-                        <td>
-                          <span
-                            className={`admin-badge ${
-                              b.status === "sent"
-                                ? "admin-badge-ok"
-                                : b.status === "scheduled"
-                                  ? "admin-badge-warn"
-                                  : ""
-                            }`}
+                        ) : (
+                          "—"
+                        )}
+                      </td>
+                      <td className="text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            type="button"
+                            className="admin-btn admin-btn-ghost !py-1 text-xs"
+                            title="Load and modify this newsletter"
+                            onClick={() => loadIntoComposer(b)}
                           >
-                            {b.status}
-                          </span>
-                        </td>
-                        <td className="text-xs whitespace-nowrap opacity-70">
-                          {new Date(
-                            b.sent_at || b.scheduled_at || b.created_at,
-                          ).toLocaleString("en-GB", {
-                            timeZone: "Africa/Lagos",
-                            day: "numeric",
-                            month: "short",
-                            year: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </td>
-                        <td className="text-xs opacity-75">
-                          {sentCount !== undefined && recCount !== undefined ? (
-                            <span className="inline-flex items-center gap-1 text-emerald-400">
-                              <CheckCircle2 size={12} /> {sentCount} /{" "}
-                              {recCount}
-                            </span>
-                          ) : (
-                            "—"
+                            <RotateCcw size={12} className="mr-1 inline" />{" "}
+                            Load & Modify
+                          </button>
+                          <button
+                            type="button"
+                            className="admin-btn admin-btn-ghost !py-1 text-xs opacity-70 hover:opacity-100"
+                            title="View content"
+                            onClick={() => setPreviewContent(b)}
+                          >
+                            <Eye size={12} />
+                          </button>
+                          {isOwner && (
+                            <button
+                              type="button"
+                              className="inline-flex items-center justify-center p-1.5 rounded border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-colors"
+                              title="Delete newsletter record"
+                              aria-label={`Delete ${b.subject}`}
+                              onClick={() => handleDeleteBroadcast(b)}
+                            >
+                              <Trash2 size={12} />
+                            </button>
                           )}
-                        </td>
-                        <td className="text-right">
-                          <div className="flex items-center justify-end gap-1.5">
-                            <button
-                              type="button"
-                              className="admin-btn admin-btn-ghost !py-1 text-xs"
-                              title="Load and modify this newsletter"
-                              onClick={() => loadIntoComposer(b)}
-                            >
-                              <RotateCcw size={12} className="mr-1 inline" />{" "}
-                              Load & Modify
-                            </button>
-                            <button
-                              type="button"
-                              className="admin-btn admin-btn-ghost !py-1 text-xs opacity-70 hover:opacity-100"
-                              title="View content"
-                              onClick={() => setPreviewContent(b)}
-                            >
-                              <Eye size={12} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-            <AdminPagination
-              totalItems={broadcastList.length}
-              pageSize={10}
-              currentPage={page}
-              onPageChange={setPage}
-            />
-          </>
-        )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+        <AdminPagination
+          totalItems={filteredBroadcasts.length}
+          pageSize={10}
+          currentPage={page}
+          onPageChange={setPage}
+          alwaysShow={true}
+        />
       </section>
 
       {/* Broadcast Content View Modal */}

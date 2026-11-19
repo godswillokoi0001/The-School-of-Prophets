@@ -8,17 +8,19 @@ export function AdminPagination({
   currentPage,
   onPageChange,
   className = "",
+  alwaysShow = false,
 }: {
   totalItems: number;
   pageSize?: number;
   currentPage: number;
   onPageChange: (page: number) => void;
   className?: string;
+  alwaysShow?: boolean;
 }) {
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
-  if (totalPages <= 1) return null;
+  if (!alwaysShow && totalPages <= 1) return null;
 
-  const start = (currentPage - 1) * pageSize + 1;
+  const start = totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1;
   const end = Math.min(currentPage * pageSize, totalItems);
 
   function getPageNumbers() {

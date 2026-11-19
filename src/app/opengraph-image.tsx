@@ -45,7 +45,7 @@ export default async function OpengraphImage() {
             A community of the called.
           </div>
           <div style={{ marginTop: 30, fontSize: 26, color: "#b8b1a3", maxWidth: 860 }}>
-            Taught in the Word. Moved by the Spirit. Built on prayer.
+            Planted in the word. Moved by the Spirit. Built on prayer.
           </div>
         </div>
 
