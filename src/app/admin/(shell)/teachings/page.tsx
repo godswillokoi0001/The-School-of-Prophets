@@ -43,17 +43,6 @@ export default async function TeachingsPage({
       }))
       .filter((t) => status === "all" || t.status === status)
       .filter((t) => !q || t.title.toLowerCase().includes(q.toLowerCase()));
-      .map((t) => ({
-        id: t.id,
-        title: t.title,
-        slug: t.slug,
-        status: t.status,
-        series_title: seriesMap.get(t.series_id ?? "") ?? null,
-        date_taught: t.date_taught,
-        featured: t.featured,
-      }))
-      .filter((t) => status === "all" || t.status === status)
-      .filter((t) => !q || t.title.toLowerCase().includes(q.toLowerCase()));
   }
 
   return (
