@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, CalendarPlus } from "lucide-react";
 import { Seal } from "@/components/Seal";
+import { Cover } from "@/components/Cover";
 import { NextGathering } from "@/components/NextGathering";
 import { Timetable } from "@/components/Timetable";
 import { EnrolmentBanner } from "@/components/EnrolmentBanner";
@@ -317,12 +318,11 @@ export default async function HomePage() {
                       href={`/teachings/${featured.slug}`}
                       className="group relative block aspect-[3/2] overflow-hidden border border-ink/15 bg-ink-2"
                     >
-                      <Image
+                      <Cover
                         src={featured.image}
                         alt={featured.imageAlt || featured.title}
-                        fill
                         sizes="(max-width: 768px) 100vw, 35vw"
-                        style={{ objectFit: "contain" }}
+                        fit="contain"
                         className="media-zoom"
                       />
                     </Link>

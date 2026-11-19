@@ -4,19 +4,57 @@
 
    ▲ Next.js 15.5.29
    - Local:        http://localhost:3210
-   - Network:      http://192.168.18.4:3210
+   - Network:      http://192.168.18.12:3210
    - Environments: .env.local
 
  ✓ Starting...
- ✓ Ready in 5.7s
+ ✓ Ready in 13.3s
  ○ Compiling / ...
- ✓ Compiled /testimonies in 18.7s (972 modules)
- GET /testimonies 200 in 12381ms
- GET / 200 in 23598ms
- GET / 200 in 867ms
- GET / 200 in 1760ms
- ✓ Compiled in 1268ms (326 modules)
- ✓ Compiled in 1597ms (326 modules)
- GET / 200 in 897ms
- GET / 200 in 266ms
-[?25h
+ ✓ Compiled / in 6.8s (1093 modules)
+ GET / 200 in 3064ms
+ GET / 200 in 9639ms
+ GET / 200 in 869ms
+ GET / 200 in 530ms
+ GET / 200 in 543ms
+ ✓ Compiled in 646ms (387 modules)
+ GET / 200 in 250ms
+ ✓ Compiled in 551ms (387 modules)
+ GET / 200 in 213ms
+ ✓ Compiled in 1078ms (1095 modules)
+ GET / 200 in 450ms
+ GET / 200 in 1025ms
+ ○ Compiling /favicon.ico ...
+ ✓ Compiled /favicon.ico in 545ms (725 modules)
+ GET /favicon.ico 200 in 1946ms
+ ○ Compiling /teachings ...
+ ✓ Compiled /teachings in 1549ms (1128 modules)
+ GET /teachings 200 in 3435ms
+ GET / 200 in 1854ms
+ GET /favicon.ico 200 in 83ms
+ ○ Compiling /gatherings ...
+ ✓ Compiled /gatherings in 2s (1120 modules)
+ GET /gatherings 200 in 3386ms
+ GET /favicon.ico 200 in 69ms
+ GET / 200 in 550ms
+ GET /favicon.ico 200 in 40ms
+ GET /teachings 200 in 620ms
+ GET /favicon.ico 200 in 56ms
+ GET /gatherings 200 in 393ms
+ GET /favicon.ico 200 in 61ms
+ ○ Compiling /testimonies ...
+ ✓ Compiled /testimonies in 1803ms (1131 modules)
+ GET /testimonies 200 in 2845ms
+ GET /favicon.ico 200 in 70ms
+ GET /favicon.ico 200 in 38ms
+ ○ Compiling /prayer ...
+ ✓ Compiled /prayer in 814ms (1139 modules)
+ GET /prayer 200 in 1835ms
+ GET /favicon.ico 200 in 62ms
+ GET /testimonies 200 in 420ms
+ GET /favicon.ico 200 in 47ms
+ GET /prayer 200 in 419ms
+ GET /favicon.ico 200 in 56ms
+ ✓ Compiled in 500ms (398 modules)
+ ✓ Compiled in 795ms (398 modules)
+ GET / 200 in 814ms
+ GET / 200 in 276ms

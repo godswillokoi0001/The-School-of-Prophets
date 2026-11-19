@@ -49,12 +49,33 @@ export function MediaFrame({
   }
 
   const remote = /^https?:\/\//.test(src);
+  const contained = fit === "contain";
 
   return (
     <div
       style={{ aspectRatio: RATIOS[ratio] }}
       className={`relative overflow-hidden ${tintClass} ${className}`}
     >
+      {contained && (
+        <>
+          <Image
+            src={src}
+            alt=""
+            aria-hidden="true"
+            fill
+            sizes={sizes}
+            unoptimized={remote}
+            style={{ objectFit: "cover", objectPosition: focalPosition(focal) }}
+            className="pointer-events-none scale-110 blur-2xl saturate-[0.9]"
+          />
+          <span
+            aria-hidden="true"
+            className={`pointer-events-none absolute inset-0 ${
+              tint === "paper" ? "bg-parchment/55" : "bg-ink/45"
+            }`}
+          />
+        </>
+      )}
       <Image
         src={src}
         alt={alt}

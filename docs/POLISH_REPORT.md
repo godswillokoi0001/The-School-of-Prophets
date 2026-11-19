@@ -36,6 +36,8 @@ insertions, 1,372 deletions**. 73 of the 124 UI files under `src/app` and
   focal point where it is photography. Nothing is stretched or upscaled.
 - Uploads are non-destructive: the editor rotates and flips only, sets a focal
   point by clicking the preview, and shows phone, tablet and desktop crops.
+  Contained pictures sit on a blurred, scaled copy of themselves, so a portrait
+  in a wide plate has no black bars and nothing is cropped to fill them.
   Natural dimensions and focal point are stored in `site_settings.media_meta`
   (no schema change). The media page warns on small or extreme-ratio files.
 - Event photography moved from letterboxed `contain` to a portrait `cover`

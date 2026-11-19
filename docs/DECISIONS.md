@@ -12,7 +12,9 @@ put to the client; each decision is reversible.
 4. **Whole-image content is `contain`; photography is `cover` with a focal
    point.** Posters, flyers, outlines and series art keep their whole frame on a
    tinted plate. Event and prophet photography uses `cover` with a default
-   focus of 50% / 30%, so heads are not cut.
+   focus of 50% / 30%, so heads are not cut. Where a contained picture cannot
+   fill its box, the space is filled by a blurred, scaled copy of the same file
+   rather than a flat black bar; the original is still uncropped.
 5. **Status is a word with a dot**, not a coloured pill. Colour is reserved for
    status and never used decoratively.
 6. **One radius: zero.** Rounded cards, pills and avatars were removed. The only
