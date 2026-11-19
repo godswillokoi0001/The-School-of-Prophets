@@ -326,7 +326,7 @@ export async function duplicateAnnouncementAction(
     .eq("key", "announcements_library")
     .maybeSingle();
 
-  let items: AnnouncementItem[] = Array.isArray((current?.value as { items?: AnnouncementItem[] })?.items)
+  const items: AnnouncementItem[] = Array.isArray((current?.value as { items?: AnnouncementItem[] })?.items)
     ? [...((current!.value as { items: AnnouncementItem[] }).items)]
     : [];
 
