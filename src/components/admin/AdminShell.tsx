@@ -203,7 +203,7 @@ export function AdminShell({
             <Crest width={30} height={34} className="shrink-0 text-gold" />
             {!isMini && (
               <div>
-                <p className="font-display text-sm leading-tight text-parchment">The School of Prophets</p>
+                <p className="text-sm font-semibold leading-tight tracking-tight text-parchment">The School of Prophets</p>
                 <p className="text-[0.62rem] uppercase tracking-widest opacity-50">Admin dashboard</p>
               </div>
             )}
@@ -257,7 +257,7 @@ export function AdminShell({
                       {!isMini && <span className="flex-1">{item.label}</span>}
                       {item.badge && item.badge > 0 ? (
                         isMini ? (
-                          <span className="absolute right-1 top-1 h-2 w-2  bg-gold" />
+                          <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-gold" />
                         ) : (
                           <span className="admin-badge admin-badge-new">{item.badge}</span>
                         )
@@ -278,7 +278,7 @@ export function AdminShell({
             </>
           ) : (
             <div
-              className="mx-auto flex h-7 w-7 items-center justify-center  bg-gold/15 text-xs font-bold text-gold"
+              className="mx-auto flex h-7 w-7 items-center justify-center rounded-full bg-gold/15 text-xs font-bold text-gold"
               title={`${fullName || email} (${role})`}
             >
               {(fullName || email || "A")[0].toUpperCase()}
@@ -324,7 +324,7 @@ export function AdminShell({
       )}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-12 items-center gap-2 border-b border-parchment/10 bg-ink px-3">
+        <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-parchment/10 bg-ink px-3 md:px-5">
           <button
             ref={menuButtonRef}
             className="p-2 text-parchment/70 hover:text-parchment md:hidden"
@@ -349,7 +349,7 @@ export function AdminShell({
 
           <button
             onClick={() => setSearchOpen(true)}
-            className="admin-input !flex !w-auto items-center gap-2 !py-1 text-xs opacity-80 hover:opacity-100"
+            className="admin-input !flex !w-auto items-center gap-2 !rounded-lg !py-1.5 text-xs opacity-80 hover:opacity-100"
             aria-label="Search everything"
           >
             <Search size={14} />
@@ -370,13 +370,13 @@ export function AdminShell({
             </form>
           </div>
         </header>
-        <main className="flex-1 px-3 pb-24 pt-3 md:p-6 md:pb-6">{children}</main>
+        <main className="flex-1 px-3 pb-24 pt-4 md:p-8 md:pb-8">{children}</main>
       </div>
 
       {/* Mobile: the four places a leader actually goes */}
       <nav
         aria-label="Quick navigation"
-        className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-4 border-t border-parchment/12 bg-ink-2 pb-[env(safe-area-inset-bottom)] md:hidden"
+        className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-4 border-t border-parchment/10 bg-ink-2 pb-[env(safe-area-inset-bottom)] md:hidden"
       >
         {MOBILE_TABS.map((tab) => {
           const active = isActive(tab.href);
@@ -392,7 +392,7 @@ export function AdminShell({
               <tab.icon size={17} />
               {tab.label}
               {tab.href === "/admin/inbox" && unread > 0 && (
-                <span className="absolute right-[28%] top-1.5 h-1.5 w-1.5  bg-gold" />
+                <span className="absolute right-[28%] top-1.5 h-1.5 w-1.5 rounded-full bg-gold" />
               )}
             </Link>
           );

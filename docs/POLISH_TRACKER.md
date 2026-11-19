@@ -1,3 +1,8 @@
+> 19 November 2026: the owner chose a modern product UI and the visual language
+> was rebuilt (tokens, header, footer, home, teachings, events, contact,
+> training, page header, admin shell). Radius and serif statements in this
+> tracker describe the first pass and were superseded; see `DECISIONS.md`.
+
 # Polish tracker
 
 Every file under `src/app` and `src/components` that renders UI, with what was

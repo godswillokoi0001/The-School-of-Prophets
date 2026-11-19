@@ -2,8 +2,8 @@ import Link from "next/link";
 import { Cover } from "@/components/Cover";
 
 /**
- * The header for inner pages: label, title, lead, with an optional editorial
- * plate beneath and an optional aside beside the title.
+ * The header for inner pages: label, title, lead, with an optional portrait
+ * card beside the title and an optional aside.
  */
 export function PageHeader({
   label,
@@ -22,43 +22,48 @@ export function PageHeader({
   image?: string;
   imageAlt?: string;
 }) {
+  const hasSide = Boolean(aside || image);
+
   return (
-    <header className="border-b border-ink/15">
-      <div className="wrap grid gap-10 py-14 md:grid-cols-12 md:py-20">
-        <div className={aside ? "md:col-span-7" : "md:col-span-9"}>
+    <header className="border-b border-line bg-paper">
+      <div className="wrap grid gap-8 py-10 md:py-14 lg:grid-cols-12 lg:items-center lg:gap-10">
+        <div className={hasSide ? "lg:col-span-7" : "lg:col-span-9"}>
           <p className="label text-ember">{label}</p>
-          <h1 className="mt-5 font-display text-hero">{title}</h1>
+          <h1 className="mt-3 font-display text-hero">{title}</h1>
           {lead && (
-            <p className="measure mt-6 max-w-[56ch] text-lg leading-relaxed text-quiet">
+            <p className="measure mt-4 max-w-[58ch] text-base leading-relaxed text-quiet">
               {lead}
             </p>
           )}
           {meta && meta.length > 0 && (
-            <dl className="mt-8 flex flex-wrap gap-x-10 gap-y-3 border-t border-ink/15 pt-4">
+            <dl className="mt-6 flex flex-wrap gap-x-8 gap-y-3 border-t border-line pt-4">
               {meta.map((item) => (
                 <div key={item.label}>
                   <dt className="label text-quiet">{item.label}</dt>
-                  <dd className="mt-1 text-sm">{item.value}</dd>
+                  <dd className="mt-1 text-sm font-medium">{item.value}</dd>
                 </div>
               ))}
             </dl>
           )}
         </div>
 
-        {aside && (
-          <div className="md:col-span-4 md:col-start-9 md:pl-4">{aside}</div>
+        {aside && <div className="lg:col-span-4 lg:col-start-9">{aside}</div>}
+
+        {!aside && image && (
+          <div className="lg:col-span-4 lg:col-start-9">
+            {/* Portrait artwork fills a portrait card; anything narrower keeps
+                its whole frame on a blurred copy of itself. */}
+            <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-line bg-ink-2 sm:aspect-[16/9] lg:aspect-[4/5]">
+              <Cover
+                src={image}
+                alt={imageAlt}
+                sizes="(max-width: 1024px) 100vw, 33vw"
+                fit="contain"
+              />
+            </div>
+          </div>
         )}
       </div>
-
-      {image && (
-        <div className="wrap pb-10 md:pb-14">
-          {/* The plate shows the whole picture: a wide crop of a portrait
-              photograph cuts faces and text, which is never acceptable. */}
-          <div className="relative aspect-[3/2] overflow-hidden border border-ink/10 bg-ink-2">
-            <Cover src={image} alt={imageAlt} sizes="(max-width: 1200px) 100vw, 1200px" fit="contain" />
-          </div>
-        </div>
-      )}
     </header>
   );
 }

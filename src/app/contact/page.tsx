@@ -41,10 +41,8 @@ export default async function ContactPage() {
         label="Contact / Join"
         title="Take your seat."
         lead="Join the community on WhatsApp, Telegram or the Facebook group, or send a message and an admin will answer. Tell us where you are and how long you have been walking with God."
-        image="/images/desert-dawn.webp"
-        imageAlt="A traveller walking a desert road at first light"
         aside={
-          <div className="border-t border-ink/20 pt-4">
+          <div className="card p-5">
             <p className="label text-quiet">Founded</p>
             <p className="mt-2 font-display text-xl">{site.founded}</p>
             <p className="mt-1 text-sm text-quiet">{site.crest}</p>
@@ -52,7 +50,7 @@ export default async function ContactPage() {
         }
       />
 
-      <section className="wrap grid gap-12 py-14 md:py-20 lg:grid-cols-12">
+      <section className="wrap grid gap-10 py-12 md:py-16 lg:grid-cols-12">
         <div className="lg:col-span-5">
           <p className="label text-ember">The community</p>
           <SocialLinks
@@ -72,7 +70,7 @@ export default async function ContactPage() {
             current link.
           </p>
 
-          <div className="mt-10 border-t border-ink/20 pt-5">
+          <div className="mt-8 border-t border-line pt-6">
             <p className="label text-ember">
               Where else to find us
             </p>
@@ -110,7 +108,7 @@ export default async function ContactPage() {
               </li>
             </ul>
 
-            <div className="mt-8 border border-gold/40 bg-gold/10 p-5">
+            <div className="mt-8 rounded-xl border border-line bg-parchment p-5">
               <p className="label flex items-center gap-2 text-ember">
                 <Phone aria-hidden="true" className="h-3.5 w-3.5" />
                 Pastoral & Prophetic Counsel
@@ -125,10 +123,12 @@ export default async function ContactPage() {
           </div>
         </div>
 
-        <div className="lg:col-span-7 lg:pl-6">
-          <div className="border-t border-ink/25 pt-5">
+        <div className="card p-5 sm:p-8 lg:col-span-7">
+          <div>
             <p className="label text-quiet">Send a message</p>
-            <h2 className="mt-3 font-display text-2xl">We would like to hear from you.</h2>
+            <h2 className="mt-2 text-2xl font-semibold tracking-tight">
+              We would like to hear from you.
+            </h2>
             <div className="mt-6">
               <ContactForm />
             </div>
@@ -143,11 +143,11 @@ export default async function ContactPage() {
         </div>
       </section>
 
-      <section className="border-t border-ink/15 bg-parchment-2/70">
-        <div className="wrap grid gap-10 py-16 md:grid-cols-12 md:py-20">
+      <section className="border-t border-line bg-paper">
+        <div className="wrap grid gap-10 py-12 md:grid-cols-12 md:py-16">
           <div className="md:col-span-4">
             <p className="label text-ember">FAQ</p>
-            <h2 className="mt-4 font-display text-3xl">Questions people ask.</h2>
+            <h2 className="mt-2 text-2xl font-semibold tracking-tight">Questions people ask.</h2>
             <p className="mt-4 text-sm leading-relaxed text-quiet">
               Anything still unclear? Use the form above; it reaches the same
               admins.
@@ -155,10 +155,10 @@ export default async function ContactPage() {
           </div>
 
           <div className="md:col-span-8">
-            <div className="border-t border-ink/20">
+            <div className="border-t border-line">
               {faqs.length === 0 ? (
                 <div className="py-8">
-                  <p className="font-display text-xl leading-snug">
+                  <p className="text-lg font-semibold leading-snug">
                     Nothing published here yet.
                   </p>
                   <p className="measure mt-2 text-sm leading-relaxed text-quiet">
@@ -168,9 +168,9 @@ export default async function ContactPage() {
                 </div>
               ) : (
                 faqs.map((faq) => (
-                  <details key={faq.id} className="group border-b border-ink/15 py-4">
+                  <details key={faq.id} className="group border-b border-line py-4">
                     <summary className="flex cursor-pointer list-none items-start justify-between gap-6">
-                      <span className="font-display text-xl leading-snug">{faq.question}</span>
+                      <span className="text-base font-medium leading-snug">{faq.question}</span>
                       <Plus
                         aria-hidden="true"
                         className="mt-1 h-4 w-4 shrink-0 text-ember transition-transform group-open:rotate-45"

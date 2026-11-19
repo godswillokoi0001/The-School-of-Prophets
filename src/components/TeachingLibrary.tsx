@@ -118,7 +118,7 @@ export function TeachingLibrary({
       </div>
 
       {results.length > 0 ? (
-        <div>
+        <div className="grid gap-4 md:grid-cols-2">
           {results.map((t) => (
             <TeachingCard
               key={t.slug}

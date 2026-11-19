@@ -17,9 +17,10 @@ put to the client; each decision is reversible.
    rather than a flat black bar; the original is still uncropped.
 5. **Status is a word with a dot**, not a coloured pill. Colour is reserved for
    status and never used decoratively.
-6. **One radius: zero.** Rounded cards, pills and avatars were removed. The only
-   circles left are the six-pixel status dot and the seal, which are drawings,
-   not chrome.
+6. **One radius family, not zero.** The first pass removed every radius; the
+   modern product direction supersedes that. Controls and nav items use 12px,
+   cards and panels 16px, badges are pills, and the seal remains a drawing.
+   Nothing else gets a custom radius.
 7. **The newsletter card no longer opens on arrival.** It waits for 60% scroll
    or exit intent, once a week, and never on the newsletter or admin pages. It
    fits a 320px screen and traps focus.
@@ -32,11 +33,19 @@ put to the client; each decision is reversible.
     this removed a 500 on every page.
 11. **Admin tables stack below 768px** through one `data-stack` rule instead of
     per-screen markup, so every table behaves the same.
-12. **The dashboard keeps its dark palette.** It shares the public tokens; the
-    admin shell is the same ink and parchment, only denser.
+12. **The dashboard keeps a dark app shell.** The public site is a light
+    surface; the admin is the same tokens inverted, dense and dark like a
+    working tool. The login screen follows the dashboard, not the site.
 13. **Seed records with stub text (`Description...`) are suppressed in the UI**
     rather than edited in the database; the records and their routes remain.
 14. **Charts and secondary statistics stay available** behind "More insights"
     on the overview instead of being removed.
 15. **`docs/qa/before` is generated from commit `cdb38cd`**, the state before
     this pass, by checking out `src/` at that commit, capturing, and restoring.
+16. **The visual language is a modern product UI** (chosen 19 November 2026):
+    white and near-white surfaces, one sans family for headings and text,
+    card-based grids, one radius family, compact controls and a tighter
+    section rhythm. The ink/parchment/gold palette and the crest are kept, so
+    the institution is recognisable; the serif display face and the wide
+    editorial bands are gone. Home, teachings, events, contact, training and
+    the page header were rebuilt; every other screen inherits the tokens.

@@ -23,38 +23,40 @@ const iconFor = {
 
 export function Footer() {
   return (
-    <footer className="bg-ink text-parchment">
-      <div className="wrap border-b border-parchment/12 py-10">
-        <NewsletterSubscribe variant="inline" />
+    <footer className="border-t border-line bg-parchment">
+      <div className="wrap py-10 md:py-12">
+        <div className="card p-6 sm:p-8">
+          <NewsletterSubscribe variant="card" />
+        </div>
       </div>
 
-      <div className="wrap grid gap-12 py-14 md:grid-cols-12 md:py-16">
+      <div className="wrap grid gap-10 border-t border-line py-12 md:grid-cols-12 md:gap-8 md:py-14">
         <div className="md:col-span-4">
-          <Link href="/" className="inline-flex items-center gap-4" aria-label={`${site.name} home`}>
-            <Seal size={84} idKey="footer" />
-            <span className="font-display text-xl leading-tight">
+          <Link href="/" className="inline-flex items-center gap-3" aria-label={`${site.name} home`}>
+            <Seal size={56} idKey="footer" />
+            <span className="text-base font-semibold leading-tight tracking-tight">
               The School
               <br />
               of Prophets
             </span>
           </Link>
-          <p className="measure mt-6 text-sm leading-relaxed text-parchment/55">
+          <p className="measure mt-4 text-sm leading-relaxed text-quiet">
             An interdenominational prophetic fellowship led by {site.leader}.
             Founded {site.founded}, gathering online every week.
           </p>
-          <p className="label mt-6 text-gold-soft/80">Watchers · Daniel 4:17</p>
+          <p className="label mt-4 text-ember">Watchers · Daniel 4:17</p>
         </div>
 
         <nav aria-label="Sitemap" className="md:col-span-3">
-          <p className="label text-parchment/35">Pages</p>
-          <ul className="mt-4 space-y-2 text-sm">
+          <p className="label text-quiet">Pages</p>
+          <ul className="mt-3 space-y-2 text-sm">
             {[
               ...navGroups.map((g) => ({ label: g.label, href: g.href })),
               { label: "Testimonies", href: "/testimonies" },
               { label: "Newsletter", href: "/newsletter" },
             ].map((item) => (
               <li key={item.label}>
-                <Link href={item.href} className="link-quiet text-parchment/65 hover:text-parchment">
+                <Link href={item.href} className="text-quiet transition-colors hover:text-ink">
                   {item.label}
                 </Link>
               </li>
@@ -63,11 +65,11 @@ export function Footer() {
         </nav>
 
         <div className="md:col-span-2">
-          <p className="label text-parchment/35">The week</p>
-          <ul className="mt-4 space-y-2.5 text-xs leading-relaxed text-parchment/60">
+          <p className="label text-quiet">The week</p>
+          <ul className="mt-3 space-y-2.5 text-xs leading-relaxed text-quiet">
             {sessions.map((s) => (
               <li key={s.id}>
-                <span className="block text-parchment/85">{dayNames[s.day]}</span>
+                <span className="block font-medium text-ink">{dayNames[s.day]}</span>
                 {s.title}, {formatTimeWAT(s.start)} WAT
               </li>
             ))}
@@ -75,8 +77,8 @@ export function Footer() {
         </div>
 
         <div className="md:col-span-3">
-          <p className="label text-parchment/35">The community</p>
-          <ul className="mt-4 space-y-2.5 text-sm">
+          <p className="label text-quiet">The community</p>
+          <ul className="mt-3 space-y-2.5 text-sm">
             {socialLinks.map((link) => {
               const href = link.href || link.fallbackHref;
               const external = href.startsWith("http");
@@ -86,11 +88,11 @@ export function Footer() {
                   <a
                     href={href}
                     {...(external ? { rel: "noopener noreferrer", target: "_blank" } : {})}
-                    className="link-quiet inline-flex items-center gap-2 text-parchment/65 hover:text-parchment"
+                    className="inline-flex items-center gap-2 text-quiet transition-colors hover:text-ink"
                   >
-                    <Icon aria-hidden="true" className="h-3.5 w-3.5 text-gold/70" />
+                    <Icon aria-hidden="true" className="h-4 w-4 text-gold" />
                     {link.label}
-                    {!link.href && <span className="text-parchment/30">· by request</span>}
+                    {!link.href && <span className="text-quiet/60">· by request</span>}
                   </a>
                 </li>
               );
@@ -98,16 +100,16 @@ export function Footer() {
           </ul>
           <Link
             href="/contact"
-            className="mt-5 inline-flex items-center gap-2 text-sm text-parchment/65 hover:text-parchment"
+            className="mt-4 inline-flex items-center gap-2 text-sm text-quiet transition-colors hover:text-ink"
           >
-            <Mail aria-hidden="true" className="h-3.5 w-3.5 text-gold/70" />
+            <Mail aria-hidden="true" className="h-4 w-4 text-gold" />
             Write to the team
           </Link>
         </div>
       </div>
 
-      <div className="border-t border-parchment/12">
-        <div className="wrap flex flex-col gap-2 py-5 text-[0.7rem] tracking-wide text-parchment/60 sm:flex-row sm:items-center sm:justify-between">
+      <div className="border-t border-line">
+        <div className="wrap flex flex-col gap-2 py-5 text-[0.75rem] text-quiet sm:flex-row sm:items-center sm:justify-between">
           <p suppressHydrationWarning>
             © {new Date().getFullYear()} {site.name}. All rights reserved.
           </p>
@@ -117,7 +119,7 @@ export function Footer() {
               <span>
                 {site.credit.label}{" "}
                 {site.credit.href ? (
-                  <a href={site.credit.href} className="link-quiet text-parchment/60">
+                  <a href={site.credit.href} className="underline underline-offset-2 hover:text-ink">
                     {site.credit.name}
                   </a>
                 ) : (

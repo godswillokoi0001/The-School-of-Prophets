@@ -15,19 +15,23 @@ export function EnrolmentBanner({
 
   return (
     <div
-      className={`border p-6 ${dark ? "border-parchment/20 bg-ink-2/60 text-parchment" : "border-ink/20 bg-parchment-2/50 text-ink"}`}
+      className={`rounded-xl border p-6 ${
+        dark
+          ? "border-parchment/15 bg-parchment/[0.04] text-parchment"
+          : "border-line bg-parchment text-ink"
+      }`}
     >
       <div className="flex items-center gap-3">
         <span
           aria-hidden="true"
-          className={`h-2 w-2 ${isOpen ? "bg-gold" : "bg-ember/70"}`}
+          className={`h-2 w-2 rounded-full ${isOpen ? "bg-gold" : "bg-ember/70"}`}
         />
         <p className={`label ${dark ? "text-parchment/60" : "text-quiet"}`}>
           {training.cohortLabel} · Enrolment {isOpen ? "open" : "closed"}
         </p>
       </div>
 
-      <p className="mt-3 font-display text-2xl leading-tight">
+      <p className="mt-3 text-xl font-semibold leading-snug tracking-tight">
         {isOpen ? "The application is live." : "The waitlist is open."}
       </p>
       <p className={`mt-2 text-sm leading-relaxed ${dark ? "text-parchment/60" : "text-quiet"}`}>

@@ -92,7 +92,7 @@ export default async function SeriesPage({ params }: Params) {
 
       <section className="wrap py-14 md:py-20">
         {items.length > 0 ? (
-          <div>
+          <div className="grid gap-4 md:grid-cols-2">
             {items.map((t) => (
               <TeachingCard key={t.slug} teaching={t} seriesTitle={series.title} />
             ))}

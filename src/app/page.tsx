@@ -7,7 +7,6 @@ import { NextGathering } from "@/components/NextGathering";
 import { Timetable } from "@/components/Timetable";
 import { EnrolmentBanner } from "@/components/EnrolmentBanner";
 import { SocialLinks } from "@/components/SocialLinks";
-import { Reveal } from "@/components/Reveal";
 import {
   getContactSettings,
   getEnrolmentSettings,
@@ -18,7 +17,6 @@ import {
   getSetting,
   getTeachings,
 } from "@/lib/data";
-import { focalFor } from "@/lib/media";
 import { site } from "@/config/site";
 import { training } from "@/content/ministry";
 import { formatDate } from "@/lib/time";
@@ -55,16 +53,17 @@ const systems = [
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [teachings, schedule, seriesList, contact, enrolment, homeSetting, exceptions, mediaMeta] = await Promise.all([
-    getTeachings(),
-    getSchedule(),
-    getSeries(),
-    getContactSettings(),
-    getEnrolmentSettings(),
-    getSetting("homepage", {}),
-    getScheduleExceptions(),
-    getMediaMeta(),
-  ]);
+  const [teachings, schedule, seriesList, contact, enrolment, homeSetting, exceptions, mediaMeta] =
+    await Promise.all([
+      getTeachings(),
+      getSchedule(),
+      getSeries(),
+      getContactSettings(),
+      getEnrolmentSettings(),
+      getSetting("homepage", {}),
+      getScheduleExceptions(),
+      getMediaMeta(),
+    ]);
   const show = { ...defaultSections, ...(homeSetting as HomeSections) };
   // A stub saved in the CMS ("Title...") is not a teaching; never print it.
   const published = teachings.filter(
@@ -73,100 +72,107 @@ export default async function HomePage() {
   const featured = published.find((t) => t.featured) ?? published[0];
   const seriesTitle = seriesList.find((s) => s.slug === featured?.series)?.title;
   const recent = published.filter((t) => t.slug !== featured?.slug).slice(0, 3);
+  void mediaMeta;
 
   return (
     <>
-      {/* Hero: the watchman's hill, held behind the type */}
-      <section className="relative isolate overflow-hidden bg-ink text-parchment">
-        <Image
-          src="/images/desert-walk.webp"
-          alt=""
-          aria-hidden="true"
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover object-[65%_45%]"
-        />
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-r from-ink via-ink/80 to-ink/5"
-        />
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-ink/30"
-        />
-
-        <div className="wrap relative grid gap-12 pb-16 pt-16 md:min-h-[38rem] md:content-center md:pb-24 md:pt-24 lg:grid-cols-12 lg:items-center lg:gap-10">
+      {/* Hero */}
+      <section className="border-b border-line bg-paper">
+        <div className="wrap grid gap-10 py-12 md:py-16 lg:grid-cols-12 lg:items-start lg:gap-12 lg:py-20">
           <div className="lg:col-span-7">
-            <p className="label text-gold-soft/85">
+            <p className="inline-flex items-center gap-2 rounded-full border border-line bg-parchment px-3 py-1 text-[0.75rem] font-medium text-quiet">
+              <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-gold" />
               Interdenominational · Founded {site.founded}
             </p>
 
-            <h1 className="mt-7 max-w-[13ch] font-display text-display text-parchment">
-              A community
-              <br />
-              of the called.
+            <h1 className="mt-5 font-display text-display text-ink">
+              A community of the called.
             </h1>
 
-            <p className="mt-8 max-w-[34ch] font-display text-lead leading-snug text-parchment/75">
-              Planted in the word. Moved by the Spirit. Built on prayer.
+            <p className="mt-5 max-w-[52ch] text-lg leading-relaxed text-quiet">
+              Planted in the word, moved by the Spirit, built on prayer. An online
+              fellowship led by {site.leader}, gathering from Nigeria, Zambia and
+              beyond.
             </p>
 
-            <p className="measure mt-6 text-parchment/55">
-              The School of Prophets is an interdenominational prophetic fellowship
-              led by {site.leader}, gathering online every week from Nigeria, Zambia
-              and beyond.
-            </p>
-
-            <div className="mt-9 flex flex-wrap items-center gap-x-7 gap-y-4">
-              <Link href="/gatherings" className="btn btn-gold">
+            <div className="mt-7 flex flex-wrap items-center gap-3">
+              <Link href="/gatherings" className="btn btn-ink">
                 Join a gathering
+                <ArrowRight aria-hidden="true" className="h-4 w-4" />
               </Link>
-              <Link
-                href="/teachings"
-                className="link-quiet inline-flex items-center gap-2 text-sm text-parchment/75 hover:text-parchment"
-              >
-                Read a teaching first
-                <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
+              <Link href="/teachings" className="btn btn-outline">
+                Read a teaching
               </Link>
             </div>
+
+            <dl className="mt-9 grid max-w-lg grid-cols-3 gap-4 border-t border-line pt-5">
+              {[
+                ["Founded", site.founded],
+                ["Rhythm", "Weekly, online"],
+                ["Watchword", "Daniel 4:17"],
+              ].map(([label, value]) => (
+                <div key={label}>
+                  <dt className="text-[0.7rem] font-semibold uppercase tracking-[0.08em] text-quiet">
+                    {label}
+                  </dt>
+                  <dd className="mt-1 text-sm font-medium text-ink">{value}</dd>
+                </div>
+              ))}
+            </dl>
           </div>
 
-          <div className="lg:col-span-4 lg:col-start-9">
-            <NextGathering sessions={schedule} joinHref={contact.whatsapp || undefined} />
-            <p className="mt-4 text-xs leading-relaxed text-parchment/60">
+          <div className="lg:col-span-5">
+            <NextGathering
+              tone="light"
+              sessions={schedule}
+              joinHref={contact.whatsapp || undefined}
+            />
+            <p className="mt-3 text-xs leading-relaxed text-quiet">
               Every session is online. Times are kept in WAT and shown in your own
               timezone.
             </p>
           </div>
         </div>
 
-        <div className="relative border-t border-parchment/10">
-          <div className="wrap flex flex-wrap gap-x-10 gap-y-2 py-4 text-[0.7rem] uppercase tracking-[0.14em] text-parchment/60">
-            <span>Founded {site.founded}</span>
-            <span aria-hidden="true" className="text-parchment/20">/</span>
-            <span>Interdenominational</span>
-            <span aria-hidden="true" className="text-parchment/20">/</span>
-            <span>Online, weekly</span>
+        <div className="wrap pb-10 md:pb-14">
+          <div className="relative aspect-[16/9] overflow-hidden rounded-2xl border border-line md:aspect-[21/9]">
+            <Image
+              src="/images/desert-walk.webp"
+              alt="A man walking a desert road at sunrise"
+              fill
+              priority
+              sizes="(max-width: 1280px) 100vw, 1200px"
+              className="object-cover object-[65%_45%]"
+            />
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 bg-gradient-to-t from-ink/70 via-ink/10 to-transparent"
+            />
+            <div className="absolute inset-x-0 bottom-0 flex flex-wrap items-end justify-between gap-3 p-5 text-parchment sm:p-7">
+              <p className="max-w-[34ch] font-display text-lg font-semibold leading-snug sm:text-2xl">
+                “The most High ruleth in the kingdom of men.”
+              </p>
+              <p className="text-[0.7rem] uppercase tracking-[0.1em] text-parchment/70">
+                Daniel 4:17
+              </p>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Who we are, with a scripture plate */}
+      {/* Who we are */}
       {show.intro && (
-        <section className="wrap grid gap-12 py-20 md:grid-cols-12 md:py-28">
-          <div className="md:col-span-7">
+        <section className="wrap section-space grid gap-10 lg:grid-cols-12 lg:gap-12">
+          <div className="lg:col-span-7">
             <p className="label text-ember">The fellowship</p>
-            <Reveal>
-              <h2 className="mt-5 max-w-[24ch] font-display text-hero">
-                Saints from different churches and cities, bound by love and united
-                by one Spirit.
-              </h2>
-            </Reveal>
-            <div className="mt-8 grid max-w-3xl gap-6 text-quiet sm:grid-cols-2">
+            <h2 className="mt-3 max-w-[24ch] font-display text-hero">
+              Saints from different churches and cities, bound by love and united by
+              one Spirit.
+            </h2>
+            <div className="mt-6 grid gap-5 text-quiet sm:grid-cols-2">
               <p>
-                We come to hear God clearly, to grow into what He has called us to
-                be, and to stand in prayer for one another.
+                We come to hear God clearly, to grow into what He has called us to be,
+                and to stand in prayer for one another.
               </p>
               <p>
                 Founded on {site.founded} as an interdenominational mandate for the
@@ -176,182 +182,170 @@ export default async function HomePage() {
             </div>
             <Link
               href="/about"
-              className="link-quiet mt-8 inline-flex items-center gap-2 text-sm font-semibold text-ink"
+              className="link-quiet mt-6 inline-flex items-center gap-2 text-sm font-semibold text-ink"
             >
               The story and the vision
-              <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
+              <ArrowRight aria-hidden="true" className="h-4 w-4" />
             </Link>
           </div>
 
-          <figure className="md:col-span-5 md:pl-8">
-            <div className="border border-ink/15 bg-paper p-8">
-              <Seal size={72} idKey="home-intro" />
-              <blockquote className="mt-8">
-                <p className="pullquote font-display text-2xl leading-[1.25]">
-                  “The most High ruleth in the kingdom of men, and giveth it to
-                  whomsoever he will.”
-                </p>
-                <figcaption className="mt-5 text-xs uppercase tracking-[0.13em] text-quiet">
-                  Daniel 4:17 · the fellowship&apos;s watchword
-                </figcaption>
-              </blockquote>
-            </div>
+          <figure className="card p-6 sm:p-8 lg:col-span-5">
+            <Seal size={56} idKey="home-intro" />
+            <blockquote className="mt-5">
+              <p className="text-xl font-medium leading-snug tracking-[-0.02em] text-ink">
+                “The most High ruleth in the kingdom of men, and giveth it to
+                whomsoever he will.”
+              </p>
+              <figcaption className="mt-4 text-xs text-quiet">
+                Daniel 4:17 · the fellowship&apos;s watchword
+              </figcaption>
+            </blockquote>
           </figure>
         </section>
       )}
 
-      {/* The week: the timetable is the centrepiece */}
-      {show.week && (
-        <section className="bg-ink text-parchment">
-          <div className="wrap py-20 md:py-28">
-            <div className="grid gap-6 md:grid-cols-12 md:items-end">
-              <div className="md:col-span-7">
-                <p className="label text-gold-soft/85">This week</p>
-                <Reveal>
-                  <h2 className="mt-4 font-display text-hero">The week, in WAT.</h2>
-                </Reveal>
+      {/* Three systems */}
+      {show.systems && (
+        <section className="border-y border-line bg-paper">
+          <div className="wrap section-space">
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <p className="label text-ember">The three systems</p>
+                <h2 className="mt-3 max-w-[22ch] font-display text-hero">
+                  Everything here rests on three things.
+                </h2>
               </div>
-              <div className="md:col-span-5 md:text-right">
+              <Link href="/about" className="link-quiet text-sm text-quiet">
+                How the house is ordered
+              </Link>
+            </div>
+
+            <div className="mt-8 grid gap-4 md:grid-cols-3">
+              {systems.map((system) => (
+                <article key={system.number} className="card card-hover p-6">
+                  <p className="text-2xl font-semibold tabular-nums text-gold">
+                    {system.number}
+                  </p>
+                  <h3 className="mt-4 text-xl font-semibold tracking-tight">{system.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-quiet">{system.body}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* The week */}
+      {show.week && (
+        <section className="wrap section-space">
+          <div className="card p-5 sm:p-8">
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <p className="label text-ember">This week</p>
+                <h2 className="mt-2 font-display text-hero">The week, in WAT.</h2>
+              </div>
+              <div className="flex flex-wrap items-center gap-4">
                 <a
                   href="/schedule.ics"
                   download
-                  className="inline-flex items-center gap-2 text-sm text-parchment/65 hover:text-parchment"
+                  className="inline-flex items-center gap-2 text-sm text-quiet hover:text-ink"
                 >
                   <CalendarPlus aria-hidden="true" className="h-4 w-4" />
-                  Add the whole week to your calendar
+                  Add the week to your calendar
                 </a>
+                <Link href="/gatherings" className="btn btn-outline">
+                  What an evening looks like
+                </Link>
               </div>
             </div>
 
-            <div className="mt-10 md:mt-12">
-              <Timetable sessions={schedule} exceptions={exceptions} tone="dark" />
+            <div className="mt-7">
+              <Timetable sessions={schedule} exceptions={exceptions} />
             </div>
 
-            <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
-              <p className="max-w-[58ch] text-xs leading-relaxed text-parchment/60">
-                Times marked * await the ministry&apos;s confirmation. Links are
-                posted in the community before each session.
-              </p>
-              <Link href="/gatherings" className="link-quiet text-sm text-parchment/75">
-                What an evening looks like
-              </Link>
-            </div>
+            <p className="mt-4 max-w-[64ch] text-xs leading-relaxed text-quiet">
+              Times marked * await the ministry&apos;s confirmation. Links are posted
+              in the community before each session.
+            </p>
           </div>
         </section>
       )}
 
-      {/* Three systems as typography, not cards */}
-      {show.systems && (
-        <section className="wrap py-20 md:py-28">
-          <div className="grid gap-6 md:grid-cols-12 md:items-end">
-            <p className="label text-ember md:col-span-3">The three systems</p>
-            <h2 className="font-display text-hero md:col-span-9">
-              Everything here rests on three things.
-            </h2>
-          </div>
-
-          <div className="mt-12 grid gap-10 md:grid-cols-3 md:gap-0">
-            {systems.map((system, index) => (
-              <div
-                key={system.number}
-                className={`border-t border-ink/25 pt-6 md:px-8 ${
-                  index === 0 ? "md:pl-0" : ""
-                } ${index < systems.length - 1 ? "md:border-r md:border-r-ink/15" : ""} ${
-                  index === systems.length - 1 ? "md:pr-0" : ""
-                }`}
-              >
-                <p className="font-display text-5xl leading-none tabular-nums text-ember">
-                  {system.number}
-                </p>
-                <h3 className="mt-6 font-display text-3xl">{system.title}</h3>
-                <p className="mt-3 max-w-[32ch] text-sm leading-relaxed text-quiet">
-                  {system.body}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Start with a teaching */}
+      {/* Featured teaching */}
       {show.teaching && featured && (
-        <section className="border-y border-ink/15 bg-paper">
-          <div className="wrap py-16 md:py-24">
-            <div className="flex flex-wrap items-baseline justify-between gap-4">
-              <p className="label text-ember">Start with this teaching</p>
-              <Link href="/teachings" className="link-quiet text-sm text-quiet">
+        <section className="border-y border-line bg-paper">
+          <div className="wrap section-space">
+            <div className="flex flex-wrap items-baseline justify-between gap-3">
+              <div>
+                <p className="label text-ember">Start with this teaching</p>
+                <h2 className="mt-2 font-display text-hero">Recent from the house.</h2>
+              </div>
+              <Link href="/teachings" className="btn btn-outline">
                 All teachings
               </Link>
             </div>
 
-            <article className="mt-8 grid gap-8 border-t border-ink/20 pt-8 md:grid-cols-12">
-              <div className="md:col-span-3">
-                <p className="label text-quiet">{seriesTitle ?? "Teaching"}</p>
-                <p className="mt-2 text-xs text-quiet">{formatDate(featured.date)}</p>
-              </div>
-
-              <div className="md:col-span-9 grid gap-8 lg:grid-cols-12 lg:items-center">
-                <div className={featured.image ? "lg:col-span-7" : "lg:col-span-12"}>
-                  <h3 className="max-w-[26ch] font-display text-3xl leading-[1.05] sm:text-4xl lg:text-5xl">
-                    <Link href={`/teachings/${featured.slug}`} className="link-quiet">
-                      {featured.title}
-                    </Link>
-                  </h3>
-                  <p className="measure mt-5 text-quiet">{featured.summary}</p>
-                  <div className="mt-6 flex flex-wrap items-center gap-6">
-                    <Link
-                      href={`/teachings/${featured.slug}`}
-                      className="link-quiet inline-flex items-center gap-2 text-sm font-semibold text-ink"
-                    >
-                      Read the outline
-                      <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
-                    </Link>
-                    <span className="text-xs uppercase tracking-[0.12em] text-ember">
-                      {featured.scripture}
-                    </span>
-                  </div>
+            <article className="card mt-7 grid gap-6 overflow-hidden lg:grid-cols-12 lg:gap-0">
+              {featured.image && (
+                <div className="relative aspect-[16/10] bg-ink-2 lg:col-span-5 lg:aspect-auto lg:min-h-[22rem]">
+                  <Cover
+                    src={featured.image}
+                    alt={featured.imageAlt || featured.title}
+                    sizes="(max-width: 1024px) 100vw, 40vw"
+                    fit="contain"
+                  />
                 </div>
-
-                {featured.image && (
-                  <div className="lg:col-span-5">
-                    <Link
-                      href={`/teachings/${featured.slug}`}
-                      className="group relative block aspect-[3/2] overflow-hidden border border-ink/15 bg-ink-2"
-                    >
-                      <Cover
-                        src={featured.image}
-                        alt={featured.imageAlt || featured.title}
-                        sizes="(max-width: 768px) 100vw, 35vw"
-                        fit="contain"
-                        className="media-zoom"
-                      />
-                    </Link>
-                  </div>
-                )}
+              )}
+              <div
+                className={`p-6 sm:p-8 ${
+                  featured.image ? "lg:col-span-7" : "lg:col-span-12"
+                }`}
+              >
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-quiet">
+                  <span className="font-medium text-ember">{seriesTitle ?? "Teaching"}</span>
+                  <span aria-hidden="true">·</span>
+                  <span>{formatDate(featured.date)}</span>
+                  {featured.scripture && (
+                    <>
+                      <span aria-hidden="true">·</span>
+                      <span>{featured.scripture}</span>
+                    </>
+                  )}
+                </div>
+                <h3 className="mt-3 max-w-[24ch] text-2xl font-semibold leading-tight tracking-tight sm:text-3xl">
+                  <Link href={`/teachings/${featured.slug}`} className="link-quiet">
+                    {featured.title}
+                  </Link>
+                </h3>
+                <p className="measure mt-3 text-sm leading-relaxed text-quiet">
+                  {featured.summary}
+                </p>
+                <Link
+                  href={`/teachings/${featured.slug}`}
+                  className="btn btn-ink mt-6"
+                >
+                  Read the outline
+                  <ArrowRight aria-hidden="true" className="h-4 w-4" />
+                </Link>
               </div>
             </article>
 
             {recent.length > 0 && (
-              <ul className="mt-10">
+              <div className="mt-6 grid gap-4 md:grid-cols-3">
                 {recent.map((t) => (
-                  <li key={t.slug} className="border-t border-ink/12">
-                    <Link
-                      href={`/teachings/${t.slug}`}
-                      className="group grid gap-2 py-5 sm:grid-cols-[9rem_1fr_auto] sm:items-baseline sm:gap-6"
-                    >
-                      <span className="text-xs uppercase tracking-[0.12em] text-quiet">
-                        {formatDate(t.date)}
-                      </span>
-                      <span className="font-display text-xl leading-snug group-hover:text-ember">
-                        {t.title}
-                      </span>
-                      <span className="text-xs uppercase tracking-[0.12em] text-quiet">
-                        {t.scripture}
-                      </span>
-                    </Link>
-                  </li>
+                  <Link
+                    key={t.slug}
+                    href={`/teachings/${t.slug}`}
+                    className="card card-hover group p-5"
+                  >
+                    <p className="text-xs text-quiet">{formatDate(t.date)}</p>
+                    <h3 className="mt-2 text-base font-semibold leading-snug tracking-tight group-hover:text-ember">
+                      {t.title}
+                    </h3>
+                    <p className="mt-2 text-xs text-quiet">{t.scripture}</p>
+                  </Link>
                 ))}
-              </ul>
+              </div>
             )}
           </div>
         </section>
@@ -359,105 +353,109 @@ export default async function HomePage() {
 
       {/* Training */}
       {show.training && (
-        <section className="bg-ink-2 text-parchment">
-          <div className="wrap grid gap-12 py-20 md:grid-cols-12 md:py-28">
-            <div className="md:col-span-7">
-              <p className="label text-gold-soft/85">The Bible institute</p>
-              <h2 className="mt-5 max-w-[24ch] font-display text-hero">
-                Called into ministry? Don&apos;t guess your way into it.
-              </h2>
-              <p className="measure mt-6 text-parchment/60">{training.intro}</p>
-              <p className="measure mt-4 text-sm text-parchment/60">
-                {training.enrolmentNote}
-              </p>
-              <Link
-                href="/training"
-                className="link-quiet mt-8 inline-flex items-center gap-2 text-sm text-parchment/80"
-              >
-                Read the syllabus
-                <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
-              </Link>
-            </div>
+        <section className="wrap section-space">
+          <div className="rounded-2xl bg-ink p-6 text-parchment sm:p-10">
+            <div className="grid gap-8 lg:grid-cols-12 lg:items-center">
+              <div className="lg:col-span-7">
+                <p className="label text-gold-soft/80">The Bible institute</p>
+                <h2 className="mt-3 max-w-[24ch] font-display text-hero">
+                  Called into ministry? Don&apos;t guess your way into it.
+                </h2>
+                <p className="measure mt-4 text-sm leading-relaxed text-parchment/70">
+                  {training.intro}
+                </p>
+                <p className="measure mt-3 text-sm leading-relaxed text-parchment/60">
+                  {training.enrolmentNote}
+                </p>
+                <Link
+                  href="/training"
+                  className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-gold-soft hover:text-parchment"
+                >
+                  Read the syllabus
+                  <ArrowRight aria-hidden="true" className="h-4 w-4" />
+                </Link>
+              </div>
 
-            <div className="md:col-span-5 md:pl-8">
-              <EnrolmentBanner status={enrolment.status} />
+              <div className="lg:col-span-5">
+                <EnrolmentBanner status={enrolment.status} />
+              </div>
             </div>
           </div>
         </section>
       )}
 
-      {/* The Prophet: the portrait we have */}
-      <section className="wrap grid gap-12 py-20 md:grid-cols-12 md:py-28">
-        <figure className="md:col-span-4">
-          <div className="relative aspect-[4/5] overflow-hidden bg-ink">
-            <Image
-              src="/images/prophet-portrait.webp"
-              alt="Prophet Lawrence Iwara, founder and overseer of The School of Prophets"
-              fill
-              sizes="(max-width: 768px) 100vw, 32vw"
-              className="object-cover object-top"
-            />
-          </div>
-          <figcaption className="figure-caption mt-3">
-            Prophet Lawrence Iwara · founder and overseer
-          </figcaption>
-        </figure>
+      {/* The Prophet */}
+      <section className="border-t border-line bg-paper">
+        <div className="wrap section-space grid gap-8 lg:grid-cols-12 lg:items-center">
+          <figure className="lg:col-span-5">
+            <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-line bg-ink sm:aspect-[4/5]">
+              <Image
+                src="/images/prophet-portrait.webp"
+                alt="Prophet Lawrence Iwara, founder and overseer of The School of Prophets"
+                fill
+                sizes="(max-width: 1024px) 100vw, 40vw"
+                className="object-cover object-top"
+              />
+            </div>
+            <figcaption className="mt-3 text-xs text-quiet">
+              Prophet Lawrence Iwara · founder and overseer
+            </figcaption>
+          </figure>
 
-        <div className="md:col-span-7 md:col-start-6">
-          <p className="label text-ember">In his own words</p>
-          <Reveal>
-            <blockquote className="mt-6">
-              <p className="pullquote max-w-[23ch] font-display text-3xl leading-[1.15] sm:text-4xl lg:text-[2.5rem]">
+          <div className="lg:col-span-6 lg:col-start-7">
+            <p className="label text-ember">In his own words</p>
+            <blockquote className="mt-4">
+              <p className="max-w-[24ch] text-2xl font-medium leading-snug tracking-[-0.025em] sm:text-3xl">
                 “One of the reasons God sent prophets was simply because He loves His
                 people.”
               </p>
-              <footer className="mt-6 text-xs uppercase tracking-[0.13em] text-quiet">
+              <footer className="mt-4 text-xs text-quiet">
                 From the 5th Anniversary teaching, 19 September 2026
               </footer>
             </blockquote>
-          </Reveal>
-          <p className="measure mt-8 text-quiet">
-            He teaches weekly, trains those called into ministry at the Bible
-            institute, and shepherds the fellowship in prayer.
-          </p>
-          <Link
-            href="/about#prophet"
-            className="link-quiet mt-6 inline-flex items-center gap-2 text-sm font-semibold text-ink"
-          >
-            Meet the Prophet
-            <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
-          </Link>
+            <p className="measure mt-5 text-sm leading-relaxed text-quiet">
+              He teaches weekly, trains those called into ministry at the Bible
+              institute, and shepherds the fellowship in prayer.
+            </p>
+            <Link
+              href="/about#prophet"
+              className="link-quiet mt-5 inline-flex items-center gap-2 text-sm font-semibold text-ink"
+            >
+              Meet the Prophet
+              <ArrowRight aria-hidden="true" className="h-4 w-4" />
+            </Link>
+          </div>
         </div>
       </section>
 
       {/* Join */}
       {show.cta && (
-        <section className="border-t border-ink/15 bg-paper">
-          <div className="wrap grid gap-10 py-16 md:grid-cols-12 md:py-20">
-            <div className="md:col-span-7">
+        <section className="wrap pb-16 md:pb-24">
+          <div className="card grid gap-8 p-6 sm:p-10 lg:grid-cols-12 lg:items-center">
+            <div className="lg:col-span-7">
               <p className="label text-ember">Take your seat</p>
-              <h2 className="mt-4 max-w-[20ch] font-display text-hero">
+              <h2 className="mt-2 max-w-[20ch] font-display text-hero">
                 Join the community and gather this week.
               </h2>
-              <p className="measure mt-5 text-quiet">
+              <p className="measure mt-4 text-sm leading-relaxed text-quiet">
                 Tell the team where you are and how long you have been walking with
                 God. Someone will send the session links.
               </p>
-              <div className="mt-8">
+              <div className="mt-6">
                 <SocialLinks />
               </div>
-              <p className="mt-4 text-xs text-quiet">
+              <p className="mt-3 text-xs text-quiet">
                 WhatsApp and Telegram invites are sent on request while the public
                 invites are being refreshed.
               </p>
             </div>
 
-            <div className="md:col-span-4 md:col-start-9 md:text-right">
-              <Seal size={120} idKey="home-join" className="ml-auto" />
-              <p className="mt-6 text-sm text-quiet">
+            <div className="lg:col-span-4 lg:col-start-9">
+              <Seal size={96} idKey="home-join" />
+              <p className="mt-4 text-sm text-quiet">
                 New here? Write first and an admin will answer.
               </p>
-              <Link href="/contact" className="link-quiet mt-2 inline-block text-sm font-semibold text-ink">
+              <Link href="/contact" className="btn btn-outline mt-3">
                 Contact the fellowship
               </Link>
             </div>

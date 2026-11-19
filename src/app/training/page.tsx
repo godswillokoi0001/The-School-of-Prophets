@@ -96,7 +96,7 @@ export default async function TrainingPage() {
 
         <aside className="lg:col-span-4 lg:col-start-9">
           <div className="lg:sticky lg:top-28">
-            <EnrolmentBanner status={enrolment.status} showLink={false} />
+            <EnrolmentBanner tone="light" status={enrolment.status} showLink={false} />
             <a href="#apply" className="btn btn-gold mt-3 w-full">
               {isOpen ? "Start the application" : "Join the waitlist"}
             </a>
