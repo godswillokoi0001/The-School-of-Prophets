@@ -13,6 +13,7 @@ export function NewsletterSubscribe({
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [phone, setPhone] = useState("");
   const [honeypot, setHoneypot] = useState("");
   const [busy, setBusy] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -45,6 +46,8 @@ export function NewsletterSubscribe({
           firstName: firstName.trim(),
           lastName: lastName.trim(),
           name: `${firstName.trim()} ${lastName.trim()}`.trim(),
+          phone: phone.trim() || undefined,
+          whatsapp: phone.trim() || undefined,
           website: honeypot,
         }),
       });
@@ -55,6 +58,7 @@ export function NewsletterSubscribe({
         setEmail("");
         setFirstName("");
         setLastName("");
+        setPhone("");
       } else {
         setError(
           data.error ||
@@ -133,8 +137,8 @@ export function NewsletterSubscribe({
           />
         </label>
       </div>
-      <div className="mt-2 flex flex-col gap-2 sm:flex-row">
-        <label className="flex-1">
+      <div className="mt-2 grid gap-2 sm:grid-cols-2">
+        <label>
           <span className="sr-only">Email address</span>
           <input
             type="email"
@@ -153,9 +157,27 @@ export function NewsletterSubscribe({
             }`}
           />
         </label>
-        <button type="submit" disabled={busy} className="btn btn-gold shrink-0">
+        <label>
+          <span className="sr-only">Phone / WhatsApp (optional)</span>
+          <input
+            type="tel"
+            autoComplete="tel"
+            inputMode="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="Phone / WhatsApp (optional)"
+            className={`min-h-11 w-full border bg-transparent px-3 text-sm focus:border-gold ${
+              onDark
+                ? "border-parchment/25 text-parchment placeholder:text-parchment/35"
+                : "border-ink/25 text-ink placeholder:text-quiet/60"
+            }`}
+          />
+        </label>
+      </div>
+      <div className="mt-2.5">
+        <button type="submit" disabled={busy} className="btn btn-gold w-full sm:w-auto">
           {busy ? "Subscribing…" : "Subscribe"}
-          {!busy && <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />}
+          {!busy && <ArrowRight aria-hidden="true" className="h-3.5 w-3.5 ml-1" />}
         </button>
       </div>
       {error && (

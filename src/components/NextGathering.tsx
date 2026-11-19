@@ -120,23 +120,23 @@ export function NextGathering({
         ))}
       </div>
 
-      <div className="mt-5 sm:mt-6 grid grid-cols-2 gap-2 sm:gap-3 items-stretch">
+      <div className="mt-5 sm:mt-6 grid grid-cols-2 gap-1.5 sm:gap-2.5 items-stretch">
         <a
           href={joinHref}
           {...(external ? { rel: "noopener noreferrer", target: "_blank" } : {})}
-          className={`btn w-full min-w-0 !px-1.5 sm:!px-3 !text-[0.6rem] sm:!text-[0.6875rem] !tracking-wider sm:!tracking-[0.13em] !min-h-[2.5rem] sm:!min-h-[2.75rem] text-center whitespace-nowrap overflow-hidden ${
+          className={`btn w-full min-w-0 !px-1 sm:!px-2 !text-[0.55rem] sm:!text-[0.625rem] md:!text-[0.6875rem] !tracking-normal sm:!tracking-wider !min-h-[2.35rem] sm:!min-h-[2.6rem] text-center whitespace-nowrap overflow-visible ${
             light ? "btn-ink" : "btn-gold"
           }`}
           title={joinLabel}
         >
-          <span className="truncate">{joinLabel}</span>
+          <span className="whitespace-nowrap">{joinLabel}</span>
         </a>
         <Link
           href="/gatherings"
-          className="btn btn-outline w-full min-w-0 !px-1.5 sm:!px-3 !text-[0.6rem] sm:!text-[0.6875rem] !tracking-wider sm:!tracking-[0.13em] !min-h-[2.5rem] sm:!min-h-[2.75rem] text-center whitespace-nowrap overflow-hidden"
+          className="btn btn-outline w-full min-w-0 !px-1 sm:!px-2 !text-[0.55rem] sm:!text-[0.625rem] md:!text-[0.6875rem] !tracking-normal sm:!tracking-wider !min-h-[2.35rem] sm:!min-h-[2.6rem] text-center whitespace-nowrap overflow-visible"
           title="How we meet"
         >
-          <span className="truncate">How we meet</span>
+          <span className="whitespace-nowrap">How we meet</span>
         </Link>
       </div>
 

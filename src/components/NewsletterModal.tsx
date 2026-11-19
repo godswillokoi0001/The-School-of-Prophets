@@ -10,6 +10,7 @@ export function NewsletterModal() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [honeypot, setHoneypot] = useState("");
   const [busy, setBusy] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -89,6 +90,8 @@ export function NewsletterModal() {
           firstName: firstName.trim(),
           lastName: lastName.trim(),
           name: `${firstName.trim()} ${lastName.trim()}`.trim(),
+          phone: phone.trim() || undefined,
+          whatsapp: phone.trim() || undefined,
           website: honeypot,
         }),
       });
@@ -250,6 +253,21 @@ export function NewsletterModal() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
+                  className="w-full border border-parchment/20 bg-ink/60 px-3.5 py-2 text-sm text-parchment placeholder:text-parchment/30 focus:border-gold focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] uppercase tracking-wider text-parchment/60 mb-1">
+                  Phone / WhatsApp <span className="text-parchment/40 normal-case">(optional)</span>
+                </label>
+                <input
+                  type="tel"
+                  autoComplete="tel"
+                  inputMode="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="e.g. +234 ... (optional)"
                   className="w-full border border-parchment/20 bg-ink/60 px-3.5 py-2 text-sm text-parchment placeholder:text-parchment/30 focus:border-gold focus:outline-none"
                 />
               </div>

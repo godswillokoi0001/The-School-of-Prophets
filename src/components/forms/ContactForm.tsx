@@ -10,7 +10,7 @@ import {
 } from "@/components/forms/Field";
 
 export function ContactForm() {
-  const [values, setValues] = useState({ name: "", email: "", message: "", website: "" });
+  const [values, setValues] = useState({ name: "", email: "", phone: "", message: "", website: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [status, setStatus] = useState<"idle" | "sending" | "ok" | "error">("idle");
   const [message, setMessage] = useState("");
@@ -25,7 +25,7 @@ export function ContactForm() {
     const result = await postForm("/api/contact", { ...values });
     if (result.ok) {
       setStatus("ok");
-      setValues({ name: "", email: "", message: "", website: "" });
+      setValues({ name: "", email: "", phone: "", message: "", website: "" });
     } else {
       setStatus("error");
       setErrors(result.errors ?? {});
@@ -71,6 +71,24 @@ export function ContactForm() {
           />
         </Field>
       </div>
+
+      <Field
+        label="Phone / WhatsApp (optional)"
+        htmlFor="contact-phone"
+        error={errors.phone}
+        hint="If you would prefer a response or follow-up via call or WhatsApp."
+      >
+        <input
+          id="contact-phone"
+          type="tel"
+          className="input"
+          value={values.phone}
+          onChange={(e) => set("phone")(e.target.value)}
+          autoComplete="tel"
+          inputMode="tel"
+          placeholder="Include country code, e.g. +234..."
+        />
+      </Field>
 
       <Field
         label="Message"

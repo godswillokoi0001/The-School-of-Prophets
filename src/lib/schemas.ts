@@ -19,6 +19,8 @@ export const contactSchema = z.object({
   name,
   email,
   message: message(10, 3000, "message"),
+  phone: z.string().trim().max(40).optional(),
+  whatsapp: z.string().trim().max(40).optional(),
 });
 
 export const prayerSchema = z.object({
@@ -40,7 +42,7 @@ export const testimonySchema = z.object({
 export const enrolmentSchema = z.object({
   fullName: name,
   email,
-  whatsapp: z.string().trim().min(7, "A WhatsApp number we can reach you on.").max(40),
+  whatsapp: z.string().trim().max(40).optional(),
   country: z.string().trim().min(2, "Please tell us your country.").max(80),
   church: z.string().trim().min(2, "Please name your church or denomination.").max(160),
   inMinistry: z.enum(["yes", "no", "preparing"]),
@@ -53,11 +55,15 @@ export const newsletterSchema = z.object({
   firstName: z.string().trim().min(1, "First name is required.").max(60),
   lastName: z.string().trim().min(1, "Last name is required.").max(60),
   name: optionalName,
+  phone: z.string().trim().max(40).optional(),
+  whatsapp: z.string().trim().max(40).optional(),
 });
 
 export const registrationSchema = z.object({
   name,
   email,
+  phone: z.string().trim().max(40).optional(),
+  whatsapp: z.string().trim().max(40).optional(),
   guests: z.coerce.number().int().min(0).max(20).default(0),
   notes: z.string().trim().max(500).optional(),
   eventSlug: z.string().trim().max(120).optional(),

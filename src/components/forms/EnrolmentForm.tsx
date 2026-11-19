@@ -50,8 +50,8 @@ export function EnrolmentForm({ isOpen }: { isOpen: boolean }) {
     if (values.fullName.trim().length < 2) problems.fullName = "Please give your full name.";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email))
       problems.email = "Use a valid email address.";
-    if (values.whatsapp.trim().length < 7)
-      problems.whatsapp = "A WhatsApp number we can reach you on.";
+    if (values.whatsapp.trim().length > 0 && values.whatsapp.trim().length < 5)
+      problems.whatsapp = "Please enter a valid WhatsApp number with country code.";
     if (values.country.trim().length < 2) problems.country = "Please tell us your country.";
     if (values.church.trim().length < 2)
       problems.church = "Please name your church or denomination.";
@@ -124,10 +124,10 @@ export function EnrolmentForm({ isOpen }: { isOpen: boolean }) {
             />
           </Field>
           <Field
-            label="WhatsApp number"
+            label="WhatsApp number (optional)"
             htmlFor="enr-whatsapp"
             error={errors.whatsapp}
-            hint="Include the country code."
+            hint="Include the country code (optional)."
           >
             <input
               id="enr-whatsapp"
@@ -137,7 +137,6 @@ export function EnrolmentForm({ isOpen }: { isOpen: boolean }) {
               autoComplete="tel"
               inputMode="tel"
               aria-invalid={Boolean(errors.whatsapp)}
-              required
             />
           </Field>
           <Field label="Country" htmlFor="enr-country" error={errors.country}>

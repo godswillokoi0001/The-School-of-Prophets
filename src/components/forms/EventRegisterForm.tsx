@@ -19,6 +19,7 @@ export function EventRegisterForm({
   const [values, setValues] = useState({
     name: "",
     email: "",
+    phone: "",
     guests: "0",
     notes: "",
     website: "",
@@ -39,6 +40,8 @@ export function EventRegisterForm({
       payload: {
         name: values.name,
         email: values.email,
+        phone: values.phone.trim() || undefined,
+        whatsapp: values.phone.trim() || undefined,
         guests: values.guests === "" ? 0 : Number(values.guests),
         notes: values.notes || undefined,
         eventSlug,
@@ -94,6 +97,24 @@ export function EventRegisterForm({
           />
         </Field>
       </div>
+
+      <Field
+        label="Phone / WhatsApp (optional)"
+        htmlFor="reg-phone"
+        error={errors.phone}
+        hint="Optional. If you would like gathering reminders or updates via WhatsApp."
+      >
+        <input
+          id="reg-phone"
+          type="tel"
+          className="input"
+          value={values.phone}
+          onChange={(e) => set("phone")(e.target.value)}
+          autoComplete="tel"
+          inputMode="tel"
+          placeholder="Include country code, e.g. +234..."
+        />
+      </Field>
 
       <Field
         label="Additional guests"
