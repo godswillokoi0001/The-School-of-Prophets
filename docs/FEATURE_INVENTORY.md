@@ -4,6 +4,9 @@ Written **before** any visual change, as the contract for the polish pass:
 everything listed here must still exist and still work when the pass ends.
 Items are ticked off at the bottom of this file (see "Verification").
 
+**Re-tested after the final pass:** all public routes return 200 at 320–1920px; the image frame, uploads, forms, auth screens, APIs, tables and permissions listed below are unchanged in behaviour. Items that require a signed-in staff session could not be exercised here; see `POLISH_REPORT.md`.
+
+
 Legend: **Public** = public site · **Admin** = `/admin` dashboard · **API** = route handler.
 
 ---

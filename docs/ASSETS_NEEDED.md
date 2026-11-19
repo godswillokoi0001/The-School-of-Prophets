@@ -84,3 +84,17 @@ public site. Delete them at launch so nobody reuses them by accident:
 - Alt text describes what is happening, not "image of".
 - Consent: no identifiable face without written permission. This includes
   screenshots of video calls.
+
+## Resolution audit (final polish pass)
+
+Measured widths of the files currently in use:
+
+| File | Pixels | Displayed at | Verdict |
+| --- | --- | --- | --- |
+| `desert-walk.webp` | 1408 × 768 | full-bleed hero | fine |
+| `prophet-portrait.webp` | 1000 × 1000 | 4:5 plate, up to 40vw | fine up to 1440 |
+| `worship-hands.webp` | 896 × 1200 | page plate, up to 1200 | soft on a 2× large screen |
+| `shofar-sunset.webp` | 598 × 900 | event cover | soft once displayed above ~300px |
+
+Replace `shofar-sunset.webp` and `worship-hands.webp` with the largest originals
+available. The site never crops the file, so a portrait original is fine.

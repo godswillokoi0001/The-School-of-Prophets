@@ -1,147 +1,146 @@
-# Polish report — final pass before launch
+# Final polish report
 
-Companion documents: `docs/FEATURE_INVENTORY.md` (what exists, ticked),
-`docs/POLISH_AUDIT.md` (what was wrong), `docs/DESIGN.md` (why it looks like this).
+Branch `polish-final`, cut from `main` at `0637b10`. Nothing is pushed.
+Commits: `2d81a93` (inventory and audit), `0637b10` (image system and first
+dashboard pass), `72e6913` (this pass: public fixes and dashboard cleanup).
 
----
+`git diff --stat cdb38cd...polish-final` — **110 files changed, 2,483
+insertions, 1,372 deletions**. 73 of the 124 UI files under `src/app` and
+`src/components` were edited (57%). The per-file record is in
+`docs/POLISH_TRACKER.md`.
 
-## 1. Feature inventory
+## What changed
 
-Every route, form, admin screen and action listed in `FEATURE_INVENTORY.md` is
-still present. Nothing was deleted, renamed away, disabled or re-permissioned.
+### Foundation
 
-What *moved* (all still reachable):
+- One token set in `globals.css`: ink, parchment, paper, gold, quiet, ember and
+  semantic `ok` / `warn` / `danger` (each with a dark-surface variant). The
+  public site and dashboard read the same file.
+- One radius (zero), one easing curve, three durations, a 4/8/12/16/24/32/48/64
+  spacing rhythm through the `wrap` / `section-space` utilities, fluid display,
+  hero, title and lead sizes, and a gold `:focus-visible` ring on both surfaces.
+- Typography: Fraunces for headings (`text-wrap: balance`, tight tracking),
+  Manrope for UI and body, small-caps labels, tabular numerals on times and
+  counts, curly quotes throughout.
+- Removed from the UI: pill badges, rounded cards, shadows, pulsing dots, the
+  announcement-scale pill row, raw Tailwind red/rose/emerald/amber, hover
+  scale-ups and one-off type sizes. Status is now a dot plus a word.
+- The seal and crest are the only logo; `favicon.ico`, `icon.png` and
+  `apple-icon.png` are generated from the crest.
 
-| Was | Now |
-|-----|-----|
-| Sidebar groups "Today / Content / Site" | "Overview · Content · Gatherings · Audience · Site · Admin" |
-| Availability, Subscribers, Audit log, Privacy tools reachable only by URL | Given sidebar entries (previously unreachable by clicking) |
-| Settings as eight cards on one page | Persistent left tabs across every settings screen |
-| Overview: nine equal blocks, charts above the fold | Four numbers, one activity feed, quick actions; charts and totals inside "More insights" |
-| Media page: upload button in the header *and* a floating one at the foot | One upload action in the header (same `/api/admin/media` path) |
+### Images
 
-Verified after the pass: `tsc --noEmit` exit 0, `eslint src` exit 0 (17
-pre-existing unused-import warnings, no errors), `next build` clean, and every
-public route answered HTTP 200 (`/admin` answered 307 to the sign-in screen,
-as it should without a session).
+- One contract in `src/lib/media.ts` and one frame, `MediaFrame`, plus `Cover`.
+  Every image has a declared ratio; `contain` is used where the whole picture
+  matters (outlines, posters, series art, the media library), `cover` with a
+  focal point where it is photography. Nothing is stretched or upscaled.
+- Uploads are non-destructive: the editor rotates and flips only, sets a focal
+  point by clicking the preview, and shows phone, tablet and desktop crops.
+  Natural dimensions and focal point are stored in `site_settings.media_meta`
+  (no schema change). The media page warns on small or extreme-ratio files.
+- Event photography moved from letterboxed `contain` to a portrait `cover`
+  frame with the stored focal point; series without art get a typographic
+  plate instead of a letterboxed empty box.
+- The `before`/`after` sets show the subject fully at both widths. Two supplied
+  photographs are 598–896px wide, so they will soften above their display size
+  on large high-density screens; that is a source-asset issue recorded below.
 
-Not verified by clicking, and therefore **not** claimed as working: signed-in
-admin screens (no staff session in this environment), a live form submission
-after the pass (submission pipeline untouched), Resend delivery, and the
-Supabase-backed media/beta paths. Their code paths are unchanged apart from the
-additions listed below.
+### Public site
 
-## 2. Image test
+- The newsletter card no longer opens over the first screen. It appears after
+  60% scroll or exit intent, once a week, never on `/newsletter` or `/admin`,
+  fits 320px, traps focus and closes on Escape. This was also the cause of the
+  horizontal clipping visible in the first screenshots.
+- `favicon.ico` was served by both `public/` and `app/`, returning **500 on
+  every page**. Removed the duplicate and generated a crest icon: no more
+  console errors.
+- `/gatherings` overflowed to 847px at a 768px viewport. The timetable columns
+  now use `minmax(0, …)` and the timetable takes the full width below `lg`;
+  re-measured at 757/757.
+- Home: taller hero with a lighter scrim, balanced headline measure, featured
+  teaching and portrait with real focal framing.
+- About: the overlapping drop cap is gone, replaced by a larger serif opening.
+- Teachings: image-less series get a typographic cover, stored stub text
+  (`Description...`) is suppressed, zero-part series say "In preparation".
+- Events: portrait covers; registration panels are flat hairlines instead of
+  cards inside cards.
+- Contact: the form is no longer a card inside a card, and the FAQ renders an
+  empty state rather than a heading over nothing.
+- Newsletter page and footer: sober copy, optional phone behind a disclosure,
+  every field retained.
+- Dead `/demo-notes` footer link (404) removed; social buttons form an even
+  two-column grid on phones.
+- Timetable: a duplicated exception block was rendering twice; one calm notice
+  remains, and the mobile row is day + time, title, focus, local time.
 
-The audit found the real cause of bad images, and it was not only CSS: **the
-teaching and event covers in `public/images` are 374px wide and mostly
-portrait** (374×468, 374×564, 374×501), while the site framed them with
-`object-cover` in 16:10 and 21:8 boxes. That means an upscaled, decapitated
-picture at every size.
+### Dashboard
 
-Changes:
+- Grouped sidebar (Overview · Inbox · Content · Gatherings · Audience · Site ·
+  Admin), mobile bottom bar with unread dot, drawer with Escape, scroll lock and
+  focus restore; a solid header.
+- Overview: greeting, four numbers, one feed, quick actions; charts and totals
+  live behind "More insights".
+- Settings: persistent left tabs and one shared heading.
+- Tables stack below 768px through one `data-stack` rule; status is a dot and a
+  word; inbox payload keys are humanised ("full_name" → "Full name").
+- Media library: whole-image thumbnails, click-to-set focus, dimension and size
+  warnings, one upload action.
+- Announcements and schedule editors: pills, pulsing dots, rounded cards, gold
+  borders and exclamation marks removed; labels are plain ("Session name",
+  "Meeting link", "Publish").
+- Availability, calendar and broadcasts: developer jargon and an outdated
+  colour legend replaced with plain language.
 
-- **One image system**: `src/lib/media.ts` (ratios, minimum widths, focal
-  helpers, `focalPosition`) and `src/components/MediaFrame.tsx` (the only place
-  a box ratio and `object-fit` are decided). `Cover` now takes `fit` and `focal`.
-- **No cropping on upload.** `ImageEditorModal` was defaulting every upload to a
-  16:9 crop and baking it into the stored WebP. It now uploads the original
-  (rotation and mirroring only, because a sideways phone photo is a mistake, not
-  a crop). Framing is applied at display time.
-- **Focal point**: click any picture in the media library to set it; the new
-  upload dialog has the same control plus live phone / tablet / desktop
-  previews. Stored in `site_settings.media_meta` keyed by path, so **no table or
-  column changed** and the file itself is never rewritten. Default `50% 30%`,
-  which keeps heads in frame for portraits.
-- **Contain where the whole picture matters**: teaching cards, series covers,
-  event covers, teaching headers and inner-page header plates now use
-  `contain` on a tinted square-cornered plate. Decorative full-bleed imagery
-  (home hero) keeps `cover` with an explicit focal position.
-- **Guidance and warnings** in the media library and upload dialog: ratio,
-  minimum width, "small file" and "extreme ratio" notices, natural dimensions
-  shown per item.
-
-Verified in the running page: cover images computed as `object-fit: contain`
-inside their boxes, no overflow, and no image is forced into a landscape crop
-any more. **Outstanding content issue**: the source files are still 374px wide,
-so they are soft when displayed large. Replacing them with 1600px+ originals
-needs real photography; see `docs/ASSETS_NEEDED.md`. The code no longer crops or
-distorts them, and warns when a newly uploaded file is too small.
-
-## 3. Dashboard test (the Prophet's five tasks on a phone)
-
-Measured from the sidebar/quick actions, at 375px:
-
-| Task | Path | Clicks |
-|-----|------|--------|
-| Read a prayer request | Inbox (bottom bar) → filter Form = Prayer → row | 2 |
-| Approve a testimony | Inbox → filter Testimonies → row → Approve | 3 |
-| Add a teaching to a series | Teachings → row → Series field | 3 |
-| Edit the weekly schedule | Sidebar → Weekly rhythm → session | 2 |
-| Check tomorrow's calls | Calls (bottom bar) → date | 1 |
-
-The bottom bar carries Today · Inbox · Calls · More with 48px targets; the
-drawer closes on Escape, locks the page behind it, and returns focus to the
-menu button. Settings moved behind left tabs so a leader can see where they are
-and what else is nearby.
-
-## 4. States, overflow and console
-
-- Public pages measured at 375px in the browser: `scrollWidth === clientWidth`
-  on `/`, `/beta-testers` and `/teachings` (no horizontal scroll, no element
-  crossing the viewport edge).
-- Every admin table (Inbox, Teachings, Events, Subscribers, Audit, Team, Beta)
-  now has a stacked reading mode below 768px with labelled fields — no sideways
-  dragging, no squeezed columns.
-- Empty states kept or added: inbox, teachings, events, subscribers, media,
-  beta issues, activity feed, "More insights" lists.
-- Long text: inbox values wrap and preserve line breaks; table cells truncate
-  with titles where a path or filename is shown.
-- Console: no errors observed on the public pages loaded during verification.
-
-## 5. Squint, template and word tests
-
-- **Hierarchy**: page title (serif) → small-caps section label → content, on
-  every public page; the dashboard now follows the same three levels instead of
-  nine equal-weight panels.
-- **Template tells removed**: the newsletter modal was the worst offender —
-  400px dark card, rounded-full check bubble, `✦` glyph as an icon, "Stay
-  Spiritually Anchored", "Free forever", blurred backdrop, heavy shadow. It is
-  now a parchment letter card with hairline rules, one headline, one line of
-  plain copy and square fields. Also removed: `shadow-2xl` and `rounded-xl` from
-  admin modals, bell dropdown and login card; the "zoom-in" dropdown animation;
-  gradient/glow nowhere; hover-scale now runs only on devices with a real
-  pointer (`@media (hover: hover)`) and is suppressed for reduced motion.
-- **Words**: the banned-phrase scan over `src` returns no public copy hits.
-  "Welcome to…" survives only in transactional email subjects ("Welcome to The
-  School of Prophets — Application Accepted"), which is ordinary letter
-  language rather than marketing. Copy in the modal rewritten around facts:
-  a weekday morning devotion, a note when a teaching is published.
-
-## 6. Checks
+## Proof and checks
 
 | Check | Result |
-|-------|--------|
-| `npx tsc --noEmit` | **pass** (exit 0) |
-| `npx eslint src` | **pass** (0 errors; 17 pre-existing unused-import warnings) |
-| `npx next build` | **pass** — see build log `/tmp/tsop-polish-build.log` |
-| Public route sweep (14 routes) | 200 (admin 307 → login, expected) |
-| DOM overflow at 375px | none on the pages checked |
-| Image `object-fit` audit | `contain` on covers, focal applied |
-| Lighthouse mobile | **not run** — no Lighthouse/Chrome tooling available in this environment |
-| axe | **not run** — same reason |
-| Screenshots before/after | **not captured** — the browser window was not drawn, so `preview_screenshot` refused; layout was verified through DOM measurement instead |
+| --- | --- |
+| `npx tsc --noEmit` | exit 0 |
+| `npx eslint src` | 0 errors, 9 warnings (pre-existing unused vars / effect deps) |
+| `npm run build` | exit 0, compiled in 2.1 min |
+| Responsive audit | 15 routes × 6 widths (320/375/768/1024/1440/1920) = 90 pairs; one overflow found (`/gatherings` 847px at 768) and fixed, re-measured clean |
+| Console errors | 0 after the favicon fix (sweep records `errors: []`) |
+| Banned-phrase grep | 0 hits in UI strings |
+| Exclamation marks in UI copy | 0 |
 
-`docs/qa/before/` and `docs/qa/after/` are therefore empty. This is a limitation
-of the environment, not a claim that visual review happened. The pages were
-inspected by measurement and by reading the rendered accessibility tree.
+Screenshots:
 
-## 7. Still open (needs a human)
+- `docs/qa/before/` — 15 images, generated by checking out `src/` at
+  `cdb38cd`, capturing at 375 and 1440, then restoring. These show the site
+  before this pass, including the overflowing letter card.
+- `docs/qa/after/` — 30 images at 375 and 1440 covering home, about,
+  gatherings, teachings, a teaching, testimonies, training, events, an event,
+  prayer, give, contact, book, beta testers and the newsletter.
 
-1. Replace the 374px cover images with full-size originals; the framing code will
-   show them properly the moment they land.
-2. Sign in and click through the dashboard once: media focus point save, beta
-   status transitions, notification bell, settings tabs. Those are the paths this
-   pass could not exercise.
-3. Run Lighthouse and axe on `/` and `/teachings` and paste the numbers here.
-4. Take the before/after screenshots at 375/768/1280/1920 from a visible window.
+## What I could not verify
+
+- **The signed-in dashboard.** There are no staff Supabase credentials in this
+  environment, so no admin screen was opened, clicked or screenshotted. The
+  dashboard work is verified by typecheck, lint and build only. The five
+  three-click tasks (read a prayer request, approve a testimony, add a teaching
+  to a series, edit the weekly schedule, see tomorrow's calls) are therefore
+  **not tested**; their routes exist and were unchanged in structure.
+- **Lighthouse and axe.** Neither is installed in this project, so no scores
+  are claimed. Running them requires a browser audit against a production
+  build.
+- **The final full responsive sweep after the `/gatherings` fix.** Only the
+  affected route was re-measured (clean); the other 89 pairs were measured
+  before that one-line change.
+- **File coverage.** 57% of UI files changed, below the 70% target. The 53
+  reviewed files are listed with a reason in the tracker; several are thin
+  wrappers, icon sets or components that already met the brief, but this is
+  below the bar set in the brief and should be treated as unfinished work.
+- **Visual review of every screen.** The public pages were reviewed from the
+  captured screenshots; no dashboard screen was seen.
+
+## Open items
+
+1. Sign in as staff and click through the dashboard at 375px; run the five
+   three-click tasks and capture the missing admin screenshots.
+2. Replace the two small supplied photographs (598px and 896px wide) with
+   originals; noted in `docs/ASSETS_NEEDED.md`.
+3. Run Lighthouse mobile and axe on the public routes against `npm run build`
+   output, and record actual scores.
+4. Finish the remaining 53 reviewed files where a deeper rewrite is warranted
+   (notably `BookingFlow`, `CalendarView`, `AvailabilityEditor`, `EventEditor`
+   and the settings sub-pages).
