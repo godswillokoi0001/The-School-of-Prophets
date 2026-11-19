@@ -4,7 +4,7 @@ import { revalidateTag } from "next/cache";
 import { getAdminClient } from "@/lib/supabase/server";
 import { audit, getStaff } from "@/lib/admin";
 
-const allTags = ["setting:enrolment", "setting:announcement", "setting:homepage", "setting:giving", "setting:contact", "setting:pages", "setting:legal", "setting:seo", "schedule", "series", "teachings", "events", "faqs", "team", "testimonies"];
+const allTags = ["setting:enrolment", "setting:announcement", "setting:announcements_library", "setting:homepage", "setting:giving", "setting:contact", "setting:pages", "setting:legal", "setting:seo", "schedule", "series", "teachings", "events", "faqs", "team", "testimonies"];
 
 export async function saveSetting(key: string, value: Record<string, unknown>) {
   const staff = await getStaff();

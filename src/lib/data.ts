@@ -386,7 +386,48 @@ export async function getContactSettings() {
   };
 }
 
+export type AnnouncementItem = {
+  id: string;
+  headline: string;
+  message: string;
+  link?: string;
+  buttonText?: string;
+  variant: "default" | "emergency";
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export async function getAnnouncement() {
+  // 1. Try reading active announcement from announcements_library
+  const lib = (await getSetting("announcements_library", { items: [] })) as {
+    items?: AnnouncementItem[];
+  };
+
+  if (Array.isArray(lib?.items) && lib.items.length > 0) {
+    const active = lib.items.find((item) => item.active && item.message?.trim());
+    if (active) {
+      return {
+        id: active.id,
+        active: true,
+        headline: active.headline || "",
+        message: active.message,
+        link: active.link || "",
+        buttonText: active.buttonText || "",
+        variant: active.variant || "default",
+      };
+    }
+    return {
+      active: false,
+      headline: "",
+      message: "",
+      link: "",
+      buttonText: "",
+      variant: "default" as const,
+    };
+  }
+
+  // 2. Fallback to legacy single "announcement" setting
   const s = await getSetting("announcement", {
     active: false,
     headline: "",
@@ -396,6 +437,7 @@ export async function getAnnouncement() {
     variant: "default",
   });
   return s as {
+    id?: string;
     active: boolean;
     headline?: string;
     message: string;
@@ -403,4 +445,34 @@ export async function getAnnouncement() {
     buttonText?: string;
     variant: "default" | "emergency";
   };
+}
+
+export async function getAnnouncementsLibrary(): Promise<AnnouncementItem[]> {
+  const lib = (await getSetting("announcements_library", { items: [] })) as {
+    items?: AnnouncementItem[];
+  };
+
+  if (Array.isArray(lib?.items) && lib.items.length > 0) {
+    return lib.items;
+  }
+
+  // Check legacy single announcement to automatically seed library
+  const single = await getAnnouncement();
+  if (single && single.message?.trim()) {
+    return [
+      {
+        id: single.id || "ann-legacy-default",
+        headline: single.headline || "",
+        message: single.message,
+        link: single.link || "",
+        buttonText: single.buttonText || "",
+        variant: single.variant || "default",
+        active: Boolean(single.active),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+    ];
+  }
+
+  return [];
 }
