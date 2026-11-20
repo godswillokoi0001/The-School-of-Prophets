@@ -57,7 +57,7 @@ export function NextGathering({
 
   return (
     <div
-      className={`relative border p-5 sm:p-7 md:p-8 ${
+      className={`relative border p-4 sm:p-7 md:p-8 ${
         light
           ? "border-ink/15 bg-parchment text-ink"
           : "border-parchment/20 bg-ink-2 text-parchment"
@@ -120,15 +120,21 @@ export function NextGathering({
         ))}
       </div>
 
-      <div className="mt-6 flex flex-col gap-2 sm:flex-row">
+      {/* Two short labels side by side, on every screen: no button wraps. */}
+      <div className="mt-6 grid grid-cols-2 gap-1.5 sm:gap-2">
         <a
           href={joinHref}
           {...(external ? { rel: "noopener noreferrer", target: "_blank" } : {})}
-          className={`btn w-full sm:flex-1 ${light ? "btn-ink" : "btn-gold"}`}
+          className={`btn w-full whitespace-nowrap px-1 text-[0.6rem] tracking-[0.03em] sm:px-3 sm:text-[0.68rem] sm:tracking-[0.06em] ${
+            light ? "btn-ink" : "btn-gold"
+          }`}
         >
           {joinLabel}
         </a>
-        <Link href="/gatherings" className="btn btn-outline w-full sm:flex-1">
+        <Link
+          href="/gatherings"
+          className="btn btn-outline w-full whitespace-nowrap px-1 text-[0.6rem] tracking-[0.03em] sm:px-3 sm:text-[0.68rem] sm:tracking-[0.06em]"
+        >
           How we meet
         </Link>
       </div>
