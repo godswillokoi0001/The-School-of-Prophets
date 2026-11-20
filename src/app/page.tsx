@@ -109,7 +109,7 @@ export default async function HomePage() {
         {/* Ambient Holy Fire & Golden Embers Particles */}
         <HeroParticles />
 
-        <div className="wrap relative grid gap-10 pb-16 pt-14 md:pb-24 md:pt-20 lg:grid-cols-12 lg:items-end lg:gap-12">
+        <div className="wrap relative grid gap-10 pb-16 pt-14 md:pb-24 md:pt-20 lg:grid-cols-12 lg:items-start lg:gap-12">
           <div className="lg:col-span-7">
             <HeroIntro />
           </div>
@@ -118,9 +118,6 @@ export default async function HomePage() {
           {/* Not a Reveal: the session times must render without JavaScript. */}
           <div className="max-w-md lg:col-span-4 lg:col-start-9">
             <NextGathering sessions={schedule} joinHref={contact.whatsapp || undefined} />
-            <p className="mt-3 text-xs leading-relaxed text-parchment/70">
-              Every session is online, and times are shown in your own timezone.
-            </p>
           </div>
         </div>
 
