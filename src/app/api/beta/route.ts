@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { handleFormSubmission } from "@/lib/submit-core";
 import { BETA_TYPE } from "@/lib/beta";
 

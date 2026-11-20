@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
 import { getAdminClient, createSupabaseServer, getServiceClient } from "@/lib/supabase/server";
 import { getStaff } from "@/lib/admin";

@@ -68,14 +68,14 @@ export function Timetable({
         ))}
       </div>
 
-      <div data-stagger>
+      <div data-stagger className="divide-y divide-transparent">
       {sessions.map((session) => (
         <div
           key={session.id}
-          className={`grid gap-2 border-b py-6 md:grid-cols-[5.5rem_minmax(0,1.6fr)_8rem_9rem] md:items-baseline md:gap-4 lg:grid-cols-[6.5rem_1.6fr_9rem_10rem] lg:gap-6 ${rule}`}
+          className={`group relative grid gap-2 border-b py-6 md:grid-cols-[5.5rem_minmax(0,1.6fr)_8rem_9rem] md:items-baseline md:gap-4 lg:grid-cols-[6.5rem_1.6fr_9rem_10rem] lg:gap-6 ${rule} transition-all duration-300 hover:bg-parchment/[0.04] hover:pl-3.5 rounded-sm`}
         >
           <div className="flex items-baseline justify-between gap-4 md:block">
-            <p className={`label ${dark ? "text-gold-soft" : "text-ember"}`}>
+            <p className={`label transition-colors duration-300 group-hover:text-gold ${dark ? "text-gold-soft" : "text-ember"}`}>
               {dayNames[session.day]}
             </p>
             <p className={`text-sm tabular-nums md:hidden ${quiet}`}>

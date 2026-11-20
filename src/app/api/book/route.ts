@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
 import { getServiceClient, supabaseConfigured } from "@/lib/supabase/server";
 import { availableSlots, getBookingConfig } from "@/lib/booking";

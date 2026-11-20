@@ -10,6 +10,7 @@ import { PublicOnly } from "@/components/PublicOnly";
 import { AuthRecoveryHandler } from "@/components/AuthRecoveryHandler";
 import { SiteMotion } from "@/components/motion/SiteMotion";
 import { MotionProvider } from "@/components/motion/MotionProvider";
+import { ScrollProgress } from "@/components/motion/ScrollProgress";
 import { site } from "@/config/site";
 
 const fraunces = Fraunces({
@@ -101,6 +102,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-screen antialiased" suppressHydrationWarning>
+        <ScrollProgress />
         <MotionProvider>
           <AuthRecoveryHandler />
           <PublicOnly>

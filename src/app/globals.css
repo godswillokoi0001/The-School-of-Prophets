@@ -221,6 +221,29 @@
   animation: beta-step-in 260ms var(--ease) both;
 }
 
+@keyframes floatSlow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.35; transform: scale(1); }
+  50% { opacity: 0.75; transform: scale(1.06); }
+}
+
+.animate-float {
+  animation: floatSlow 4s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 3.5s ease-in-out infinite;
+}
+
+/* Ensure data-stagger children are always visible if motion finishes */
+[data-stagger] > * {
+  will-change: transform, opacity;
+}
+
 /* Editorial details -------------------------------------------------- */
 
 /* A long-read opening: larger serif, no decorative drop cap. */
@@ -332,9 +355,35 @@
   .btn-gold {
     background: var(--color-gold);
     color: var(--color-ink);
+    position: relative;
+    overflow: hidden;
+    transition:
+      background-color var(--dur-2) var(--ease),
+      box-shadow var(--dur-2) var(--ease),
+      transform var(--dur-1) var(--ease);
   }
   .btn-gold:hover {
     background: var(--color-gold-soft);
+    box-shadow: 0 4px 18px rgba(176, 128, 58, 0.35);
+  }
+  .btn-gold::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.25),
+      transparent
+    );
+    transition: transform 700ms ease;
+    pointer-events: none;
+  }
+  .btn-gold:hover::after {
+    transform: translateX(200%);
   }
 
   .btn-outline {

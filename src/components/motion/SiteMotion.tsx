@@ -6,15 +6,9 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 /**
- * The scroll layer of the site, in one place.
- *
- * Only two things are animated here, both driven by position on the page:
- * `[data-parallax]` drifts a photograph a few pixels inside its frame, and
- * `[data-stagger]` brings a grid or a list in one item at a time. Nothing
- * above the fold is hidden by this file, so a page still reads correctly
- * before hydration and with JavaScript switched off.
- *
- * Reduced-motion readers get the page with no transforms at all.
+ * Site-wide high-performance motion layer.
+ * Drives smooth parallax, staggered entrances, and scroll dynamics.
+ * Built with failsafes ensuring sections NEVER remain hidden.
  */
 export function SiteMotion() {
   const pathname = usePathname();
@@ -25,78 +19,111 @@ export function SiteMotion() {
 
     const mm = gsap.matchMedia();
 
-    // Reduced motion keeps the fade, and drops every movement. The page still
-    // arrives in sequence; nothing travels across the screen.
+    // Reduced motion mode: ensure full visibility immediately
     mm.add("(prefers-reduced-motion: reduce)", () => {
-      gsap.utils.toArray<HTMLElement>("[data-stagger]").forEach((group) => {
-        const items = Array.from(group.children) as HTMLElement[];
-        if (!items.length) return;
-        gsap.from(items, {
-          opacity: 0,
-          duration: 0.4,
-          stagger: 0.05,
-          ease: "power1.out",
-          scrollTrigger: { trigger: group, start: "top 88%", once: true },
-        });
+      document.querySelectorAll<HTMLElement>("[data-stagger], [data-parallax]").forEach((el) => {
+        el.style.opacity = "1";
+        el.style.transform = "none";
       });
     });
 
     mm.add("(prefers-reduced-motion: no-preference)", () => {
-      // A photograph beside long copy drifts gently against the scroll.
+      // 1. Dynamic Parallax on Photography
       gsap.utils.toArray<HTMLElement>("[data-parallax]").forEach((plate) => {
         gsap.fromTo(
           plate,
-          { yPercent: -4 },
+          { yPercent: -6, scale: 1.04 },
           {
-            yPercent: 4,
+            yPercent: 6,
+            scale: 1,
             ease: "none",
             scrollTrigger: {
               trigger: plate.closest("figure, a, div") ?? plate,
               start: "top bottom",
               end: "bottom top",
-              scrub: 0.6,
+              scrub: 0.8,
             },
           },
         );
       });
 
-      // Grids and lists arrive one item at a time.
+      // 2. Grids, Lists & Timetables: Fluid Staggered Entrance
       gsap.utils.toArray<HTMLElement>("[data-stagger]").forEach((group) => {
         const items = Array.from(group.children) as HTMLElement[];
         if (!items.length) return;
-        gsap.from(items, {
-          opacity: 0,
-          y: 28,
-          duration: 0.9,
-          ease: "power3.out",
-          stagger: 0.09,
-          scrollTrigger: { trigger: group, start: "top 88%", once: true },
-        });
+
+        // Check if group is already visible on screen
+        const rect = group.getBoundingClientRect();
+        if (rect.top < window.innerHeight * 0.9) {
+          gsap.fromTo(
+            items,
+            { opacity: 0, y: 18 },
+            {
+              opacity: 1,
+              y: 0,
+              duration: 0.7,
+              ease: "power2.out",
+              stagger: 0.08,
+              immediateRender: false,
+            }
+          );
+        } else {
+          gsap.fromTo(
+            items,
+            { opacity: 0, y: 22 },
+            {
+              opacity: 1,
+              y: 0,
+              duration: 0.75,
+              ease: "power3.out",
+              stagger: 0.08,
+              immediateRender: false,
+              scrollTrigger: {
+                trigger: group,
+                start: "top 95%",
+                once: true,
+              },
+            }
+          );
+        }
       });
 
-      // The hero photograph settles as the invitation leaves the screen.
+      // 3. Hero Gathering Photo: Cinematic Depth Parallax
       const hero = document.querySelector<HTMLElement>("[data-hero]");
       const heroMedia = document.querySelector<HTMLElement>("[data-hero-media]");
       if (hero && heroMedia) {
         gsap.to(heroMedia, {
-          yPercent: 5,
+          yPercent: 12,
+          scale: 1.05,
           ease: "none",
           scrollTrigger: {
             trigger: hero,
             start: "top top",
             end: "bottom top",
-            scrub: 0.5,
+            scrub: 0.6,
           },
         });
       }
 
-      return () => {};
+      // 4. Guaranteed Failsafe: Ensure zero sections ever remain hidden
+      const failsafeTimer = window.setTimeout(() => {
+        document.querySelectorAll<HTMLElement>("[data-stagger] > *").forEach((el) => {
+          if (window.getComputedStyle(el).opacity === "0") {
+            el.style.opacity = "1";
+            el.style.transform = "none";
+          }
+        });
+      }, 1400);
+
+      return () => {
+        window.clearTimeout(failsafeTimer);
+      };
     });
 
     const refresh = () => ScrollTrigger.refresh();
     window.addEventListener("load", refresh);
     document.fonts?.ready.then(refresh).catch(() => undefined);
-    const settle = window.setTimeout(refresh, 900);
+    const settle = window.setTimeout(refresh, 600);
 
     return () => {
       window.clearTimeout(settle);
