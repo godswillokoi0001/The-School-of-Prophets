@@ -41,7 +41,14 @@ put to the client; each decision is reversible.
 15. **`docs/qa/before` is generated from commit `cdb38cd`**, the state before
     this pass, by checking out `src/` at that commit, capturing, and restoring.
 16. **Home imagery is about the fellowship, not the wilderness.** The hero shows
-    a worshipper with hands lifted, beside the type rather than behind it, so the
-    picture is seen and the countdown card no longer covers it. The fellowship
-    section leads with a gathered house at prayer, with the watchword moved to a
-    full-width band; the three systems each carry one photograph. Nothing but the layout and the chosen photographs changed.
+    the gathered house, not a lone figure; the fellowship section leads with a
+    congregation at prayer, with the watchword moved to a full-width band; the
+    three systems each carry one photograph. Nothing but the layout and the
+    chosen photographs changed.
+17. **The hero photograph is the ministry's own, used full-bleed.** Their
+    photograph of the gathering is the hero background, held readable by a dark
+    scrim that thins to the right so faces stay visible, and the NextGathering
+    card stays in the column where it was. The same photograph heads
+    `/gatherings`, so the two pages open on the same room. `/about` gained one
+    wide plate (cropped from the uncut file to drop the generated-image
+    watermark) between its header and the long read. No other page was rebuilt.

@@ -82,13 +82,25 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* Hero: the worshipping house, shown plainly beside the invitation */}
+      {/* Hero: the gathering itself, behind the invitation */}
       <section className="relative isolate overflow-hidden bg-ink text-parchment">
-        <div className="wrap relative grid gap-10 pb-16 pt-10 md:pb-20 md:pt-16 lg:grid-cols-12 lg:items-center lg:gap-12">
-          <div className="order-2 lg:order-1 lg:col-span-6">
-            <p className="label text-gold-soft/85">
-              Interdenominational · Founded {site.founded}
-            </p>
+        <Image
+          src="/images/fellowship-gathering.webp"
+          alt="Members of the fellowship standing together in worship, hands lifted and faces turned upward"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-[52%_38%]"
+        />
+        <div aria-hidden="true" className="absolute inset-0 bg-ink/72 md:bg-ink/40" />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 hidden bg-gradient-to-r from-ink via-ink/78 to-ink/5 md:block"
+        />
+
+        <div className="wrap relative grid gap-10 pb-16 pt-14 md:pb-24 md:pt-20 lg:grid-cols-12">
+          <div className="lg:col-span-7">
+            <p className="label text-gold-soft/90">The fellowship</p>
 
             <h1 className="mt-6 max-w-[13ch] font-display text-display text-parchment">
               A community
@@ -96,8 +108,10 @@ export default async function HomePage() {
               of the <em className="italic text-gold-soft">called</em>.
             </h1>
 
-            <p className="mt-6 max-w-[34ch] font-display text-lead leading-snug text-parchment/75">
-              Planted in the word. Moved by the Spirit. Built on prayer.
+            <p className="mt-7 max-w-[46ch] text-lead leading-relaxed text-parchment/85">
+              The School of Prophets is an interdenominational prophetic fellowship
+              led by {site.leader}, gathering online every week from Nigeria, Zambia
+              and beyond.
             </p>
 
             <div className="mt-8 flex flex-wrap items-center gap-x-7 gap-y-4">
@@ -115,39 +129,19 @@ export default async function HomePage() {
 
             <div className="mt-10 max-w-md">
               <NextGathering sessions={schedule} joinHref={contact.whatsapp || undefined} />
-              <p className="mt-3 text-xs leading-relaxed text-parchment/60">
-                Led by {site.leader}. Every session is online, and times are shown
-                in your own timezone.
+              <p className="mt-3 text-xs leading-relaxed text-parchment/70">
+                Every session is online, and times are shown in your own timezone.
               </p>
             </div>
           </div>
-
-          <div className="order-1 lg:order-2 lg:col-span-5 lg:col-start-8">
-            <figure className="relative">
-              <div className="relative aspect-[4/3] overflow-hidden border border-parchment/15 bg-ink-2 sm:aspect-[16/9] lg:aspect-[4/5]">
-                <Image
-                  src="/images/worship-hands.webp"
-                  alt="A worshipper standing with hands lifted in prayer"
-                  fill
-                  priority
-                  sizes="(max-width: 1024px) 100vw, 40vw"
-                  className="object-cover object-[50%_32%]"
-                />
-              </div>
-              <figcaption className="mt-3 flex items-baseline justify-between gap-4 text-[0.68rem] uppercase tracking-[0.13em] text-parchment/60">
-                <span>Worship, word and prayer</span>
-                <span className="text-gold-soft/80">Every week, online</span>
-              </figcaption>
-            </figure>
-          </div>
         </div>
 
-        <div className="relative border-t border-parchment/10">
-          <div className="wrap flex flex-wrap gap-x-10 gap-y-2 py-4 text-[0.7rem] uppercase tracking-[0.14em] text-parchment/60">
+        <div className="relative border-t border-parchment/15 bg-ink/45">
+          <div className="wrap flex flex-wrap gap-x-10 gap-y-2 py-4 text-[0.7rem] uppercase tracking-[0.14em] text-parchment/70">
             <span>Founded {site.founded}</span>
-            <span aria-hidden="true" className="text-parchment/20">/</span>
+            <span aria-hidden="true" className="text-parchment/25">/</span>
             <span>Interdenominational</span>
-            <span aria-hidden="true" className="text-parchment/20">/</span>
+            <span aria-hidden="true" className="text-parchment/25">/</span>
             <span>Online, weekly</span>
           </div>
         </div>
@@ -271,12 +265,12 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* Three systems as typography, not cards */}
+      {/* Three systems: one photograph each */}
       {show.systems && (
         <section className="wrap py-20 md:py-28">
-          <div className="grid gap-6 md:grid-cols-12 md:items-end">
-            <p className="label text-ember md:col-span-3">The three systems</p>
-            <h2 className="font-display text-hero md:col-span-9">
+          <div>
+            <p className="label text-ember">The three systems</p>
+            <h2 className="mt-4 max-w-[24ch] font-display text-hero">
               Everything here rests on three things.
             </h2>
           </div>

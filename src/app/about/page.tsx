@@ -76,6 +76,23 @@ export default function AboutPage() {
         </div>
       </header>
 
+      {/* The road here: one photograph, wide and quiet, before the long read. */}
+      <figure className="wrap pt-10 md:pt-14">
+        <div className="relative aspect-[4/3] overflow-hidden bg-ink-2 sm:aspect-[1250/560]">
+          <Image
+            src="/images/desert-village.webp"
+            alt="A traveller resting on a hillside above a desert village at dusk"
+            fill
+            sizes="(max-width: 1200px) 100vw, 1200px"
+            className="object-cover object-[40%_45%]"
+          />
+        </div>
+        <figcaption className="figure-caption mt-3 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+          <span>From one small online gathering to a fellowship across three countries</span>
+          <span className="text-ember">Since {site.founded}</span>
+        </figcaption>
+      </figure>
+
       {/* The story, set as a long read with margin notes. */}
       <section className="wrap grid gap-12 py-16 md:grid-cols-12 md:gap-8 md:py-24">
         <div className="md:col-span-3">

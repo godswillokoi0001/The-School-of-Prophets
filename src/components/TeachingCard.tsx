@@ -79,7 +79,8 @@ export function TeachingCard({
         </p>
       </div>
 
-      <div className="md:col-span-1 md:text-right">
+      {/* On phones the title is the link; a lone arrow under the entry reads as debris. */}
+      <div className="hidden md:col-span-1 md:block md:text-right">
         <Link
           href={`/teachings/${teaching.slug}`}
           aria-label={`Read ${teaching.title}`}

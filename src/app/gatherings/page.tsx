@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { CalendarPlus } from "lucide-react";
 import { NextGathering } from "@/components/NextGathering";
@@ -34,8 +35,21 @@ export default async function GatheringsPage() {
 
   return (
     <>
-      <header className="bg-ink text-parchment">
-        <div className="wrap grid gap-12 py-14 md:grid-cols-12 md:py-20">
+      <header className="relative isolate overflow-hidden bg-ink text-parchment">
+        <Image
+          src="/images/fellowship-gathering.webp"
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-[62%_40%]"
+        />
+        <div aria-hidden="true" className="absolute inset-0 bg-ink/76 md:bg-ink/55" />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 hidden bg-gradient-to-r from-ink/95 via-ink/65 to-ink/10 md:block"
+        />
+        <div className="wrap relative grid gap-12 py-14 md:grid-cols-12 md:py-20">
           <div className="md:col-span-7">
             <p className="label text-gold-soft/85">Weekly gatherings</p>
             <h1 className="mt-5 font-display text-hero">Every week, we meet.</h1>
