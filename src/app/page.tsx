@@ -8,6 +8,7 @@ import { Timetable } from "@/components/Timetable";
 import { EnrolmentBanner } from "@/components/EnrolmentBanner";
 import { SocialLinks } from "@/components/SocialLinks";
 import { Reveal } from "@/components/Reveal";
+import { HeroIntro } from "@/components/HeroIntro";
 import {
   getContactSettings,
   getEnrolmentSettings,
@@ -83,15 +84,21 @@ export default async function HomePage() {
   return (
     <>
       {/* Hero: the gathering itself, behind the invitation */}
-      <section className="relative isolate overflow-hidden bg-ink text-parchment">
-        <Image
-          src="/images/fellowship-gathering.webp"
-          alt="Members of the fellowship standing together in worship, hands lifted and faces turned upward"
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover object-[64%_38%]"
-        />
+      <section
+        data-hero
+        className="relative isolate overflow-hidden bg-ink text-parchment"
+      >
+        {/* Oversized so the scroll drift never shows an edge. */}
+        <div data-hero-media className="absolute inset-0 scale-[1.12] will-change-transform">
+          <Image
+            src="/images/fellowship-gathering.webp"
+            alt="Members of the fellowship standing together in worship, hands lifted and faces turned upward"
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover object-[64%_38%]"
+          />
+        </div>
         <div aria-hidden="true" className="absolute inset-0 bg-ink/72 md:bg-ink/40" />
         <div
           aria-hidden="true"
@@ -100,35 +107,11 @@ export default async function HomePage() {
 
         <div className="wrap relative grid gap-10 pb-16 pt-14 md:pb-24 md:pt-20 lg:grid-cols-12 lg:items-end lg:gap-12">
           <div className="lg:col-span-7">
-            <p className="label text-gold-soft/90">The fellowship</p>
-
-            <h1 className="mt-6 max-w-[13ch] font-display text-display text-parchment">
-              A community
-              <br />
-              of the <em className="italic text-gold-soft">called</em>.
-            </h1>
-
-            <p className="mt-7 max-w-[46ch] text-lead leading-relaxed text-parchment/85">
-              The School of Prophets is an interdenominational prophetic fellowship
-              led by {site.leader}, gathering online every week from Nigeria, Zambia
-              and beyond.
-            </p>
-
-            <div className="mt-8 flex flex-wrap items-center gap-x-7 gap-y-4">
-              <Link href="/gatherings" className="btn btn-gold">
-                Join a gathering
-              </Link>
-              <Link
-                href="/teachings"
-                className="link-quiet inline-flex items-center gap-2 text-sm text-parchment/75 hover:text-parchment"
-              >
-                Read a teaching first
-                <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
-              </Link>
-            </div>
+            <HeroIntro />
           </div>
 
           {/* The next gathering sits to the right of the invitation on desktop. */}
+          {/* Not a Reveal: the session times must render without JavaScript. */}
           <div className="max-w-md lg:col-span-4 lg:col-start-9">
             <NextGathering sessions={schedule} joinHref={contact.whatsapp || undefined} />
             <p className="mt-3 text-xs leading-relaxed text-parchment/70">
@@ -138,11 +121,11 @@ export default async function HomePage() {
         </div>
 
         <div className="relative border-t border-parchment/15 bg-ink/45">
-          <div className="wrap flex flex-wrap gap-x-10 gap-y-2 py-4 text-[0.7rem] uppercase tracking-[0.14em] text-parchment/70">
+          <div className="wrap grid gap-1 py-4 text-[0.68rem] uppercase leading-relaxed tracking-[0.14em] text-parchment/70 sm:flex sm:flex-wrap sm:items-center sm:gap-x-10 sm:gap-y-2 sm:text-[0.7rem]">
             <span>Founded {site.founded}</span>
-            <span aria-hidden="true" className="text-parchment/25">/</span>
+            <span aria-hidden="true" className="hidden text-parchment/25 sm:inline">/</span>
             <span>Interdenominational</span>
-            <span aria-hidden="true" className="text-parchment/25">/</span>
+            <span aria-hidden="true" className="hidden text-parchment/25 sm:inline">/</span>
             <span>Online, weekly</span>
           </div>
         </div>
@@ -155,13 +138,15 @@ export default async function HomePage() {
             <div className="md:col-span-5">
               <div className="relative">
                 <figure className="relative aspect-[4/5] overflow-hidden border border-ink/15 bg-ink-3 sm:aspect-[5/4] md:aspect-[4/5]">
-                  <Image
-                    src="/images/prayer-cathedral.webp"
-                    alt="A congregation standing in prayer under the light of a high window"
-                    fill
-                    sizes="(max-width: 768px) 100vw, 46vw"
-                    className="object-cover object-[45%_35%]"
-                  />
+                  <div data-parallax className="absolute inset-x-0 -bottom-[6%] -top-[6%]">
+                    <Image
+                      src="/images/prayer-cathedral.webp"
+                      alt="A congregation standing in prayer under the light of a high window"
+                      fill
+                      sizes="(max-width: 768px) 100vw, 46vw"
+                      className="object-cover object-[45%_35%]"
+                    />
+                  </div>
                   <figcaption className="absolute inset-x-0 top-0 max-w-[78%] bg-gradient-to-b from-ink/85 via-ink/40 to-transparent px-5 pb-12 pt-4 text-[0.68rem] uppercase tracking-[0.13em] text-parchment/85">
                     A house of prayer
                   </figcaption>
@@ -276,7 +261,7 @@ export default async function HomePage() {
             </h2>
           </div>
 
-          <div className="mt-12 grid gap-10 sm:grid-cols-3 sm:gap-6 md:gap-8">
+          <div data-stagger className="mt-12 grid gap-10 sm:grid-cols-3 sm:gap-6 md:gap-8">
             {systems.map((system) => (
               <article key={system.number} className="group">
                 <div className="relative aspect-[5/4] overflow-hidden border border-ink/15 bg-ink-3">
@@ -362,7 +347,7 @@ export default async function HomePage() {
             </article>
 
             {recent.length > 0 && (
-              <ul className="mt-10">
+            <ul data-stagger className="mt-10">
                 {recent.map((t) => (
                   <li key={t.slug} className="border-t border-ink/12">
                     <Link
@@ -420,13 +405,15 @@ export default async function HomePage() {
       <section className="wrap grid gap-12 py-20 md:grid-cols-12 md:py-28">
         <figure className="md:col-span-4">
           <div className="relative aspect-[4/5] overflow-hidden bg-ink">
-            <Image
-              src="/images/prophet-portrait.webp"
-              alt="Prophet Lawrence Iwara, founder and overseer of The School of Prophets"
-              fill
-              sizes="(max-width: 768px) 100vw, 32vw"
-              className="object-cover object-top"
-            />
+            <div data-parallax className="absolute inset-x-0 -bottom-[6%] -top-[6%]">
+              <Image
+                src="/images/prophet-portrait.webp"
+                alt="Prophet Lawrence Iwara, founder and overseer of The School of Prophets"
+                fill
+                sizes="(max-width: 768px) 100vw, 32vw"
+                className="object-cover object-top"
+              />
+            </div>
           </div>
           <figcaption className="figure-caption mt-3">
             Prophet Lawrence Iwara · founder and overseer

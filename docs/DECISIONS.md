@@ -52,3 +52,24 @@ put to the client; each decision is reversible.
     `/gatherings`, so the two pages open on the same room. `/about` gained one
     wide plate (cropped from the uncut file to drop the generated-image
     watermark) between its header and the long read. No other page was rebuilt.
+18. **Motion is split by job: GSAP for the page, Framer Motion for the parts.**
+    GSAP and ScrollTrigger (in `SiteMotion`, mounted once in the root layout)
+    own everything tied to scroll: the hero photograph drifts as the invitation
+    leaves, `[data-parallax]` photographs sit a few pixels off their frame on
+    the home and about pages, and `[data-stagger]` groups (the three systems,
+    the timetable rows, the recent teachings, the years on `/about`) arrive one
+    item at a time. Framer Motion owns the component-level movement, because it
+    writes its opening frame into the server HTML: the hero invitation, the
+    next-gathering card, the tally digits, the mobile menu and the route fade in
+    `template.tsx`. No library is loaded into the admin screens beyond the route
+    fade.
+19. **Reduced motion dims the movement, not the content.** Readers with the OS
+    setting get short opacity fades and no parallax, no rise, no stagger travel;
+    `SiteMotion` keeps a fade-only stagger for them. Nothing is ever hidden
+    behind an animation that fails to run.
+20. **The hero label "The fellowship" is gone, and the hero actions sit on one
+    line on a phone.** The heading carries the page alone. "Join a gathering"
+    and "Read a teaching first" are a single nowrap row down to 320px (tighter
+    tracking and padding below `sm`, the arrow hidden there), and the founded /
+    interdenominational / weekly strip stacks as three plain lines on a phone
+    instead of wrapping with a stray slash.

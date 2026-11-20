@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, Menu, X, ArrowUpRight } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 import { Crest } from "@/components/Crest";
 import { navGroups } from "@/config/nav";
 import { site } from "@/config/site";
@@ -160,9 +161,14 @@ export function Header() {
         </div>
       </header>
 
-      {open && (
-        <div
+      <AnimatePresence>
+        {open && (
+        <motion.div
           id="mobile-nav"
+          initial={{ opacity: 0, y: -12 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -12 }}
+          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
           className="fixed inset-0 z-40 overflow-y-auto bg-ink text-parchment xl:hidden"
         >
           <div className="wrap pb-16 pt-24">
@@ -228,8 +234,9 @@ export function Header() {
             </div>
             <p className="label mt-8 text-parchment/35">{site.crest}</p>
           </div>
-        </div>
-      )}
+        </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }

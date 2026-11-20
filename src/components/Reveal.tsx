@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode } from "react";
+import { motion } from "framer-motion";
+import type { ReactNode } from "react";
 
 /**
  * A single, slow rise as a block enters the viewport. Nothing else animates;
@@ -9,39 +10,21 @@ import { useEffect, useRef, type ReactNode } from "react";
 export function Reveal({
   children,
   className = "",
-  as: Tag = "div",
+  delay = 0,
 }: {
   children: ReactNode;
   className?: string;
-  as?: "div" | "section" | "header";
+  delay?: number;
 }) {
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      el.dataset.reveal = "shown";
-      return;
-    }
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            el.dataset.reveal = "shown";
-            observer.disconnect();
-          }
-        }
-      },
-      { rootMargin: "0px 0px -10% 0px", threshold: 0.05 },
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
   return (
-    <Tag ref={ref as never} data-reveal="pending" className={`reveal ${className}`}>
+    <motion.div
+      className={className}
+      initial={{ opacity: 0, y: 14 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "0px 0px -12% 0px" }}
+      transition={{ duration: 0.75, delay, ease: [0.22, 1, 0.36, 1] }}
+    >
       {children}
-    </Tag>
+    </motion.div>
   );
 }

@@ -79,13 +79,15 @@ export default function AboutPage() {
       {/* The road here: one photograph, wide and quiet, before the long read. */}
       <figure className="wrap pt-10 md:pt-14">
         <div className="relative aspect-[4/3] overflow-hidden bg-ink-2 sm:aspect-[1250/560]">
-          <Image
-            src="/images/desert-village.webp"
-            alt="A traveller resting on a hillside above a desert village at dusk"
-            fill
-            sizes="(max-width: 1200px) 100vw, 1200px"
-            className="object-cover object-[40%_45%]"
-          />
+          <div data-parallax className="absolute inset-x-0 -bottom-[6%] -top-[6%]">
+            <Image
+              src="/images/desert-village.webp"
+              alt="A traveller resting on a hillside above a desert village at dusk"
+              fill
+              sizes="(max-width: 1200px) 100vw, 1200px"
+              className="object-cover object-[40%_45%]"
+            />
+          </div>
         </div>
         <figcaption className="figure-caption mt-3 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
           <span>From one small online gathering to a fellowship across three countries</span>
@@ -204,7 +206,7 @@ export default function AboutPage() {
             <p className="label text-quiet">The years</p>
           </div>
           <div className="md:col-span-9">
-            <ol>
+            <ol data-stagger>
               {timeline.map((entry) => (
                 <li
                   key={entry.date}

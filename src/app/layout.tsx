@@ -8,6 +8,8 @@ import { AnnouncementBar } from "@/components/AnnouncementBar";
 import { NewsletterModal } from "@/components/NewsletterModal";
 import { PublicOnly } from "@/components/PublicOnly";
 import { AuthRecoveryHandler } from "@/components/AuthRecoveryHandler";
+import { SiteMotion } from "@/components/motion/SiteMotion";
+import { MotionProvider } from "@/components/motion/MotionProvider";
 import { site } from "@/config/site";
 
 const fraunces = Fraunces({
@@ -99,22 +101,25 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-screen antialiased" suppressHydrationWarning>
-        <AuthRecoveryHandler />
-        <PublicOnly>
-          <a
-            href="#main"
-            className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:bg-ink focus:px-4 focus:py-3 focus:text-parchment"
-          >
-            Skip to content
-          </a>
-          <AnnouncementBar />
-          <Header />
-          <NewsletterModal />
-        </PublicOnly>
-        <main id="main">{children}</main>
-        <PublicOnly>
-          <Footer />
-        </PublicOnly>
+        <MotionProvider>
+          <AuthRecoveryHandler />
+          <PublicOnly>
+            <a
+              href="#main"
+              className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:bg-ink focus:px-4 focus:py-3 focus:text-parchment"
+            >
+              Skip to content
+            </a>
+            <AnnouncementBar />
+            <Header />
+            <NewsletterModal />
+          </PublicOnly>
+          <main id="main">{children}</main>
+          <PublicOnly>
+            <Footer />
+          </PublicOnly>
+          <SiteMotion />
+        </MotionProvider>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}

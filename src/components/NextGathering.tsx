@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { dayNames, type Session } from "@/content/schedule";
 import { site } from "@/config/site";
 import {
@@ -109,9 +110,18 @@ export function NextGathering({
             }`}
           >
             <p className="font-display text-xl sm:text-2xl lg:text-3xl tabular-nums leading-none">
-              {unit.value === undefined
-                ? "––"
-                : String(unit.value).padStart(2, "0")}
+              {unit.value === undefined ? (
+                "––"
+              ) : (
+                <motion.span
+                  key={unit.value}
+                  className="inline-block tabular-nums"
+                  initial={{ y: -6, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                >
+                  {String(unit.value).padStart(2, "0")}
+                </motion.span>
+              )}
             </p>
             <p className={`label mt-1 text-[0.6rem] sm:text-xs ${light ? "text-quiet" : "text-parchment/60"}`}>
               {unit.label}

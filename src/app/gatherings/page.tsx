@@ -36,14 +36,16 @@ export default async function GatheringsPage() {
   return (
     <>
       <header className="relative isolate overflow-hidden bg-ink text-parchment">
-        <Image
-          src="/images/fellowship-gathering.webp"
-          alt=""
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover object-[62%_40%]"
-        />
+        <div data-parallax className="absolute inset-x-0 -bottom-[6%] -top-[6%]">
+          <Image
+            src="/images/fellowship-gathering.webp"
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover object-[62%_40%]"
+          />
+        </div>
         <div aria-hidden="true" className="absolute inset-0 bg-ink/76 md:bg-ink/55" />
         <div
           aria-hidden="true"

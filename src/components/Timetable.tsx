@@ -68,6 +68,7 @@ export function Timetable({
         ))}
       </div>
 
+      <div data-stagger>
       {sessions.map((session) => (
         <div
           key={session.id}
@@ -112,6 +113,7 @@ export function Timetable({
           </p>
         </div>
       ))}
+      </div>
     </div>
   );
 }
