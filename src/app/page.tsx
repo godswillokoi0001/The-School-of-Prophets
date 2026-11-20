@@ -90,7 +90,7 @@ export default async function HomePage() {
           fill
           priority
           sizes="100vw"
-          className="object-cover object-[52%_38%]"
+          className="object-cover object-[64%_38%]"
         />
         <div aria-hidden="true" className="absolute inset-0 bg-ink/72 md:bg-ink/40" />
         <div
@@ -98,7 +98,7 @@ export default async function HomePage() {
           className="absolute inset-0 hidden bg-gradient-to-r from-ink via-ink/78 to-ink/5 md:block"
         />
 
-        <div className="wrap relative grid gap-10 pb-16 pt-14 md:pb-24 md:pt-20 lg:grid-cols-12">
+        <div className="wrap relative grid gap-10 pb-16 pt-14 md:pb-24 md:pt-20 lg:grid-cols-12 lg:items-end lg:gap-12">
           <div className="lg:col-span-7">
             <p className="label text-gold-soft/90">The fellowship</p>
 
@@ -126,13 +126,14 @@ export default async function HomePage() {
                 <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
               </Link>
             </div>
+          </div>
 
-            <div className="mt-10 max-w-md">
-              <NextGathering sessions={schedule} joinHref={contact.whatsapp || undefined} />
-              <p className="mt-3 text-xs leading-relaxed text-parchment/70">
-                Every session is online, and times are shown in your own timezone.
-              </p>
-            </div>
+          {/* The next gathering sits to the right of the invitation on desktop. */}
+          <div className="max-w-md lg:col-span-4 lg:col-start-9">
+            <NextGathering sessions={schedule} joinHref={contact.whatsapp || undefined} />
+            <p className="mt-3 text-xs leading-relaxed text-parchment/70">
+              Every session is online, and times are shown in your own timezone.
+            </p>
           </div>
         </div>
 
