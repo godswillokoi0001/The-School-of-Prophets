@@ -66,7 +66,7 @@ export function MediaFrame({
             sizes={sizes}
             unoptimized={remote}
             style={{ objectFit: "cover", objectPosition: focalPosition(focal) }}
-            className="pointer-events-none scale-110 blur-2xl saturate-[0.9]"
+            className="pointer-events-none scale-[1.06] blur-[10px] saturate-[0.95]"
           />
           <span
             aria-hidden="true"
