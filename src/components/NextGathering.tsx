@@ -58,26 +58,14 @@ export function NextGathering({
 
   return (
     <div
-      className={`group relative border p-4 sm:p-7 md:p-8 transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(176,128,58,0.18)] ${
+      className={`relative border p-4 sm:p-7 md:p-8 ${
         light
           ? "border-ink/15 bg-parchment text-ink"
-          : "border-gold/30 bg-[#14181e]/95 text-parchment backdrop-blur-sm"
+          : "border-parchment/20 bg-ink-2 text-parchment"
       }`}
     >
-      {/* Sacred gold corner marks */}
-      <div className="pointer-events-none absolute top-1.5 left-1.5 w-2 h-2 border-t border-l border-gold/70" />
-      <div className="pointer-events-none absolute top-1.5 right-1.5 w-2 h-2 border-t border-r border-gold/70" />
-      <div className="pointer-events-none absolute bottom-1.5 left-1.5 w-2 h-2 border-b border-l border-gold/70" />
-      <div className="pointer-events-none absolute bottom-1.5 right-1.5 w-2 h-2 border-b border-r border-gold/70" />
-
       <div className="flex items-baseline justify-between gap-2 sm:gap-4">
-        <div className="flex items-center gap-2">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gold opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-gold"></span>
-          </span>
-          <p className={`label ${light ? "text-ember" : "text-gold"}`}>Next gathering</p>
-        </div>
+        <p className={`label ${light ? "text-ember" : "text-gold"}`}>Next gathering</p>
         <p className={`label text-[0.65rem] sm:text-xs truncate ${light ? "text-quiet" : "text-parchment/60"}`} suppressHydrationWarning>
           {now ? localZoneLabel(start) : "local time"}
         </p>
@@ -127,9 +115,7 @@ export function NextGathering({
               ) : (
                 <motion.span
                   key={unit.value}
-                  className={`inline-block tabular-nums ${
-                    unit.label === "Sec" ? "text-gold-soft" : ""
-                  }`}
+                  className="inline-block tabular-nums"
                   initial={{ y: -4, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ duration: 0.25, ease: "easeOut" }}
@@ -150,15 +136,15 @@ export function NextGathering({
         <a
           href={joinHref}
           {...(external ? { rel: "noopener noreferrer", target: "_blank" } : {})}
-          className={`btn w-full whitespace-nowrap px-1 text-[0.6rem] tracking-[0.03em] sm:px-3 sm:text-[0.68rem] sm:tracking-[0.06em] transition-all duration-300 hover:shadow-lg ${
-            light ? "btn-ink" : "btn-gold hover:brightness-110"
+          className={`btn w-full whitespace-nowrap px-1 text-[0.6rem] tracking-[0.03em] sm:px-3 sm:text-[0.68rem] sm:tracking-[0.06em] ${
+            light ? "btn-ink" : "btn-gold"
           }`}
         >
           {joinLabel}
         </a>
         <Link
           href="/gatherings"
-          className="btn btn-outline w-full whitespace-nowrap px-1 text-[0.6rem] tracking-[0.03em] sm:px-3 sm:text-[0.68rem] sm:tracking-[0.06em] transition-all duration-300 hover:border-gold hover:text-gold-soft"
+          className="btn btn-outline w-full whitespace-nowrap px-1 text-[0.6rem] tracking-[0.03em] sm:px-3 sm:text-[0.68rem] sm:tracking-[0.06em]"
         >
           How we meet
         </Link>

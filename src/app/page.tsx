@@ -267,27 +267,21 @@ export default async function HomePage() {
 
           <div data-stagger className="mt-12 grid gap-10 sm:grid-cols-3 sm:gap-6 md:gap-8">
             {systems.map((system) => (
-              <article
-                key={system.number}
-                className="group relative rounded-sm border border-transparent p-2 transition-all duration-500 hover:-translate-y-2 hover:border-gold/30 hover:bg-ink/[0.03] hover:shadow-[0_16px_40px_rgba(176,128,58,0.12)]"
-              >
-                <div className="relative aspect-[5/4] overflow-hidden border border-ink/15 bg-ink-3 shadow-inner">
+              <article key={system.number} className="group">
+                <div className="relative aspect-[5/4] overflow-hidden border border-ink/15 bg-ink-3">
                   <Image
                     src={system.image}
                     alt={system.alt}
                     fill
                     sizes="(max-width: 640px) 100vw, 30vw"
-                    className="object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
+                    className="object-cover object-center transition-transform duration-700 ease-out group-hover:scale-[1.03]"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-ink/50 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
                 </div>
-                <div className="mt-5 flex items-baseline gap-3 border-t border-ink/25 pt-4 transition-colors duration-300 group-hover:border-gold">
-                  <span className="font-display text-sm font-semibold tabular-nums text-ember transition-colors duration-300 group-hover:text-gold">
+                <div className="mt-5 flex items-baseline gap-3 border-t border-ink/25 pt-4">
+                  <span className="font-display text-sm tabular-nums text-ember">
                     {system.number}
                   </span>
-                  <h3 className="font-display text-2xl transition-colors duration-300 group-hover:text-gold-soft">
-                    {system.title}
-                  </h3>
+                  <h3 className="font-display text-2xl">{system.title}</h3>
                 </div>
                 <p className="mt-2 max-w-[34ch] text-sm leading-relaxed text-quiet">
                   {system.body}
