@@ -40,3 +40,8 @@ put to the client; each decision is reversible.
     on the overview instead of being removed.
 15. **`docs/qa/before` is generated from commit `cdb38cd`**, the state before
     this pass, by checking out `src/` at that commit, capturing, and restoring.
+16. **Home imagery is about the fellowship, not the wilderness.** The hero shows
+    a worshipper with hands lifted, beside the type rather than behind it, so the
+    picture is seen and the countdown card no longer covers it. The fellowship
+    section leads with a gathered house at prayer, with the watchword moved to a
+    full-width band; the three systems each carry one photograph. Nothing but the layout and the chosen photographs changed.

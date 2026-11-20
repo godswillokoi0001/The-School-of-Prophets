@@ -39,16 +39,22 @@ const systems = [
     number: "01",
     title: "Word",
     body: "The Scriptures opened, book by book and topic by topic, until a person can hear God for themselves.",
+    image: "/images/bible-bedside.webp",
+    alt: "A believer reading an open Bible in a quiet room",
   },
   {
     number: "02",
     title: "Worship",
     body: "We bless His name before we ask Him for anything. Worship sets the posture of the house.",
+    image: "/images/shofar-sunset.webp",
+    alt: "A worshipper lifting a shofar in prayer",
   },
   {
     number: "03",
     title: "Prayer",
     body: "Intercession is the work here, not the warm-up. A people who stand in the gap for one another.",
+    image: "/images/prayer-cave.webp",
+    alt: "A man kneeling in prayer in a stone room",
   },
 ];
 
@@ -76,49 +82,25 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* Hero: the watchman's hill, held behind the type */}
+      {/* Hero: the worshipping house, shown plainly beside the invitation */}
       <section className="relative isolate overflow-hidden bg-ink text-parchment">
-        <Image
-          src="/images/desert-walk.webp"
-          alt=""
-          aria-hidden="true"
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover object-[65%_45%]"
-        />
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-r from-ink via-ink/80 to-ink/5"
-        />
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-ink/30"
-        />
-
-        <div className="wrap relative grid gap-12 pb-16 pt-16 md:min-h-[38rem] md:content-center md:pb-24 md:pt-24 lg:grid-cols-12 lg:items-center lg:gap-10">
-          <div className="lg:col-span-7">
+        <div className="wrap relative grid gap-10 pb-16 pt-10 md:pb-20 md:pt-16 lg:grid-cols-12 lg:items-center lg:gap-12">
+          <div className="order-2 lg:order-1 lg:col-span-6">
             <p className="label text-gold-soft/85">
               Interdenominational · Founded {site.founded}
             </p>
 
-            <h1 className="mt-7 max-w-[13ch] font-display text-display text-parchment">
+            <h1 className="mt-6 max-w-[13ch] font-display text-display text-parchment">
               A community
               <br />
-              of the called.
+              of the <em className="italic text-gold-soft">called</em>.
             </h1>
 
-            <p className="mt-8 max-w-[34ch] font-display text-lead leading-snug text-parchment/75">
+            <p className="mt-6 max-w-[34ch] font-display text-lead leading-snug text-parchment/75">
               Planted in the word. Moved by the Spirit. Built on prayer.
             </p>
 
-            <p className="measure mt-6 text-parchment/55">
-              The School of Prophets is an interdenominational prophetic fellowship
-              led by {site.leader}, gathering online every week from Nigeria, Zambia
-              and beyond.
-            </p>
-
-            <div className="mt-9 flex flex-wrap items-center gap-x-7 gap-y-4">
+            <div className="mt-8 flex flex-wrap items-center gap-x-7 gap-y-4">
               <Link href="/gatherings" className="btn btn-gold">
                 Join a gathering
               </Link>
@@ -130,14 +112,33 @@ export default async function HomePage() {
                 <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
               </Link>
             </div>
+
+            <div className="mt-10 max-w-md">
+              <NextGathering sessions={schedule} joinHref={contact.whatsapp || undefined} />
+              <p className="mt-3 text-xs leading-relaxed text-parchment/60">
+                Led by {site.leader}. Every session is online, and times are shown
+                in your own timezone.
+              </p>
+            </div>
           </div>
 
-          <div className="lg:col-span-4 lg:col-start-9">
-            <NextGathering sessions={schedule} joinHref={contact.whatsapp || undefined} />
-            <p className="mt-4 text-xs leading-relaxed text-parchment/60">
-              Every session is online. Times are kept in WAT and shown in your own
-              timezone.
-            </p>
+          <div className="order-1 lg:order-2 lg:col-span-5 lg:col-start-8">
+            <figure className="relative">
+              <div className="relative aspect-[4/3] overflow-hidden border border-parchment/15 bg-ink-2 sm:aspect-[16/9] lg:aspect-[4/5]">
+                <Image
+                  src="/images/worship-hands.webp"
+                  alt="A worshipper standing with hands lifted in prayer"
+                  fill
+                  priority
+                  sizes="(max-width: 1024px) 100vw, 40vw"
+                  className="object-cover object-[50%_32%]"
+                />
+              </div>
+              <figcaption className="mt-3 flex items-baseline justify-between gap-4 text-[0.68rem] uppercase tracking-[0.13em] text-parchment/60">
+                <span>Worship, word and prayer</span>
+                <span className="text-gold-soft/80">Every week, online</span>
+              </figcaption>
+            </figure>
           </div>
         </div>
 
@@ -152,51 +153,81 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Who we are, with a scripture plate */}
+      {/* Who we are: a house at prayer, set beside the plain account */}
       {show.intro && (
-        <section className="wrap grid gap-12 py-20 md:grid-cols-12 md:py-28">
-          <div className="md:col-span-7">
-            <p className="label text-ember">The fellowship</p>
-            <Reveal>
-              <h2 className="mt-5 max-w-[24ch] font-display text-hero">
-                Saints from different churches and cities, bound by love and united
-                by one Spirit.
-              </h2>
-            </Reveal>
-            <div className="mt-8 grid max-w-3xl gap-6 text-quiet sm:grid-cols-2">
-              <p>
+        <section>
+          <div className="wrap grid gap-12 py-20 md:grid-cols-12 md:gap-10 md:py-28">
+            <div className="md:col-span-5">
+              <div className="relative">
+                <figure className="relative aspect-[4/5] overflow-hidden border border-ink/15 bg-ink-3 sm:aspect-[5/4] md:aspect-[4/5]">
+                  <Image
+                    src="/images/prayer-cathedral.webp"
+                    alt="A congregation standing in prayer under the light of a high window"
+                    fill
+                    sizes="(max-width: 768px) 100vw, 46vw"
+                    className="object-cover object-[45%_35%]"
+                  />
+                  <figcaption className="absolute inset-x-0 top-0 max-w-[78%] bg-gradient-to-b from-ink/85 via-ink/40 to-transparent px-5 pb-12 pt-4 text-[0.68rem] uppercase tracking-[0.13em] text-parchment/85">
+                    A house of prayer
+                  </figcaption>
+                </figure>
+              </div>
+            </div>
+
+            <div className="md:col-span-6 md:col-start-7 md:self-center">
+              <p className="label text-ember">The fellowship</p>
+              <Reveal>
+                <h2 className="mt-5 max-w-[22ch] font-display text-hero">
+                  Saints from different churches, bound by love and one Spirit.
+                </h2>
+              </Reveal>
+              <p className="mt-6 text-lead text-quiet">
                 We come to hear God clearly, to grow into what He has called us to
                 be, and to stand in prayer for one another.
               </p>
-              <p>
-                Founded on {site.founded} as an interdenominational mandate for the
-                whole body of Christ. We stay in our local churches and gather here
-                to be taught.
-              </p>
+
+              <dl className="mt-8 border-y border-ink/15">
+                {[
+                  ["Founded", `${site.founded} · interdenominational`],
+                  ["Reach", "Nigeria, Zambia and beyond"],
+                  ["Rhythm", "Four gatherings, every week, online"],
+                ].map(([term, detail]) => (
+                  <div
+                    key={term}
+                    className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-b border-ink/12 py-3 last:border-b-0"
+                  >
+                    <dt className="text-[0.68rem] uppercase tracking-[0.13em] text-ember">
+                      {term}
+                    </dt>
+                    <dd className="text-sm text-quiet">{detail}</dd>
+                  </div>
+                ))}
+              </dl>
+
+              <Link
+                href="/about"
+                className="link-quiet mt-8 inline-flex items-center gap-2 text-sm font-semibold text-ink"
+              >
+                The story and the vision
+                <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
+              </Link>
             </div>
-            <Link
-              href="/about"
-              className="link-quiet mt-8 inline-flex items-center gap-2 text-sm font-semibold text-ink"
-            >
-              The story and the vision
-              <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
-            </Link>
           </div>
 
-          <figure className="md:col-span-5 md:pl-8">
-            <div className="border border-ink/15 bg-paper p-8">
-              <Seal size={72} idKey="home-intro" />
-              <blockquote className="mt-8">
-                <p className="pullquote font-display text-2xl leading-[1.25]">
+          <div className="border-y border-ink/15 bg-paper">
+            <div className="wrap flex flex-col items-start gap-8 py-12 sm:flex-row sm:items-center md:gap-12 md:py-14">
+              <Seal size={88} idKey="home-intro" className="shrink-0" />
+              <blockquote className="max-w-[54ch]">
+                <p className="pullquote font-display text-2xl leading-[1.25] md:text-3xl">
                   “The most High ruleth in the kingdom of men, and giveth it to
                   whomsoever he will.”
                 </p>
-                <figcaption className="mt-5 text-xs uppercase tracking-[0.13em] text-quiet">
+                <figcaption className="mt-4 text-xs uppercase tracking-[0.13em] text-quiet">
                   Daniel 4:17 · the fellowship&apos;s watchword
                 </figcaption>
               </blockquote>
             </div>
-          </figure>
+          </div>
         </section>
       )}
 
@@ -250,24 +281,28 @@ export default async function HomePage() {
             </h2>
           </div>
 
-          <div className="mt-12 grid gap-10 md:grid-cols-3 md:gap-0">
-            {systems.map((system, index) => (
-              <div
-                key={system.number}
-                className={`border-t border-ink/25 pt-6 md:px-8 ${
-                  index === 0 ? "md:pl-0" : ""
-                } ${index < systems.length - 1 ? "md:border-r md:border-r-ink/15" : ""} ${
-                  index === systems.length - 1 ? "md:pr-0" : ""
-                }`}
-              >
-                <p className="font-display text-5xl leading-none tabular-nums text-ember">
-                  {system.number}
-                </p>
-                <h3 className="mt-6 font-display text-3xl">{system.title}</h3>
-                <p className="mt-3 max-w-[32ch] text-sm leading-relaxed text-quiet">
+          <div className="mt-12 grid gap-10 sm:grid-cols-3 sm:gap-6 md:gap-8">
+            {systems.map((system) => (
+              <article key={system.number} className="group">
+                <div className="relative aspect-[5/4] overflow-hidden border border-ink/15 bg-ink-3">
+                  <Image
+                    src={system.image}
+                    alt={system.alt}
+                    fill
+                    sizes="(max-width: 640px) 100vw, 30vw"
+                    className="object-cover object-center transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+                  />
+                </div>
+                <div className="mt-5 flex items-baseline gap-3 border-t border-ink/25 pt-4">
+                  <span className="font-display text-sm tabular-nums text-ember">
+                    {system.number}
+                  </span>
+                  <h3 className="font-display text-2xl">{system.title}</h3>
+                </div>
+                <p className="mt-2 max-w-[34ch] text-sm leading-relaxed text-quiet">
                   {system.body}
                 </p>
-              </div>
+              </article>
             ))}
           </div>
         </section>
