@@ -10,6 +10,7 @@ import { SocialLinks } from "@/components/SocialLinks";
 import { Reveal } from "@/components/Reveal";
 import { HeroIntro } from "@/components/HeroIntro";
 import { HeroParticles } from "@/components/motion/HeroParticles";
+import { HeroPillars } from "@/components/HeroPillars";
 import {
   getContactSettings,
   getEnrolmentSettings,
@@ -109,7 +110,7 @@ export default async function HomePage() {
         {/* Ambient Holy Fire & Golden Embers Particles */}
         <HeroParticles />
 
-        <div className="wrap relative grid gap-10 pb-16 pt-14 md:pb-24 md:pt-20 lg:grid-cols-12 lg:items-start lg:gap-12">
+        <div className="wrap relative grid gap-10 pb-10 pt-14 md:pb-14 md:pt-20 lg:grid-cols-12 lg:items-start lg:gap-12">
           <div className="lg:col-span-7">
             <HeroIntro />
           </div>
@@ -121,15 +122,8 @@ export default async function HomePage() {
           </div>
         </div>
 
-        <div className="relative border-t border-parchment/15 bg-ink/45">
-          <div className="wrap grid gap-1 py-4 text-[0.68rem] uppercase leading-relaxed tracking-[0.14em] text-parchment/70 sm:flex sm:flex-wrap sm:items-center sm:gap-x-10 sm:gap-y-2 sm:text-[0.7rem]">
-            <span>Founded {site.founded}</span>
-            <span aria-hidden="true" className="hidden text-parchment/25 sm:inline">/</span>
-            <span>Interdenominational</span>
-            <span aria-hidden="true" className="hidden text-parchment/25 sm:inline">/</span>
-            <span>Online, weekly</span>
-          </div>
-        </div>
+        {/* Feature Highlights Banner */}
+        <HeroPillars />
       </section>
 
       {/* Who we are: a house at prayer, set beside the plain account */}
