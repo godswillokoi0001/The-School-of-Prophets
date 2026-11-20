@@ -52,7 +52,7 @@ export function Cover({
               objectFit: "cover",
               objectPosition: focalPosition(focal),
             }}
-            className="pointer-events-none scale-[1.06] blur-[10px] saturate-[0.95]"
+            className="pointer-events-none scale-[1.02] blur-[3px] saturate-[0.98]"
           />
           <span
             aria-hidden="true"
